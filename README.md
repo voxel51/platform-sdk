@@ -14,10 +14,10 @@ git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
 ```
 
-and then install the package:
+and then run the install script:
 
 ```shell
-pip install .
+bash install.bash
 ```
 
 
