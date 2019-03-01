@@ -1,0 +1,202 @@
+# Voxel51 Vision Services Platform Quickstart
+
+This guide provides a detailed description of using the
+[Platform SDK](https://github.com/voxel51/platform-sdk) to wrap your custom
+analytic for deployment to the Vision Services Platform.
+
+<img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
+
+
+## Generic Docker entrypoint
+
+The following code provides an annotated example of a generic Docker entrypoint
+that uses the Platform SDK to:
+ - parse the task description provided to the image at runtime
+ - download the inputs and parameters for the task
+ - report the necessary metadata to the platform
+ - publish the outputs of the task to the platform
+ - mark the task as complete
+
+It also demonstrates how to appropriately handle runtime errors that may occur
+during execution.
+
+
+```python
+import logging
+
+# The `platform-sdk` package must be pip installed in your container
+import voxel51.task as voxt
+
+#
+# The following constants set paths in the internal file system of your Docker
+# container to which you want to download task input(s), write outputs, etc.
+#
+
+# A directory to which to download the task input(s) for your task.
+INPUTS_DIR = "/path/to/inputs"
+
+# A path to write the logfile for this task
+TASK_LOGFILE_PATH = "/path/to/task.log"
+
+#
+# The local path to which your analytic will write it's final output. The file
+# type you specify here depends on the nature of your analytic.
+#
+OUTPUT_PATH = "/path/to/output.json"
+
+
+logger = logging.getLogger(__name__)
+
+
+def main():
+    '''The main entrypoint for your Docker.
+
+    Note that no arguments are required here because the Platform SDK reads the
+    necessary configuration settings from environment variables.
+    '''
+
+    #
+    # Setup logging
+    #
+    # This command configures system-wide logging so that all logging recorded
+    # via the builtin `logging` module will be written to the logfile path that
+    # you provide here. Note that the platform stores task logs internally to
+    # facilitate debugging, but these logs are not made available to end-users.
+    #
+    voxt.setup_logging(TASK_LOGFILE_PATH)
+
+    #
+    # Get task config URL
+    #
+    # When a platform Docker image is executed, the `TASK_DESCRIPTION`
+    # environment variable is set to a signed URL at which the TaskConfig for
+    # the task can be downloaded.
+    #
+    task_config_url = voxt.get_task_config_url()
+
+    try:
+        #
+        # Create a TaskManager for the task
+        #
+        # The TaskManager class provides a convenient interface to read inputs
+        # and parameters for your task, publish its status during execution,
+        # and upload the output when the task completes.
+        #
+        # This command downloads the TaskConfig from `task_config_url` and
+        # stores a TaskStatus instance internally to record the status of the
+        # task.
+        #
+        task_manager = voxt.TaskManager.from_url(task_config_url)
+    except:
+        #
+        # Something went terribly wrong and we are unable to communicate with
+        # the platform. This command logs the failure and notifies the platform
+        # as fully as possible.
+        #
+        voxt.fail_epically(task_config_url)
+
+    try:
+        #
+        # Mark the task as started
+        #
+        # This command updates the state of the TaskStatus stored in the
+        # TaskManager and then publishes the status to the platform.
+        #
+        task_manager.start()
+
+        #
+        # Download inputs
+        #
+        # This command downloads the inputs for your task to the directory that
+        # you specify here. It returns a dictionary mapping the input names to
+        # the paths of each downloaded file in the directory. The inputs are
+        # downloaded from the signed URLs contained in the TaskConfig provided
+        # to your Docker image when it was run. The names of the inputs are
+        # configured by the analytic JSON that you provided when publishing the
+        # analytic to the platform.
+        #
+        inputs = task_manager.download_inputs(INPUTS_DIR)
+
+        #
+        # Parse parameters
+        #
+        # This command parses any parameters provided in the TaskConfig for the
+        # task. It returns a dictionary that maps parameter names to their
+        # corresponding values. The names of the parameters are configured by
+        # the analytic JSON that you provided when publishing the analytic to
+        # the platform.
+        #
+        parameters = task_manager.parse_parameters()
+
+        #
+        # Record metadata and post job metadata
+        #
+        # The code below performs two tasks: it records the metadata about the
+        # task inputs, and it publishes the metadata about the overall task to
+        # the platform.
+        #
+        # The input metadata is required by the platform in order to, for
+        # example, know the frame rate of the input video when rendering the
+        # annotations generated by an object detection analytic.
+        #
+        # Posting metadata about the job to the platform is required so that
+        # the platform can track the data volume processed by the task.
+        #
+        # The code below assumes the typical case where the analytic has only
+        # one input, and that input is a video.
+        #
+        input_name = list(inputs.keys())[0]
+        input_path = inputs[input_name]
+        task_manager.record_input_metadata(input_name, video_path=input_path)
+        task_manager.post_job_metadata(input_path)
+
+        #
+        # Your code goes here!!
+        #
+        # Now you have the inputs and parameters required to run your task, so
+        # you can perform your custom work!
+        #
+        # Remember that any `logging` messages you generated will be
+        # automatically recorded in your task's logfile. The TaskManager can
+        # also store messages, which are included in the status JSON file made
+        # available to end users. You can publish the latest status of your
+        # task to the platform at any time by calling `publish_status()`.
+        #
+        logger.info("Logging messages will appear in the task's logfile")
+        task_manager.add_status_message("TaskManager can track messages")
+        task_manager.publish_status()
+
+        #
+        # Upload output
+        #
+        # This command uploads the output that you generated at the provided
+        # path to the platform.
+        #
+        task_manager.upload_output(OUTPUT_PATH)
+
+        #
+        # Mark task as complete
+        #
+        # This command marks the task as complete and publishes the final task
+        # status and logfile to the platform. You are done!
+        #
+        task_manager.complete(logfile_path=TASK_LOGFILE_PATH)
+    except:
+        #
+        # An error occured while your analytic was executing, so the command
+        # below gracefully exits by recording the stack trace in your logfile,
+        # marking the task as failed, and posting the final (failed) task
+        # status to the platform.
+        #
+        task_manager.fail_gracefully(logfile_path=TASK_LOGFILE_PATH)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+
+## Copyright
+
+Copyright 2017-2019, Voxel51, Inc.<br>
+[voxel51.com](https://voxel51.com)
