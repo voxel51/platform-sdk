@@ -53,6 +53,10 @@ images. This repository contains an easy-to-use SDK that allows you to wrap
 your custom algorithms with a Docker entrypoint that implements the platform's
 analytic interface.
 
+> Currently, to deploy a custom analytic to the Vision Services Platform you
+> must email support@voxel51.com. In the near future, you will be able to
+> deploy analytics to the platform autonomously.
+
 Regardless of where the platform is deployed, users interact with
 it via the Vision Services API, which exposes the interface through which users
 can upload and manage data resources, run analytics on data, monitor the status
