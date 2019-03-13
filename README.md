@@ -51,11 +51,9 @@ addition, the platform allows users and third-party applications to deploy
 custom analytics to the platform for private use by uploading their own Docker
 images. This repository contains an easy-to-use SDK that allows you to wrap
 your custom algorithms with a Docker entrypoint that implements the platform's
-analytic interface.
-
-> Currently, to deploy a custom analytic to the Vision Services Platform you
-> must email support@voxel51.com. In the near future, you will be able to
-> deploy analytics to the platform autonomously.
+analytic interface. See the Analytic Deployment section below to learn how to
+deploy your custom analytics to the platform either programmatically via the
+API or the web-based console.
 
 Regardless of where the platform is deployed, users interact with
 it via the Vision Services API, which exposes the interface through which users
@@ -165,6 +163,55 @@ reported automatically via the Platform SDK:
 
 See the [Quickstart Guide](QUICKSTART.md) for more details about the interface
 provided by the Platform SDK.
+
+
+## Analytic Deployment
+
+You can deploy new custom analytics or new versions of your existing analytics
+at any time via the API or the web-based console. Deploying a new analytic is
+a simple two step process:
+
+- Upload an analytic JSON to the platform that describes the details and
+interface of the analytic you plan to upload. See the
+[API Documentation](https://console.voxel51.com/docs/api#analytics-download-documentation)
+for a description of the format of this JSON file.
+
+- Upload the corresponding Docker image(s) for your analytic. The platform
+supports analytic execution via either CPU-only or GPU-enabled compute. You
+must upload a separate Docker image for each execution mode for which you
+declared support in your analytic JSON.
+
+Once you have uploaded your analytic JSON and Docker images, your analytic is
+ready for production use!
+
+### Deployment via API
+
+New analytics can be published programmatically via the Vision Services API
+or any of its client libraries. For example, the following code snippet shows
+how to publish a GPU-enabled analytic using the Python client library:
+
+```py
+from voxe51.api import API
+
+# Local path to the analytic JSON file
+upload_analytic_path = "/path/to/analytic.json"
+
+# Local path to your GPU-enabled image
+upload_image_tar_path = "/path/to/image.tar.gz"
+
+api = API()
+api.upload_analytic(upload_analytic_path)
+api.upload_analytic_image(analytic_id, upload_image_tar_path, "gpu")
+```
+
+See the [API Documentation](https://console.voxel51.com/docs/api#analytics-upload-analytic)
+for more information about deploying analytics via the API.
+
+### Deployment via web console
+
+You can also publish new analytics via the web-based
+[Vision Services Console](https://console.voxel51.com). To do so, simply login
+to your platform account, navigate to the `Analytics` page, and click `Upload`.
 
 
 ## Documentation
