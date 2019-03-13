@@ -502,12 +502,10 @@ def post_job_metadata_for_video(video_path, task_config, task_status):
     '''
     vm = voxu.get_metadata_for_video(video_path)
     metadata = {
-        "units": vm.total_frame_count,  # @todo deprecate?
         "frame_count": vm.total_frame_count,
         "duration_seconds": vm.duration,
         "size_bytes": vm.size_bytes
     }
-
     post_job_metadata(metadata, task_config, task_status)
 
 
@@ -517,7 +515,7 @@ def post_job_metadata(metadata, task_config, task_status):
     Args:
         metadata (dict): a dictionary describing the input metadata for the
             job. It should include all of the following fields, if applicable:
-            ``units``, ``frame_count``, ``duration_seconds``, ``size_bytes``
+            ``frame_count``, ``duration_seconds``, and ``size_bytes``
         task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
     '''
