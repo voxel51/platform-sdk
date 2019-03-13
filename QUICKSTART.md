@@ -24,15 +24,15 @@ during execution.
 ```python
 import logging
 
-# The `platform-sdk` package must be pip installed in your container
+# The `platform-sdk` package must be pip installed in your image
 import voxel51.task as voxt
 
 #
 # The following constants set paths in the internal file system of your Docker
-# container to which you want to download task input(s), write outputs, etc.
+# image to which you want to download task input(s), write outputs, etc.
 #
 
-# A directory to which to download the task input(s) for your task.
+# A directory to which to download the task input(s) for your task
 INPUTS_DIR = "/path/to/inputs"
 
 # A path to write the logfile for this task
