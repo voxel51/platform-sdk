@@ -218,10 +218,6 @@ FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 COPY platform-sdk/ /engine/platform-sdk/
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
-        sudo \
-        build-essential \
-        pkg-config \
-        curl \
         libcupti-dev \
         python2.7 \
         python-dev \
