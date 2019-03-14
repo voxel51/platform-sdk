@@ -214,7 +214,13 @@ FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 # Your custom installation goes here!
 #
 
+#
 # Install `platform-sdk` and its dependencies
+#
+# The following tensorflow + numpy options are supported:
+#   - Python 2.7.X: tensorflow(-gpu)==1.12.0 and numpy==1.14.0
+#   - Python 3.6.X: tensorflow(-gpu)==1.12.0 and numpy==1.16.0
+#
 COPY platform-sdk/ /engine/platform-sdk/
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
