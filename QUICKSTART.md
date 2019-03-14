@@ -198,11 +198,11 @@ if __name__ == "__main__":
 
 ## Docker build
 
-The following section assumes that you have extended the template in the
-previous section to obtain a `main.py` entrypoint for your Docker image that
-runs your custom analytic.
+This section assumes that you have extended the template in the previous
+section to obtain a `main.py` entrypoint for your Docker image that runs your
+custom analytic.
 
-The following snippet defines a `Dockerfile` that installs the Platform SDK and
+The snippet below defines a `Dockerfile` that installs the Platform SDK and
 its dependencies in a GPU-enabled Docker image that runs the `main.py`
 entrypoint that you provide. It can be easily extended to include any custom
 installation requirements for your analytic.
@@ -210,7 +210,6 @@ installation requirements for your analytic.
 ```
 # A typical base image for GPU deployments. Others are possible
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
-#
 
 #
 # Your custom installation goes here!
@@ -248,7 +247,7 @@ RUN apt-get update \
 #
 ENV TASK_DESCRIPTION=null ENV=null API_TOKEN=null
 
-# Expose port so image can read/write data from external storage at runtime
+# Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
 
 # Setup entrypoint
