@@ -7,7 +7,7 @@ analytic for deployment to the Vision Services Platform.
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
 
-## Generic Docker entrypoint
+## Docker entrypoint
 
 The following code provides an annotated example of a generic Docker entrypoint
 that uses the Platform SDK to:
