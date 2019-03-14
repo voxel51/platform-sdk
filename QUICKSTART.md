@@ -196,6 +196,88 @@ if __name__ == "__main__":
 ```
 
 
+## Docker build
+
+The following section assumes that you have extended the template in the
+previous section to obtain a `main.py` entrypoint for your Docker image that
+runs your custom analytic.
+
+The following snippet defines a `Dockerfile` that installs the Platform SDK and
+its dependencies in a GPU-enabled Docker image that runs the `main.py`
+entrypoint that you provide. It can be easily extended to include any custom
+installation requirements for your analytic.
+
+```
+# A typical base image for GPU deployments. Others are possible
+FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
+#
+
+#
+# Your custom installation goes here!
+#
+
+# Install `platform-sdk` and its dependencies
+COPY platform-sdk/ /engine/platform-sdk/
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install \
+        sudo \
+        build-essential \
+        pkg-config \
+        curl \
+        libcupti-dev \
+        python2.7 \
+        python-dev \
+        python-pip \
+        python-setuptools \
+        ffmpeg \
+        imagemagick \
+    && pip install --upgrade pip==9.0.3 \
+    && pip --no-cache-dir install -r /engine/platform-sdk/requirements.txt \
+    && pip --no-cache-dir install -r /engine/platform-sdk/eta/requirements.txt \
+    && pip --no-cache-dir install -e /engine/platform-sdk/. \
+    && pip --no-cache-dir install -e /engine/platform-sdk/eta/.
+    && pip --no-cache-dir install opencv-python-headless \
+    && pip --no-cache-dir install --upgrade requests \
+    && pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
+    && pip --no-cache-dir install --upgrade numpy==1.14.0 \
+    && rm -rf /var/lib/apt
+
+#
+# Declare environment variables that the platform will use to communicate with
+# the image at runtime
+#
+ENV TASK_DESCRIPTION=null ENV=null API_TOKEN=null
+
+# Expose port so image can read/write data from external storage at runtime
+EXPOSE 8000
+
+# Setup entrypoint
+COPY main.py /engine/main.py
+RUN chmod +x /engine/main.py
+WORKDIR /engine
+ENTRYPOINT ["python", "main.py"]
+```
+
+You can build your image from the above `Dockerfile` by running:
+
+```shell
+# Clone platform-sdk
+git clone https://github.com/voxel51/platform-sdk
+git submodule init
+git submodule update
+
+#
+# Your custom setup goes here!
+#
+
+# Build image
+docker build -t "<name>-<version>" .
+
+# Cleanup
+rm -rf platform-sdk
+```
+
+
 ## Copyright
 
 Copyright 2017-2019, Voxel51, Inc.<br>
