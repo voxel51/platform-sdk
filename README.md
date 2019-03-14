@@ -205,7 +205,7 @@ api.upload_analytic_image(analytic_id, upload_image_tar_path, "gpu")
 ```
 
 See the [API Documentation](https://console.voxel51.com/docs/api#analytics-upload-analytic)
-for more information about deploying analytics via the API.
+for more complete instructions for deploying analytics via the API.
 
 ### Deployment via web console
 
