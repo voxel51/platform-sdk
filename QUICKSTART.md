@@ -7,7 +7,7 @@ analytic for deployment to the Vision Services Platform.
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
 
-## Generic Docker entrypoint
+## Docker entrypoint
 
 The following code provides an annotated example of a generic Docker entrypoint
 that uses the Platform SDK to:
@@ -20,19 +20,18 @@ that uses the Platform SDK to:
 It also demonstrates how to appropriately handle runtime errors that may occur
 during execution.
 
-
 ```python
 import logging
 
-# The `platform-sdk` package must be pip installed in your container
+# The `platform-sdk` package must be pip installed in your image
 import voxel51.task as voxt
 
 #
 # The following constants set paths in the internal file system of your Docker
-# container to which you want to download task input(s), write outputs, etc.
+# image to which you want to download task input(s), write outputs, etc.
 #
 
-# A directory to which to download the task input(s) for your task.
+# A directory to which to download the task input(s) for your task
 INPUTS_DIR = "/path/to/inputs"
 
 # A path to write the logfile for this task
@@ -193,6 +192,89 @@ def main():
 
 if __name__ == "__main__":
     main()
+```
+
+
+## Docker build
+
+This section assumes that you have extended the template in the previous
+section to obtain a `main.py` entrypoint for your Docker image that runs your
+custom analytic.
+
+The snippet below defines a `Dockerfile` that installs the Platform SDK and
+its dependencies in a GPU-enabled Docker image that runs the `main.py`
+entrypoint that you provide. It can be easily extended to include any custom
+installation requirements for your analytic.
+
+```
+# A typical base image for GPU deployments. Others are possible
+FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
+
+#
+# Your custom installation goes here!
+#
+
+#
+# Install `platform-sdk` and its dependencies
+#
+# The following tensorflow + numpy options are supported:
+#   - Python 2.7.X: tensorflow(-gpu)==1.12.0 and numpy==1.14.0
+#   - Python 3.6.X: tensorflow(-gpu)==1.12.0 and numpy==1.16.0
+#
+COPY platform-sdk/ /engine/platform-sdk/
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install \
+        libcupti-dev \
+        python2.7 \
+        python-dev \
+        python-pip \
+        python-setuptools \
+        ffmpeg \
+        imagemagick \
+    && pip install --upgrade pip==9.0.3 \
+    && pip --no-cache-dir install -r /engine/platform-sdk/requirements.txt \
+    && pip --no-cache-dir install -r /engine/platform-sdk/eta/requirements.txt \
+    && pip --no-cache-dir install -e /engine/platform-sdk/. \
+    && pip --no-cache-dir install -e /engine/platform-sdk/eta/.
+    && pip --no-cache-dir install opencv-python-headless \
+    && pip --no-cache-dir install --upgrade requests \
+    && pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
+    && pip --no-cache-dir install --upgrade numpy==1.14.0 \
+    && rm -rf /var/lib/apt
+
+#
+# Declare environment variables that the platform will use to communicate with
+# the image at runtime
+#
+ENV TASK_DESCRIPTION=null ENV=null API_TOKEN=null
+
+# Expose port so image can read/write from external storage at runtime
+EXPOSE 8000
+
+# Setup entrypoint
+COPY main.py /engine/main.py
+RUN chmod +x /engine/main.py
+WORKDIR /engine
+ENTRYPOINT ["python", "main.py"]
+```
+
+You can build your image from the above `Dockerfile` by running:
+
+```shell
+# Clone platform-sdk
+git clone https://github.com/voxel51/platform-sdk
+git submodule init
+git submodule update
+
+#
+# Your custom setup goes here!
+#
+
+# Build image
+docker build -t "<analytic>-<version>" .
+
+# Cleanup
+rm -rf platform-sdk
 ```
 
 
