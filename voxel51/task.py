@@ -49,6 +49,7 @@ class TaskConfig(Config):
 
     def __init__(self, d):
         self.analytic = self.parse_string(d, "analytic")
+        self.version = self.parse_string(d, "version")
         self.job_id = self.parse_string(d, "job_id")
         self.inputs = self.parse_object_dict(
             d, "inputs", voxu.RemotePathConfig, default={})
@@ -217,7 +218,8 @@ class TaskStatus(Serializable):
     '''Class for recording the status of a task.
 
     Attributes:
-        name (str): name of the analytic
+        analytic (str): name of the analytic
+        version (str): version of the analytic
         state (TaskState): current TaskState of the task
         start_time (str): time the task was started, or None if not started
         complete_time (str): time the task was completed, or None if not
@@ -236,7 +238,8 @@ class TaskStatus(Serializable):
         Args:
             task_config (TaskConfig): a TaskConfig instace describing the task
         '''
-        self.name = task_config.analytic
+        self.analytic = task_config.analytic
+        self.version = task_config.version
         self.state = TaskState.QUEUED
         self.start_time = None
         self.complete_time = None
@@ -323,8 +326,8 @@ class TaskStatus(Serializable):
     def attributes(self):
         '''Returns a list of class attributes to be serialized.'''
         return [
-            "name", "state", "start_time", "complete_time", "fail_time",
-            "messages", "inputs", "posted_data"]
+            "analytic", "version" "state", "start_time", "complete_time",
+            "fail_time", "messages", "inputs", "posted_data"]
 
 
 class TaskStatusMessage(Serializable):

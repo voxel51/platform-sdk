@@ -20,7 +20,6 @@ that uses the Platform SDK to:
 It also demonstrates how to appropriately handle runtime errors that may occur
 during execution.
 
-
 ```python
 import logging
 
@@ -270,7 +269,7 @@ git submodule update
 #
 
 # Build image
-docker build -t "<name>-<version>" .
+docker build -t "<analytic>-<version>" .
 
 # Cleanup
 rm -rf platform-sdk
