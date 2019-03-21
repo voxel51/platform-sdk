@@ -326,7 +326,7 @@ class TaskStatus(Serializable):
     def attributes(self):
         '''Returns a list of class attributes to be serialized.'''
         return [
-            "analytic", "version" "state", "start_time", "complete_time",
+            "analytic", "version", "state", "start_time", "complete_time",
             "fail_time", "messages", "inputs", "posted_data"]
 
 
