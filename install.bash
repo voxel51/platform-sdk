@@ -9,20 +9,17 @@
 
 # Show usage information
 usage() {
-    echo "Usage:  bash $0 [-h] [-e]
+    echo "Usage:  bash $0 [-h]
 
 -h      Display this help message.
--e      Installs python packages in editable (developer) mode.
 "
 }
 
 # Parse flags
 SHOW_HELP=false
-DEV_MODE=false
-while getopts "he" FLAG; do
+while getopts "h" FLAG; do
     case "${FLAG}" in
         h) SHOW_HELP=true ;;
-        e) DEV_MODE=true ;;
         *) usage ;;
     esac
 done
@@ -31,11 +28,7 @@ done
 # Install platform-sdk
 echo "Installing platform-sdk"
 pip install -r requirements.txt
-if [ ${DEV_MODE} = true ]; then
-    pip install -e .
-else
-    pip install .
-fi
+pip install -e .
 
 # Initialize submodules
 echo "Initializing submodules"
@@ -46,8 +39,4 @@ git submodule update
 echo "Installing ETA"
 cd eta
 bash install_externals.bash
-if [ ${DEV_MODE} = true ]; then
-    pip install -e .
-else
-    pip install .
-fi
+pip install -e .
