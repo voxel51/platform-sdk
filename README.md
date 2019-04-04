@@ -200,7 +200,7 @@ from voxe51.api import API
 # Local path to the analytic JSON file
 upload_analytic_path = "/path/to/analytic.json"
 
-# Local path to your GPU-enabled image
+# Local path to a tar.gz of your GPU-enabled image
 upload_image_tar_path = "/path/to/image.tar.gz"
 
 api = API()
