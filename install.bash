@@ -39,4 +39,5 @@ git submodule update
 echo "Installing ETA"
 cd eta
 bash install_externals.bash
+cp config-example.json config.json
 pip install -e .
