@@ -278,6 +278,24 @@ rm -rf platform-sdk
 ```
 
 
+## Docker deployment
+
+After you have built the Docker image for your custom analytic, you must save
+it as a `.tar.gz` file so that you can upload it to the Voxel51 Platform.
+To do so, simply execute a command like:
+
+```shell
+docker save <image> | gzip -c > <image>.tar.gz
+```
+
+where, if you built your image as described in the previous section,
+`<image>=<analytic>-<version>`.
+
+Finally, follow the instructions in the
+[Analytic Deployment section](README.md#analytic-deployment) of the README to
+publish your analytic to the platform.
+
+
 ## Copyright
 
 Copyright 2017-2019, Voxel51, Inc.<br>
