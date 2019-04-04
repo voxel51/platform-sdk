@@ -291,9 +291,8 @@ docker save <image> | gzip -c > <image>.tar.gz
 where, if you built your image as described in the previous section,
 `<image>=<analytic>-<version>`.
 
-Finally, follow the instructions in the
-[Analytic Deployment section](README.md#analytic-deployment) of the README to
-publish your analytic to the platform.
+Finally, follow the instructions in the Analytic Deployment section of the
+[README](README.md) to publish your analytic to the platform.
 
 
 ## Copyright
