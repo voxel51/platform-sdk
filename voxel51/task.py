@@ -63,11 +63,19 @@ class TaskConfig(Config):
 class TaskState(object):
     '''Enum describing the possible states of a task.'''
 
-    READY = "READY"
-    QUEUED = "QUEUED"
+    SCHEDULED = "SCHEDULED"
     RUNNING = "RUNNING"
-    FAILED = "FAILED"
     COMPLETE = "COMPLETE"
+    FAILED = "FAILED"
+
+
+class TaskFailureType(object):
+    '''Enum describing the possible reasons for a failed task.'''
+
+    USER = "USER"
+    ANALYTIC = "ANALYTIC"
+    PLATFORM = "PLATFORM"
+    NONE = "NONE"
 
 
 class TaskManager(object):
@@ -202,16 +210,18 @@ class TaskManager(object):
         complete_task(
             self.task_config, self.task_status, logfile_path=logfile_path)
 
-    def fail_gracefully(self, logfile_path=None):
+    def fail_gracefully(self, failure_type, logfile_path=None):
         '''Marks the task as failed and gracefully winds up by posting any
         available information (status, logfile, etc.) to the platform.
 
         Args:
+            failure_type (TaskFailureType): the failure reason
             logfile_path (str): an optional local path to a logfile for the
                 task
         '''
         fail_gracefully(
-            self.task_config, self.task_status, logfile_path=logfile_path)
+            failure_type, self.task_config, self.task_status,
+            logfile_path=logfile_path)
 
 
 class TaskStatus(Serializable):
@@ -221,6 +231,7 @@ class TaskStatus(Serializable):
         analytic (str): name of the analytic
         version (str): version of the analytic
         state (TaskState): current TaskState of the task
+        failure_type (TaskFailureType): the TaskFailureType of the task
         start_time (str): time the task was started, or None if not started
         complete_time (str): time the task was completed, or None if not
             completed
@@ -240,7 +251,8 @@ class TaskStatus(Serializable):
         '''
         self.analytic = task_config.analytic
         self.version = task_config.version
-        self.state = TaskState.QUEUED
+        self.state = TaskState.SCHEDULED
+        self.failure_type = TaskFailureType.NONE
         self.start_time = None
         self.complete_time = None
         self.fail_time = None
@@ -293,17 +305,20 @@ class TaskStatus(Serializable):
         self.complete_time = self.add_message(msg)
         self.state = TaskState.COMPLETE
 
-    def fail(self, msg="Task failed"):
+    def fail(self, failure_type, msg="Task failed"):
         '''Marks the task as failed.
 
         Subclasses may override this method, but, if they do, they must set
-        ``self.state = TaskState.FAILED`` themselves or call this method.
+        ``self.failure_type`` to the appropriate value and set
+        ``self.state = TaskState.FAILED``.
 
         Args:
+            failure_type (TaskFailureType): the failure reason
             msg (str, optional): a message to log
         '''
         self.fail_time = self.add_message(msg)
         self.state = TaskState.FAILED
+        self.failure_type = failure_type
 
     def add_message(self, msg):
         '''Adds the given message to the status. Messages are timestamped and
@@ -326,8 +341,8 @@ class TaskStatus(Serializable):
     def attributes(self):
         '''Returns a list of class attributes to be serialized.'''
         return [
-            "analytic", "version", "state", "start_time", "complete_time",
-            "fail_time", "messages", "inputs", "posted_data"]
+            "analytic", "version", "state", "failure_type", "start_time",
+            "complete_time", "fail_time", "messages", "inputs", "posted_data"]
 
 
 class TaskStatusMessage(Serializable):
@@ -438,8 +453,19 @@ def make_publish_callback(job_id, status_path_config):
             content_type="application/json")
         logger.info("Task status written to cloud storage")
 
-        _get_api_client().update_job_state(job_id, task_status.state)
-        logger.info("Job state %s posted to API", task_status.state)
+        if task_status.state == TaskState.FAILED:
+            failure_type = task_status.failure_type
+        else:
+            failure_type = None
+
+        _get_api_client().update_job_state(
+            job_id, task_status.state, failure_type=failure_type)
+        if task_status.state == TaskState.FAILED:
+            logger.info(
+                "Job state %s (%s) posted to API", task_status.state,
+                failure_type)
+        else:
+            logger.info("Job state %s posted to API", task_status.state)
 
     return _publish_status
 
@@ -582,19 +608,21 @@ def upload_logfile(logfile_path, task_config):
     voxu.upload(logfile_path, task_config.logfile)
 
 
-def fail_gracefully(task_config, task_status, logfile_path=None):
+def fail_gracefully(failure_type, task_config, task_status, logfile_path=None):
     '''Marks the task as failed and gracefully winds up by posting any
     available information (status, logfile, etc.).
 
     Args:
+        failure_type (TaskFailureType): the failure reason
         task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
         logfile_path (str, optional): the path to a logfile to upload
     '''
     # Log the stack trace and mark the task as failed
     exc_info = sys.exc_info()
+    logger.error("Failure type: %s", failure_type)
     logger.error("Uncaught exception", exc_info=exc_info)
-    task_status.fail()
+    task_status.fail(failure_type)
 
     try:
         # Try to publish the task status
@@ -636,9 +664,15 @@ def fail_epically(task_config_url):
     job_id = os.path.basename(os.path.dirname(path))
 
     try:
+        #
         # The only thing we can do is update the job status to FAILED
-        _get_api_client().update_job_state(job_id, TaskState.FAILED)
-        logger.info("Job state %s posted to API", TaskState.FAILED)
+        # and blame it on the platform
+        #
+        _get_api_client().update_job_state(
+            job_id, TaskState.FAILED, failure_type=TaskFailureType.PLATFORM)
+        logger.info(
+            "Job state %s (%s) posted to API", TaskState.FAILED,
+            TaskFailureType.PLATFORM)
     except:
         logger.error("Unable to communicate with API")
 
