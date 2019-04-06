@@ -110,18 +110,23 @@ class API(object):
             endpoint, headers=self._header, json=metadata)
         _validate_response(res)
 
-    def update_job_state(self, job_id, state):
+    def update_job_state(self, job_id, state, failure_type=None):
         '''Updates the state of the job with the given ID.
 
         Args:
             job_id (str): the job ID
             state (str): the new job state
+            failure_type (str, optional): the job failure type, if any
 
         Raises:
             APIError if the request was unsuccessful
         '''
         endpoint = self.base_url + "/jobs/" + job_id + "/state"
+
         data = {"state": state}
+        if failure_type is not None:
+            data["failure_type"] = failure_type
+
         res = self._requests.put(endpoint, headers=self._header, data=data)
         _validate_response(res)
 
