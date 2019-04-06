@@ -187,7 +187,16 @@ def main():
         # marking the task as failed, and posting the final (failed) task
         # status to the platform.
         #
-        task_manager.fail_gracefully(logfile_path=TASK_LOGFILE_PATH)
+
+        #
+        # Note that the `fail_gracefully` function allows you to specify a
+        # failure type for the job from the TaskFailureType enum. Here we
+        # assume that the platform and analytic are working perfectly and any
+        # error must have resulted from invalid user data. However, the failure
+        # type can be customized depending on the nature of the error.
+        #
+        task_manager.fail_gracefully(
+            voxt.TaskFailureType.USER, logfile_path=TASK_LOGFILE_PATH)
 
 
 if __name__ == "__main__":
