@@ -172,8 +172,9 @@ provided by the Platform SDK.
 ## Analytic Deployment
 
 You can deploy new custom analytics or new versions of your existing analytics
-at any time via the API or the web-based console. Deploying a new analytic is
-a simple two step process:
+at any time via the [API](https://console.voxel51.com/docs/api) or the
+[web console](https://console.voxel51.com). Deploying a new analytic is a
+simple two step process:
 
 - Upload an analytic JSON to the platform that describes the details and
 interface of the analytic you plan to upload. See the
@@ -192,7 +193,8 @@ ready for production use!
 
 New analytics can be published programmatically via the Vision Services API
 or any of its client libraries. For example, the following code snippet shows
-how to publish a GPU-enabled analytic using the Python client library:
+how to publish a GPU-enabled analytic using the
+[Python client library](https://github.com/voxel51/api-py):
 
 ```py
 from voxe51.api import API
