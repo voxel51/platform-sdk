@@ -106,6 +106,7 @@ def main():
         # as fully as possible.
         #
         voxt.fail_epically(task_config_url)
+        return
 
     try:
         #
