@@ -141,6 +141,7 @@ reported automatically via the Platform SDK:
     "start_time": "2019-02-02 07:14:28",
     "complete_time": "2019-02-02 07:32:45",
     "fail_time": null,
+    "failure_type": "NONE",
     "messages": [
         {
             "message": "Task started",

@@ -286,9 +286,6 @@ class TaskStatus(Serializable):
     def start(self, msg="Task started"):
         '''Marks the task as started.
 
-        Subclasses may override this method, but, if they do, they must set
-        ``self.state = TaskState.RUNNING`` themselves or call this method.
-
         Args:
             msg (str, optional): a message to log
         '''
