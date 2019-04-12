@@ -210,7 +210,8 @@ def main():
         # type can be customized depending on the nature of the error.
         #
         task_manager.fail_gracefully(
-            voxt.TaskFailureType.USER, logfile_path=TASK_LOGFILE_PATH)
+            failure_type=voxt.TaskFailureType.USER,
+            logfile_path=TASK_LOGFILE_PATH)
 
 
 if __name__ == "__main__":
