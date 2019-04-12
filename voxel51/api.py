@@ -18,7 +18,6 @@ from builtins import *
 # pragma pylint: enable=unused-wildcard-import
 # pragma pylint: enable=wildcard-import
 
-import json
 import os
 
 import mimetypes
@@ -218,4 +217,4 @@ def _validate_response(res):
 
 
 def _parse_json_response(res):
-    return json.loads(res.content)
+    return voxu.load_json(res.content)

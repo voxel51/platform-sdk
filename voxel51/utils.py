@@ -18,6 +18,7 @@ from builtins import *
 # pragma pylint: enable=unused-wildcard-import
 # pragma pylint: enable=wildcard-import
 
+import json
 import os
 
 try:
@@ -168,6 +169,22 @@ def upload_bytes(bytes_str, path_config, content_type=None):
     '''
     url = handle_macos_localhost(path_config.signed_url)
     _get_http_client().upload_bytes(bytes_str, url, content_type=content_type)
+
+
+def load_json(str_or_bytes):
+    '''Loads JSON from string.
+
+     Args:
+        str_or_bytes (str): the input string or bytes
+
+     Returns:
+        a JSON list/dictionary
+    '''
+    try:
+        return json.loads(str_or_bytes)
+    except TypeError:
+        # Must be a Python version for which json.loads() cannot handle bytes
+        return json.loads(str_or_bytes.decode("utf-8"))
 
 
 def _get_http_client():
