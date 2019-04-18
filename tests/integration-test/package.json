@@ -8,13 +8,17 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "busboy": "^0.3.1",
     "joi": "^14.3.1",
     "ramda": "^0.26.1",
     "uuid": "^3.3.2"
   },
   "scripts": {
-    "start": "DEBUG=sdk-integration node server/index.js",
-    "clean": "rm ./server/storage/*"
+    "start": "node server/index.js",
+    "clean": "rm ./server/storage/*",
+    "debug": "DEBUG=sdk-integration,sdk-integration-server node server/index.js",
+    "debug-server": "DEBUG=sdk-integration-server node server/index.js",
+    "debug-setup": "DEBUG=sdk-integration node server/index.js"
   },
   "devDependencies": {
     "debug": "^4.1.1"

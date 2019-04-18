@@ -3,21 +3,21 @@
 const debug = require('debug')('sdk-integration');
 const { exec } = require('child_process');
 const fs = require('fs');
-const http = require('http');
 const path = require('path');
 
 const uuid4 = require('uuid/v4');
 
 const schema = require('./schema.js');
+// const server = require('./server.js');
 
 (async function main() {
   // declare global consts
   var STORAGE_BASE_DIR,
     GIVEN_INPUT_FILE,
-    TEST_PORT,
     API_TOKEN,
     TEST_DOCKER_IMAGE,
     GIVEN_ANALYTIC_FILE,
+    PORT,
     JOB_ID;
 
   try {
@@ -40,33 +40,25 @@ const schema = require('./schema.js');
       throw new Error(`A valid absolute path to the desired analytic JSON ` +
         `test file must be set via TEST_ANALYTIC_FILE environment variable.`);
     }
+
+    PORT = process.env.TEST_PORT || 5656;
     debug('Environment variable validation complete.');
 
     STORAGE_BASE_DIR = path.join(__dirname, './storage');
     API_TOKEN = 'my-very-special-key12345';
-    TEST_PORT = process.env.TEST_PORT || 5656;
     JOB_ID = uuid4();
     const analyticFields = await parseAndVerifyAnalyticJSON();
     // TODO add support for parameters?
-    const taskURL = await generateTaskJSON(analyticFields);
-    const dockerCmd = await generateDockerCommand(taskURL);
-    console.log('Run the following docker command to test your image now:\n',
-      dockerCmd, '\nCleanup generated files via npm run clean or ' +
-      'yarn run clean.');
+    const {taskURL, task} = await generateTaskJSON(analyticFields);
     debug('Test setup complete.');
-    debug('Spinning up mock server.');
-    process.exit(0);
 
-    // requests to serve
-    // download task json request
-    // post job state(s)
-    // post started
-    // download input(s)
-    // accept job metadata
-    // post running
-    // post output(s)
-    // post complete
-    // post fail/log at any point
+    // debug('Spinning up mock server.');
+    // const socket = await server.spinup(task);
+
+    const dockerCmd = await generateDockerCommand(taskURL);
+    console.log('\n\nRun the following docker command to test your image now:\n',
+      dockerCmd, '\nCleanup generated files via npm run clean or ' +
+      'yarn run clean.\n\n');
   } catch (err) {
     console.error(err);
     process.exit(1);
@@ -103,25 +95,26 @@ const schema = require('./schema.js');
       job_id: JOB_ID,
       inputs: {
         video: {
-          signed_url: await generateSignedUrl(inputFilename),
+          signed_url: await generateSignedUrl(inputFilename, 'input'),
         },
       },
       parameters: params,
-      output: await generateSignedUrl(analyticFields.output),
-      status: await generateSignedUrl('status.json'),
-      logfile: await generateSignedUrl('logfile.log'),
+      output: await generateSignedUrl(analyticFields.output, 'output'),
+      status: await generateSignedUrl('status.json', 'status'),
+      logfile: await generateSignedUrl('logfile.log', 'logfile'),
     };
     const taskJSON = await safeJSONStringify(task);
     debug('Stringified task JSON:', taskJSON);
     await writeFile('task.json', taskJSON);
     debug('Generating signed url for task JSON file.');
-    const taskURL = await generateSignedUrl('task.json');
+    const taskURL = await generateSignedUrl('task.json', 'task');
     debug('Task JSON generation complete.');
-    return taskURL;
+    return {taskURL, task};
   }
 
-  function generateSignedUrl(filepath) {
-    return Promise.resolve(path.join(STORAGE_BASE_DIR, filepath));
+  function generateSignedUrl(filepath, type) {
+    return Promise.resolve(`http://localhost:${PORT}/v1` +
+      `/local/file?${type}=${path.join(STORAGE_BASE_DIR, filepath)}`);
   }
 
   async function parseAndVerifyAnalyticJSON() {
