@@ -9,16 +9,37 @@ const path = require('path');
 const uuid4 = require('uuid/v4');
 
 (async function main() {
+  // declare global consts
+  var STORAGE_BASE_DIR,
+    GIVEN_INPUT_FILE,
+    TEST_PORT,
+    API_TOKEN,
+    TEST_DOCKER_IMAGE,
+    JOB_ID;
+
   try {
-    const STORAGE_BASE_DIR = path.join(__dirname, './storage');
-    const API_TOKEN = 'my-very-special-key12345';
-    const TEST_PORT = process.env.TEST_PORT || 5656;
-    const JOB_ID = uuid4();
-    const GIVEN_INPUT_FILE = process.env.TEST_INPUT_FILE;
+    GIVEN_INPUT_FILE = process.env.TEST_INPUT_FILE;
     if (!GIVEN_INPUT_FILE) {
       throw new Error(`A valid absolute path to the desired input test ` +
         `file must be set via TEST_INPUT_FILE environment variable.`);
     }
+
+    TEST_DOCKER_IMAGE = process.env.TEST_DOCKER_IMAGE;
+    if (!TEST_DOCKER_IMAGE) {
+      throw new Error(`A valid, local docker image must be set via ` +
+        `TEST_DOCKER_IMAGE environment variable.`);
+    }
+
+    STORAGE_BASE_DIR = path.join(__dirname, './storage');
+    API_TOKEN = 'my-very-special-key12345';
+    TEST_PORT = process.env.TEST_PORT || 5656;
+    JOB_ID = uuid4();
+    const taskURL = await generateTaskJSON();
+    const dockerCmd = await generateDockerCommand(taskURL);
+    console.log('Run the following docker command to test your image now:',
+      dockerCmd);
+    process.exit(0);
+
     // requests to serve
     // download task json request
     // post job state(s)
@@ -34,13 +55,13 @@ const uuid4 = require('uuid/v4');
     process.exit(1);
   }
 
-  function generateDockerCommand(taskURL, jobId) {
+  function generateDockerCommand(taskURL) {
     return new Promise(function(resolve, reject) {
       var cmd = 'docker run ';
       if (process.env.TEST_USE_GPU) {
         cmd += '--runtime=nvidia ';
       }
-      cmd += `--name ${jobId} ` +
+      cmd += `--name ${JOB_ID} ` +
         `--detach ` +
         `-e TASK_DESCRIPTION="${taskURL}" ` +
         `-e ENV="LOCAL" ` +
@@ -54,22 +75,27 @@ const uuid4 = require('uuid/v4');
   async function generateTaskJSON(params={}) {
     // TODO get analytic, version, output name from analytic json?
     // TODO add verification of analytic json file?
+    const inputFilename = path.basename(GIVEN_INPUT_FILE);
+    const inputFilePath = path.join(STORAGE_BASE_DIR, inputFilename);
+    await pExec(`cp ${GIVEN_INPUT_FILE} ${inputFilePath}`);
     const task = {
-      analytic: '',
-      version: '',
+      analytic: 'foobar',
+      version: '1.0.0',
       job_id: JOB_ID,
       inputs: {
         video: {
-          signed_url: '',
+          signed_url: await generateSignedUrl(inputFilename),
         },
       },
       parameters: params,
+      // TODO get output filename/dir from analytic json
       output: await generateSignedUrl('output'),
       status: await generateSignedUrl('status.json'),
       logfile: await generateSignedUrl('logfile.log'),
     };
     const taskJSON = await safeJSONStringify(task);
-    return await writeFile('task.json', taskJSON);
+    await writeFile('task.json', taskJSON);
+    return await generateSignedUrl('task.json');
   }
 
   function generateSignedUrl(filepath) {
@@ -100,7 +126,7 @@ const uuid4 = require('uuid/v4');
 
   function writeFile(filepath, data) {
     return new Promise(function(resolve, reject) {
-      const file = path.resolve(STORAGE_BASE_DIR, filepath);
+      const file = path.join(STORAGE_BASE_DIR, filepath);
       fs.writeFile(file, data, (err) => {
         if (err) {
           return reject(err);
