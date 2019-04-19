@@ -101,13 +101,19 @@ const server = require('./server.js');
       job_id: JOB_ID,
       inputs: {
         video: {
-          signed_url: await generateSignedUrl(inputFilename, 'input'),
+          'signed-url': await generateSignedUrl(inputFilename, 'input'),
         },
       },
       parameters: params,
-      output: await generateSignedUrl(analyticFields.output, 'output'),
-      status: await generateSignedUrl('status.json', 'status'),
-      logfile: await generateSignedUrl('logfile.log', 'logfile'),
+      output: {
+        'signed-url': await generateSignedUrl(analyticFields.output, 'output'),
+      },
+      status: {
+        'signed-url': await generateSignedUrl('status.json', 'status'),
+      },
+      logfile: {
+        'signed-url': await generateSignedUrl('logfile.log', 'logfile'),
+      },
     };
     const taskJSON = await safeJSONStringify(task);
     debug('Stringified task JSON:', taskJSON);
@@ -119,7 +125,7 @@ const server = require('./server.js');
   }
 
   function generateSignedUrl(filepath, type) {
-    return Promise.resolve(`http://localhost:${PORT}/v1` +
+    return Promise.resolve(`http://127.0.0.1:${PORT}/v1` +
       `/local/file?${type}=${path.join(STORAGE_BASE_DIR, filepath)}`);
   }
 

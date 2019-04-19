@@ -36,49 +36,49 @@ const server = (function genServer() {
     {
       name: 'update job state',
       regex: new RegExp('\\/v1\\/jobs\\/.*\\/state'),
-      method: 'PUT',
+      methods: ['PUT'],
       handler: updateJobState,
     },
     {
       name: 'job metadata',
       regex: new RegExp('\\/v1\\/jobs\\/.*\\/metadata'),
-      method: 'POST',
+      methods: ['POST'],
       handler: reportJobMetadata,
     },
     {
       name: 'job transaction',
       regex: new RegExp('\\/v1\\/jobs\\/.*\\/transaction'),
-      method: 'PUT',
+      methods: ['PUT'],
       handler: reportJobTransaction,
     },
     {
       name: 'get task json',
       regex: new RegExp('\\/v1\\/local/file\\?task\\='),
-      method: 'GET',
+      methods: ['GET'],
       handler: getTaskJSON,
     },
     {
       name: 'get input(s)',
       regex: new RegExp('\\/v1\\/local\\/file\\?input\\='),
-      method: 'GET',
+      methods: ['GET'],
       handler: getInputFile,
     },
     {
       name: 'write output',
       regex: new RegExp('\\/v1\\/local\\/file\\?output\\='),
-      method: 'POST',
+      methods: ['PUT', 'POST'],
       handler: writeOutput,
     },
     {
       name: 'write logfile',
       regex: new RegExp('\\/v1\\/local\\/file\\?logfile\\='),
-      method: 'POST',
+      methods: ['PUT', 'POST'],
       handler: writeLogfile,
     },
     {
       name: 'write status',
       regex: new RegExp('\\/v1\\/local\\/file\\?status\\='),
-      method: 'POST',
+      methods: ['PUT', 'POST'],
       handler: writeStatus,
     },
   ];
@@ -90,10 +90,10 @@ const server = (function genServer() {
       TASK = task;
       const server = http.createServer(async (req, res) => {
         const resHandler = await parsePathAndGetHandler(req, res)
+        debug('The returned response handler is:', resHandler);
         if (!resHandler) {
           debug('No response handler found! Occured for path:',
             req.path, req.method);
-          res.setEncoding('utf8');
           res.writeHead(404, {'content-type': 'application/json'});
           res.end(JSON.stringify({
             code: 404,
@@ -117,10 +117,14 @@ const server = (function genServer() {
   function parsePathAndGetHandler(req) {
     return new Promise(function(resolve, reject) {
       const u = url.parse(req.url, true);
+      debug('the url info', u);
+      debug('the http method', req.method);
       for (const route of ROUTES) {
-        if (route.regex.test(u.path) &&
-          req.method.toUpperCase() === route.method) {
-          return resolve(handler(route.handler));
+        if (route.regex.test(u.path)) {
+          const safeMethod = req.method.toUpperCase();
+          if (route.methods.some((m) => m === safeMethod)) {
+            return resolve(handler(route.handler));
+          }
         }
       }
       return resolve(null);
@@ -141,7 +145,6 @@ const server = (function genServer() {
         if (res.headersSent || (!code && !body)) {
           return resolve();
         }
-        res.setEncoding('utf8');
         res.writeHead(code, {'content-type': 'application/json'});
         res.write(JSON.stringify(body));
         res.end();
@@ -157,7 +160,6 @@ const server = (function genServer() {
   }
 
   async function updateJobState(req, res) {
-    res.setEncoding('utf8');
     res.setHeader('content-type', 'application/json');
     const body = await readRequestBody(req);
     if (!body.state ||
@@ -262,8 +264,8 @@ const server = (function genServer() {
   }
 
   async function writeStatus(req, res) {
-    await markEvent(numStatusWrites, eventList.numStatusWrites + 1);
-    await markEvent(writeStatus, true);
+    await markEvent('numStatusWrites', eventList.numStatusWrites + 1);
+    await markEvent('writeStatus', true);
     const u = await checkQuery(req, res, 'status');
     if (u.code && u.code === 404) {
       return u;
