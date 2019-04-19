@@ -231,32 +231,36 @@ const server = (function genServer() {
 
   async function getTaskJSON(req, res) {
     await markEvent('getTaskJSON', true);
-    const u = await checkQueryPath(req, res);
+    const u = await checkQuery(req, res, 'task');
     if (u !== null) {
+      u.query.path = u.query['task'];
       await createAndPipeReadStream(u, res);
     }
   }
 
   async function getInputFile(req, res) {
     await markEvent('getInputFile', true);
-    const u = await checkQueryPath(req, res);
+    const u = await checkQuery(req, res, 'input');
     if (u !== null) {
+      u.query.path = u.query['input'];
       await createAndPipeReadStream(u, res);
     }
   }
 
   async function writeOutput(req, res) {
     await markEvent('writeOutput', true);
-    const u = await checkQueryPath(req, res);
+    const u = await checkQuery(req, res, 'output');
     if (u !== null) {
+      u.query.path = u.query['output'];
       await createAndPipeWriteStream(u, req, res);
     }
   }
 
   async function writeLogfile(req, res) {
     await markEvent('writeLogfile', true);
-    const u = await checkQueryPath(req, res);
+    const u = await checkQuery(req, res, 'logfile');
     if (u !== null) {
+      u.query.path = u.query['logfile'];
       await createAndPipeWriteStream(u, req, res);
     }
   }
@@ -264,8 +268,9 @@ const server = (function genServer() {
   async function writeStatus(req, res) {
     await markEvent(numStatusWrites, eventList.numStatusWrites + 1);
     await markEvent(writeStatus, true);
-    const u = await checkQueryPath(req, res);
+    const u = await checkQuery(req, res, 'status');
     if (u !== null) {
+      u.query.path = u.query['status'];
       await createAndPipeWriteStream(u, req, res);
     }
   }
@@ -292,10 +297,10 @@ const server = (function genServer() {
 
   const getQueryFilename = (qp) => qp.split('/').pop();
 
-  function checkQueryPath(req, res) {
+  function checkQuery(req, res, field) {
     return new Promise(function(resolve, reject) {
       const u = url.parse(req, true);
-      if (!u.query.path) {
+      if (!u.query.field) {
         res.statusCode = 404;
         res.setEncoding('utf8');
         res.setHeader('content-type', 'application/json');
