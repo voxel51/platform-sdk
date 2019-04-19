@@ -54,13 +54,13 @@ const server = (function genServer() {
     {
       name: 'get task json',
       regex: new RegExp('\\/v1\\/local\\/file\\?task\\='),
-      methods: ['GET'],
+      methods: ['HEAD', 'GET'],
       handler: getTaskJSON,
     },
     {
       name: 'get input(s)',
       regex: new RegExp('\\/v1\\/local\\/file\\?inputs\\='),
-      methods: ['GET'],
+      methods: ['HEAD', 'GET'],
       handler: getInputFile,
     },
     {
@@ -107,8 +107,8 @@ const server = (function genServer() {
         console.log(`Server is now listening on port ${PORT}.`);
       });
       socket.on('close', () => {
-        console.log('Server is closing.');
-        console.log('The following events were logged:', eventList);
+        console.log('Server is closing.\n');
+        console.log('The following events were logged:\n\n', eventList);
       });
       return resolve(socket);
     });
@@ -119,16 +119,6 @@ const server = (function genServer() {
       const u = url.parse(req.url, true);
       debug('the url info', u);
       debug('the http method', req.method);
-      if (req.method === 'HEAD') {
-        return resolve(handler(() => {
-          return new Promise(function(resolve, reject) {
-            return resolve({
-              code: 200,
-              body: {},
-            });
-          });
-        }));
-      }
       for (const route of ROUTES) {
         if (route.regex.test(u.path)) {
           const safeMethod = req.method.toUpperCase();
@@ -263,12 +253,21 @@ const server = (function genServer() {
 
   async function getInputFile(req, res) {
     debug('get input file handler reached.');
-    await markEvent('getInputFile', true);
     const u = await checkQuery(req, res, 'inputs');
+    u.query.path = u.query['inputs'];
+    if (req.method === 'HEAD') {
+      const filename = getQueryFilename(u.query.path);
+      debug('The proposed filename for header in HEAD request:', filename);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      return {
+        code: 200,
+        body: {},
+      };
+    }
+    await markEvent('getInputFile', true);
     if (u.code && u.code === 404) {
       return u;
     }
-    u.query.path = u.query['inputs'];
     return await createAndPipeReadStream(u, res);
   }
 

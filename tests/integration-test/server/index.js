@@ -83,7 +83,9 @@ const server = require('./server.js');
         `-e ENV="LOCAL" ` +
         `-e API_TOKEN="${API_TOKEN}" ` +
         `-e OS="${process.platform}" ` +
-        `--network="host" ${TEST_DOCKER_IMAGE}`;
+        `--network="host" ${TEST_DOCKER_IMAGE}; ` +
+        `echo -e "\n\nNow close the server (Ctrl-C) to finish the ` +
+        `test and retrive your results!"`;
       debug('Docker command generation complete.');
       return resolve(cmd);
     });
