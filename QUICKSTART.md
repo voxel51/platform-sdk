@@ -156,7 +156,10 @@ def main():
         # the platform can track the data volume processed by the task.
         #
         # The code below assumes the typical case where the analytic has only
-        # one input, and that input is a video.
+        # one input, and that input is a video. If your analytic does not take
+        # a single video as input, then you can comment out the lines below;
+        # note, however, that your jobs will not be fully tracked by the
+        # platform.
         #
         input_name = list(inputs.keys())[0]
         input_path = inputs[input_name]
