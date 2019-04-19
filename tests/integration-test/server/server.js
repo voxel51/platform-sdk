@@ -53,13 +53,13 @@ const server = (function genServer() {
     },
     {
       name: 'get task json',
-      regex: new RegExp('\\/v1\\/local/file\\?task\\='),
+      regex: new RegExp('\\/v1\\/local\\/file\\?task\\='),
       methods: ['GET'],
       handler: getTaskJSON,
     },
     {
       name: 'get input(s)',
-      regex: new RegExp('\\/v1\\/local\\/file\\?input\\='),
+      regex: new RegExp('\\/v1\\/local\\/file\\?inputs\\='),
       methods: ['GET'],
       handler: getInputFile,
     },
@@ -92,7 +92,7 @@ const server = (function genServer() {
         const resHandler = await parsePathAndGetHandler(req, res)
         if (!resHandler) {
           debug('No response handler found! Occured for path:',
-            req.path, req.method);
+            req.url, req.method);
           res.writeHead(404, {'content-type': 'application/json'});
           res.end(JSON.stringify({
             code: 404,
@@ -119,6 +119,16 @@ const server = (function genServer() {
       const u = url.parse(req.url, true);
       debug('the url info', u);
       debug('the http method', req.method);
+      if (req.method === 'HEAD') {
+        return resolve(handler(() => {
+          return new Promise(function(resolve, reject) {
+            return resolve({
+              code: 200,
+              body: {},
+            });
+          });
+        }));
+      }
       for (const route of ROUTES) {
         if (route.regex.test(u.path)) {
           const safeMethod = req.method.toUpperCase();
@@ -254,11 +264,11 @@ const server = (function genServer() {
   async function getInputFile(req, res) {
     debug('get input file handler reached.');
     await markEvent('getInputFile', true);
-    const u = await checkQuery(req, res, 'input');
+    const u = await checkQuery(req, res, 'inputs');
     if (u.code && u.code === 404) {
       return u;
     }
-    u.query.path = u.query['input'];
+    u.query.path = u.query['inputs'];
     return await createAndPipeReadStream(u, res);
   }
 
@@ -297,6 +307,13 @@ const server = (function genServer() {
     return await createAndPipeWriteStream(u, req, res);
   }
 
+  async function handleHeadReq(req, res) {
+    return {
+      code: 200,
+      body: {},
+    };
+  }
+
   function readRequestBody(req) {
     debug('Reading request body.');
     return new Promise(function(resolve, reject) {
@@ -307,8 +324,12 @@ const server = (function genServer() {
       });
       req.on('end', () => {
         debug('Raw body data', body);
-        return parseJSONBody(body)
-          .then(resolve);
+        if (req.headers['content-type'] === 'application/json') {
+          return resolve(JSON.parse(body));
+        } else { // assume application/x-www-form-urlencoded
+          return parseUrlEncodedBody(body)
+            .then(resolve);
+        }
       });
     });
   }
@@ -340,7 +361,13 @@ const server = (function genServer() {
         });
       });
       const filename = getQueryFilename(url.query.path);
-      res.setHeader('content-disposition', `attachment; filename=${filename}`);
+      debug('The proposed filename for header:', filename);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.on('finish', () => {
+        debug('The response stream completed.');
+        debug('The response object', res);
+        debug('The response headers', res.getHeaders());
+      });
       rs.pipe(res);
       return resolve({code: 200});
     });
@@ -365,7 +392,7 @@ const server = (function genServer() {
     });
   }
 
-  function parseJSONBody(raw) {
+  function parseUrlEncodedBody(raw) {
     return new Promise(function(resolve, reject) {
       var bodyShell = {};
       const fields = raw.split('&');

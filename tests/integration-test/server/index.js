@@ -101,7 +101,7 @@ const server = require('./server.js');
       job_id: JOB_ID,
       inputs: {
         video: {
-          'signed-url': await generateSignedUrl(inputFilename, 'input'),
+          'signed-url': await generateSignedUrl(inputFilename, 'inputs'),
         },
       },
       parameters: params,
