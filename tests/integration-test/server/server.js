@@ -29,6 +29,7 @@ const server = (function genServer() {
     reportTransactionUnits: false,
   };
 
+  const getQueryFilename = (qp) => qp.split('/').pop();
   const handler = R.curry(resHandler);
 
   const ROUTES = [
@@ -118,7 +119,7 @@ const server = (function genServer() {
       const u = url.parse(req.url, true);
       for (const route of ROUTES) {
         if (route.regex.test(u.path) &&
-          req.method.toUpperString() === route.method) {
+          req.method.toUpperCase() === route.method) {
           return resolve(handler(route.handler));
         }
       }
@@ -137,14 +138,18 @@ const server = (function genServer() {
     return new Promise(async function(resolve, reject) {
       try {
         const {code, body} = await contFn(req, res);
+        if (res.headersSent || (!code && !body)) {
+          return resolve();
+        }
         res.setEncoding('utf8');
-        res.writeStatus(code, {'content-type': 'application/json'});
+        res.writeHead(code, {'content-type': 'application/json'});
         res.write(JSON.stringify(body));
         res.end();
         return resolve();
       } catch (err) {
-        res.writeStatus(err.code, {'content-type': 'application/json'});
-        res.write(err.message);
+        console.log('\n\nERROR\n\n', err);
+        res.writeHead(err.code, {'content-type': 'application/json'});
+        res.write(err);
         res.end();
         return resolve();
       }
@@ -159,13 +164,10 @@ const server = (function genServer() {
       (body.state !== 'COMPLETE' ||
         body.state !== 'FAILED' ||
         body.state !== 'RUNNING')) {
-      res.statusCode = 400;
-      res.write(JSON.stringify({
+      return {
         code: 400,
-        message: 'Invalid state provided.',
-      }));
-      res.end();
-      return;
+        body: {code: 400, message: 'Invalid state provided.'},
+      };
     }
     if (body.state === 'RUNNING') {
       await markEvent('running', true);
@@ -175,20 +177,17 @@ const server = (function genServer() {
       await markEvent('failed', true);
       if (!body.failure_type ||
         typeof body.failure_type !== 'string') {
-        res.statusCode = 400;
-        res.write(JSON.stringify({
+        return {
           code: 400,
-          message: 'Failure type should be provided.',
-        }));
-        res.end();
-        return;
+          body: {code: 400, message: 'Failure type should be provided.'},
+        };
       }
       await markEvent('failureType', body.failure_type);
     }
-    res.statusCode = 200;
-    res.write(JSON.stringify({
-      state: body.state,
-    }));
+    return {
+      code: 200,
+      body: {state: body.state},
+    };
   }
 
   async function reportJobMetadata(req, res) {
@@ -196,83 +195,81 @@ const server = (function genServer() {
     const body = await readRequestBody(req);
     const fields = ['frame_count', 'size_bytes', 'duration_seconds'];
     if (!fields.every((f) => existsAndNumber(body[f]))) {
-      res.statusCode = 400;
-      res.setEncoding('utf8');
-      res.setHeader('content-type', 'application/json');
-      res.write(JSON.stringify({
+      return {
         code: 400,
-        message: 'All three job metadata fields should be valid numbers.',
-      }));
-      res.end();
-      return;
+        body: {code: 400, message: 'All three job metadata fields should be valid numbers.'},
+      };
     }
-    res.statusCode = 204;
-    res.end();
-
+    return {
+      code: 204,
+      body: {},
+    };
   }
 
   async function reportJobTransaction(req, res) {
     await markEvent('reportTransactionUnits', true);
     const body = await readRequestBody(req);
     if (!existsAndNumber(body.transaction_units)) {
-      res.statusCode = 400;
-      res.setEncoding('utf8');
-      res.setHeader('content-type', 'application/json');
-      res.write(JSON.stringify({
+      return {
         code: 400,
-        message: 'Transaction units must be a valid number.',
-      }));
-      res.end();
-      return;
+        body: {code: 400, message: 'Transaction units must be a valid number.'},
+      };
     }
-    res.statusCode = 204;
-    res.end();
+    return {
+      code: 204,
+      body: {},
+    };
   }
 
   async function getTaskJSON(req, res) {
     await markEvent('getTaskJSON', true);
     const u = await checkQuery(req, res, 'task');
-    if (u !== null) {
-      u.query.path = u.query['task'];
-      await createAndPipeReadStream(u, res);
+    if (u.code && u.code === 404) {
+      return u;
     }
+    u.query.path = u.query['task'];
+    return await createAndPipeReadStream(u, res);
   }
 
   async function getInputFile(req, res) {
     await markEvent('getInputFile', true);
     const u = await checkQuery(req, res, 'input');
-    if (u !== null) {
-      u.query.path = u.query['input'];
-      await createAndPipeReadStream(u, res);
+    if (u.code && u.code === 404) {
+      return u;
     }
+    u.query.path = u.query['input'];
+    return await createAndPipeReadStream(u, res);
   }
 
   async function writeOutput(req, res) {
     await markEvent('writeOutput', true);
     const u = await checkQuery(req, res, 'output');
-    if (u !== null) {
-      u.query.path = u.query['output'];
-      await createAndPipeWriteStream(u, req, res);
+    if (u.code && u.code === 404) {
+      return u;
     }
+    u.query.path = u.query['output'];
+    return await createAndPipeWriteStream(u, req, res);
   }
 
   async function writeLogfile(req, res) {
     await markEvent('writeLogfile', true);
     const u = await checkQuery(req, res, 'logfile');
-    if (u !== null) {
-      u.query.path = u.query['logfile'];
-      await createAndPipeWriteStream(u, req, res);
+    if (u.code && u.code === 404) {
+      return u;
     }
+    u.query.path = u.query['logfile'];
+    return await createAndPipeWriteStream(u, req, res);
   }
 
   async function writeStatus(req, res) {
     await markEvent(numStatusWrites, eventList.numStatusWrites + 1);
     await markEvent(writeStatus, true);
     const u = await checkQuery(req, res, 'status');
-    if (u !== null) {
-      u.query.path = u.query['status'];
-      await createAndPipeWriteStream(u, req, res);
+    if (u.code && u.code === 404) {
+      return u;
     }
+    u.query.path = u.query['status'];
+    return await createAndPipeWriteStream(u, req, res);
   }
 
   function readRequestBody(req) {
@@ -295,21 +292,14 @@ const server = (function genServer() {
     return t !== undefined && t !== null && typeof t === 'number';
   }
 
-  const getQueryFilename = (qp) => qp.split('/').pop();
-
   function checkQuery(req, res, field) {
     return new Promise(function(resolve, reject) {
-      const u = url.parse(req, true);
-      if (!u.query.field) {
-        res.statusCode = 404;
-        res.setEncoding('utf8');
-        res.setHeader('content-type', 'application/json');
-        res.write(JSON.stringify({
+      const u = url.parse(req.url, true);
+      if (!u.query[field]) {
+        return resolve({
           code: 404,
-          message: 'Not found. Invalid signed url format.',
-        }));
-        res.end();
-        return resolve(null);
+          mesage: 'Not found. Invalid signed url format.',
+        });
       }
       return resolve(u);
     });
@@ -317,18 +307,17 @@ const server = (function genServer() {
 
   function createAndPipeReadStream(url, res) {
     return new Promise(function(resolve, reject) {
-      const rs = fs.createReadStream(u.query.path);
+      const rs = fs.createReadStream(url.query.path);
       rs.on('error', (err) => {
-        res.setEncoding('utf8');
-        res.statusCode = 400;
-        res.write(err);
-        res.end();
-        return resolve();
+        return resolve({
+          code: 400,
+          body: err,
+        });
       });
-      const filename = getQueryFilename(u.query.path);
+      const filename = getQueryFilename(url.query.path);
       res.setHeader('content-disposition', `attachment; filename=${filename}`);
       rs.pipe(res);
-      return resolve();
+      return resolve({});
     });
   }
 
@@ -336,15 +325,16 @@ const server = (function genServer() {
     return new Promise(function(resolve, reject) {
       const ws = fs.createWriteStream(url.query.path);
       ws.on('error', (err) => {
-        res.setEncoding('utf8');
-        res.statusCode = 400;
-        res.write(err);
-        res.end();
+        return resolve({
+          code: 400,
+          body: err,
+        });
       });
       ws.on('finish', () => {
-        res.statusCode = 201;
-        res.end();
-        return resolve();
+        return resolve({
+          code: 201,
+          body: {},
+        });
       });
       req.pipe(ws);
     });

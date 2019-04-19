@@ -56,8 +56,8 @@ const server = require('./server.js');
     const socket = await server.spinup(task);
 
     const dockerCmd = await generateDockerCommand(taskURL);
-    console.log('\n\nRun the following docker command to test your image now:\n',
-      dockerCmd, '\nCleanup generated files via npm run clean or ' +
+    console.log('\n\nRun the following docker command to test your image now:\n\n',
+      dockerCmd, '\n\nCleanup generated files via npm run clean or ' +
       'yarn run clean.\n\n');
 
     process.on('SIGTERM', shutdown(socket));
