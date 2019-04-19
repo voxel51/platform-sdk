@@ -11,7 +11,7 @@ const R = require('ramda');
 
 const server = (function genServer() {
   const BASE_DIR = __dirname;
-  const PORT = process.env.PORT || 5656;
+  const PORT = 4000;
   var TASK = {};
   var eventList = {
     getTaskJSON: false,
@@ -90,7 +90,6 @@ const server = (function genServer() {
       TASK = task;
       const server = http.createServer(async (req, res) => {
         const resHandler = await parsePathAndGetHandler(req, res)
-        debug('The returned response handler is:', resHandler);
         if (!resHandler) {
           debug('No response handler found! Occured for path:',
             req.path, req.method);
@@ -101,6 +100,7 @@ const server = (function genServer() {
           }));
           return;
         }
+        debug('Response handler found. Calling controller.');
         return await resHandler(req, res);
       });
       const socket = server.listen(PORT, 'localhost', () => {
@@ -142,14 +142,26 @@ const server = (function genServer() {
     return new Promise(async function(resolve, reject) {
       try {
         const {code, body} = await contFn(req, res);
-        if (res.headersSent || (!code && !body)) {
+        debug('The main response handler returned a controller call with:');
+        debug(code, body);
+        debug('Have the headers been sent?', res.headersSent);
+        if (res.headersSent || (!code && !body) || req.method === 'GET') {
+          debug('If yes, OR no code and no body OR it was a GET to download file, return.');
           return resolve();
         }
+        if (!body || Object.keys(body).length === 0) {
+          debug('If no body, just set status and return response.');
+          res.statusCode = code;
+          res.end();
+          return resolve();
+        }
+        debug('Else write headers, stringify body, and send.');
         res.writeHead(code, {'content-type': 'application/json'});
         res.write(JSON.stringify(body));
         res.end();
         return resolve();
       } catch (err) {
+        debug('Error caught during parsing/controller functions.');
         console.log('\n\nERROR\n\n', err);
         res.writeHead(err.code, {'content-type': 'application/json'});
         res.write(err);
@@ -160,11 +172,12 @@ const server = (function genServer() {
   }
 
   async function updateJobState(req, res) {
-    res.setHeader('content-type', 'application/json');
+    debug('update job state handler reached.');
     const body = await readRequestBody(req);
+    debug('The parsed request body is:', body);
     if (!body.state ||
-      (body.state !== 'COMPLETE' ||
-        body.state !== 'FAILED' ||
+      (body.state !== 'COMPLETE' &&
+        body.state !== 'FAILED' &&
         body.state !== 'RUNNING')) {
       return {
         code: 400,
@@ -193,8 +206,10 @@ const server = (function genServer() {
   }
 
   async function reportJobMetadata(req, res) {
+    debug('report job metadata handler reached.');
     await markEvent('reportMetadata', true);
     const body = await readRequestBody(req);
+    debug('The parsed request body is:', body);
     const fields = ['frame_count', 'size_bytes', 'duration_seconds'];
     if (!fields.every((f) => existsAndNumber(body[f]))) {
       return {
@@ -209,8 +224,10 @@ const server = (function genServer() {
   }
 
   async function reportJobTransaction(req, res) {
+    debug('report job transaction units handler reached.');
     await markEvent('reportTransactionUnits', true);
     const body = await readRequestBody(req);
+    debug('The parsed request body is:', body);
     if (!existsAndNumber(body.transaction_units)) {
       return {
         code: 400,
@@ -224,6 +241,7 @@ const server = (function genServer() {
   }
 
   async function getTaskJSON(req, res) {
+    debug('get task json handler reached.');
     await markEvent('getTaskJSON', true);
     const u = await checkQuery(req, res, 'task');
     if (u.code && u.code === 404) {
@@ -234,6 +252,7 @@ const server = (function genServer() {
   }
 
   async function getInputFile(req, res) {
+    debug('get input file handler reached.');
     await markEvent('getInputFile', true);
     const u = await checkQuery(req, res, 'input');
     if (u.code && u.code === 404) {
@@ -244,6 +263,7 @@ const server = (function genServer() {
   }
 
   async function writeOutput(req, res) {
+    debug('write output handler reached.');
     await markEvent('writeOutput', true);
     const u = await checkQuery(req, res, 'output');
     if (u.code && u.code === 404) {
@@ -254,7 +274,9 @@ const server = (function genServer() {
   }
 
   async function writeLogfile(req, res) {
+    debug('write log file handler reached.');
     await markEvent('writeLogfile', true);
+    await markEvent('numLogfileWrites', eventList['numLogfileWrites'] + 1);
     const u = await checkQuery(req, res, 'logfile');
     if (u.code && u.code === 404) {
       return u;
@@ -264,6 +286,7 @@ const server = (function genServer() {
   }
 
   async function writeStatus(req, res) {
+    debug('write status handler reached.');
     await markEvent('numStatusWrites', eventList.numStatusWrites + 1);
     await markEvent('writeStatus', true);
     const u = await checkQuery(req, res, 'status');
@@ -275,6 +298,7 @@ const server = (function genServer() {
   }
 
   function readRequestBody(req) {
+    debug('Reading request body.');
     return new Promise(function(resolve, reject) {
       req.setEncoding('utf8');
       var body = '';
@@ -282,10 +306,9 @@ const server = (function genServer() {
         body += data;
       });
       req.on('end', () => {
-        if (req.headers['content-type'] === 'application/json') {
-          return resolve(JSON.parse(body));
-        }
-        return resolve(body);
+        debug('Raw body data', body);
+        return parseJSONBody(body)
+          .then(resolve);
       });
     });
   }
@@ -319,7 +342,7 @@ const server = (function genServer() {
       const filename = getQueryFilename(url.query.path);
       res.setHeader('content-disposition', `attachment; filename=${filename}`);
       rs.pipe(res);
-      return resolve({});
+      return resolve({code: 200});
     });
   }
 
@@ -339,6 +362,21 @@ const server = (function genServer() {
         });
       });
       req.pipe(ws);
+    });
+  }
+
+  function parseJSONBody(raw) {
+    return new Promise(function(resolve, reject) {
+      var bodyShell = {};
+      const fields = raw.split('&');
+      debug('Split body fields', fields);
+      for (const field of fields) {
+        debug('Next field', field);
+        const parts = field.split('=');
+        bodyShell[parts[0]] = parts[1];
+      }
+      debug('The constructed body', bodyShell);
+      return resolve(bodyShell);
     });
   }
 }());

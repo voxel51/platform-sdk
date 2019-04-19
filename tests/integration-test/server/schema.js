@@ -26,7 +26,7 @@ const schema = (function main() {
     description: joi.string().required(),
     placeholder: joi.string().required(),
     required: joi.boolean().required(),
-    default: joi.any().required(),
+    default: joi.any(),
   });
 
   const infoSchema = joi.object({

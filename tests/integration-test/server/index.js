@@ -41,7 +41,7 @@ const server = require('./server.js');
         `test file must be set via TEST_ANALYTIC_FILE environment variable.`);
     }
 
-    PORT = process.env.TEST_PORT || 5656;
+    PORT = 4000;
     debug('Environment variable validation complete.');
 
     STORAGE_BASE_DIR = path.join(__dirname, './storage');
