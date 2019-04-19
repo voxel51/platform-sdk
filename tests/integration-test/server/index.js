@@ -8,7 +8,7 @@ const path = require('path');
 const uuid4 = require('uuid/v4');
 
 const schema = require('./schema.js');
-// const server = require('./server.js');
+const server = require('./server.js');
 
 (async function main() {
   // declare global consts
@@ -52,13 +52,20 @@ const schema = require('./schema.js');
     const {taskURL, task} = await generateTaskJSON(analyticFields);
     debug('Test setup complete.');
 
-    // debug('Spinning up mock server.');
-    // const socket = await server.spinup(task);
+    debug('Spinning up mock server.');
+    const socket = await server.spinup(task);
 
     const dockerCmd = await generateDockerCommand(taskURL);
     console.log('\n\nRun the following docker command to test your image now:\n',
       dockerCmd, '\nCleanup generated files via npm run clean or ' +
       'yarn run clean.\n\n');
+
+    process.on('SIGTERM', shutdown(socket));
+    process.on('SIGINT', shutdown(socket));
+    process.on('unhandledRejection', (reason, p) => {
+      console.error('Unhandled rejection at Promise: ', p, 'reason:', reason);
+      console.error(reason.stack);
+    });
   } catch (err) {
     console.error(err);
     process.exit(1);
@@ -72,7 +79,6 @@ const schema = require('./schema.js');
         cmd += '--runtime=nvidia ';
       }
       cmd += `--name ${JOB_ID} ` +
-        `--detach ` +
         `-e TASK_DESCRIPTION="${taskURL}" ` +
         `-e ENV="LOCAL" ` +
         `-e API_TOKEN="${API_TOKEN}" ` +
@@ -231,5 +237,14 @@ const schema = require('./schema.js');
         return resolve({stdout, stderr});
       });
     });
+  }
+
+  function shutdown(socket) {
+    return function() {
+      console.log('Exiting. Wrapping up remaining connections...');
+      socket.close(() => {
+        process.exit(0);
+      });
+    };
   }
 }());

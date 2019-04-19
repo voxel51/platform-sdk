@@ -34,49 +34,49 @@ const server = (function genServer() {
   const ROUTES = [
     {
       name: 'update job state',
-      regex: /\/v1\/jobs\/.*\/state/,
+      regex: new RegExp('\\/v1\\/jobs\\/.*\\/state'),
       method: 'PUT',
       handler: updateJobState,
     },
     {
       name: 'job metadata',
-      regex: /\/v1\/jobs\/.*\/metadata/,
+      regex: new RegExp('\\/v1\\/jobs\\/.*\\/metadata'),
       method: 'POST',
       handler: reportJobMetadata,
     },
     {
       name: 'job transaction',
-      regex: /\/v1\/jobs\/.*\/transaction/,
+      regex: new RegExp('\\/v1\\/jobs\\/.*\\/transaction'),
       method: 'PUT',
       handler: reportJobTransaction,
     },
     {
       name: 'get task json',
-      regex: /\/v1\/local/file\?task\=/,
+      regex: new RegExp('\\/v1\\/local/file\\?task\\='),
       method: 'GET',
       handler: getTaskJSON,
     },
     {
       name: 'get input(s)',
-      regex: /\/v1\/local\/file\?input\=/,
+      regex: new RegExp('\\/v1\\/local\\/file\\?input\\='),
       method: 'GET',
       handler: getInputFile,
     },
     {
       name: 'write output',
-      regex: /\/v1\/local\/file\?output\=/,
+      regex: new RegExp('\\/v1\\/local\\/file\\?output\\='),
       method: 'POST',
       handler: writeOutput,
     },
     {
       name: 'write logfile',
-      regex: /\/v1\/local\/file\?logfile\=/,
+      regex: new RegExp('\\/v1\\/local\\/file\\?logfile\\='),
       method: 'POST',
       handler: writeLogfile,
     },
     {
       name: 'write status',
-      regex: /\/v1\/local\/file\?status\=/,
+      regex: new RegExp('\\/v1\\/local\\/file\\?status\\='),
       method: 'POST',
       handler: writeStatus,
     },
@@ -188,7 +188,7 @@ const server = (function genServer() {
     res.statusCode = 200;
     res.write(JSON.stringify({
       state: body.state,
-    });
+    }));
   }
 
   async function reportJobMetadata(req, res) {
