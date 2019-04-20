@@ -2,6 +2,8 @@
 
 An SDK for deploying custom analytics to the Voxel51 Platform.
 
+Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel51/platform-sdk).
+
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
 
