@@ -126,7 +126,7 @@ class API(object):
         if failure_type is not None:
             data["failure_type"] = failure_type
 
-        res = self._requests.put(endpoint, headers=self._header, data=data)
+        res = self._requests.put(endpoint, headers=self._header, json=data)
         _validate_response(res)
 
     def upload_job_output_as_data(self, job_id, path):
