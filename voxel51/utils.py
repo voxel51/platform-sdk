@@ -27,6 +27,7 @@ except ImportError:
     import urlparse  # Python 2
 
 from eta.core.config import Config
+import eta.core.image as etai
 import eta.core.storage as etas
 import eta.core.video as etav
 
@@ -111,6 +112,18 @@ def get_metadata_for_video(video_path):
         a VideoMetadata instance describing the video
     '''
     return etav.VideoMetadata.build_for(video_path)
+
+
+def get_metadata_for_image(image_path):
+    '''Gets metadata about the given image.
+
+    Args:
+        image_path (str): the path to the image
+
+    Returns:
+        an ``eta.core.image.ImageMetadata`` instance describing the image
+    '''
+    return etai.ImageMetadata.build_for(image_path)
 
 
 def download(path_config, output_dir):
