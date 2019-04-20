@@ -3,7 +3,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = VisionServicesPlatformSDK
+SPHINXPROJ    = Voxel51PlatformSDK
 SOURCEDIR     = source
 BUILDDIR      = build
 

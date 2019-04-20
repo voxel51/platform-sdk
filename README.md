@@ -1,6 +1,6 @@
-# Voxel51 Vision Services Platform SDK
+# Voxel51 Platform SDK
 
-An SDK for deploying custom analytics to the Voxel51 Vision Services Platform.
+An SDK for deploying custom analytics to the Voxel51 Platform.
 
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
@@ -24,16 +24,16 @@ bash install.bash
 ## Quickstart
 
 See the [Quickstart Guide](QUICKSTART.md) for step-by-step instructions on
-using this SDK to wrap your custom analytic for deployment to the Vision
-Services Platform.
+using this SDK to wrap your custom analytic for deployment to the Voxel51
+Platform.
 
 
 ## Overview
 
-The Voxel51 Vision Services Platform is a scalable compute cluster that allows
-users to process their video (or other) data through state-of-the-art video
-understanding algorithms. The platform is generic and can be deployed in the
-cloud (Google Cloud, AWS, Microsoft Azure, etc.) or on-premises in a private
+The Voxel51 Platform is a scalable compute cluster that allows users to process
+their video (or other) data through state-of-the-art video understanding
+algorithms. The platform is generic and can be deployed in the cloud
+(Google Cloud, AWS, Microsoft Azure, etc.) or on-premises in a private
 datacenter.
 
 Algorithms are deployed to the platform as **analytics**, which are concrete
@@ -45,9 +45,8 @@ container. When a job is requested on the platform, the Docker image for the
 corresponding analytic is deployed as a Pod in a Kubernetes cluster and the
 specified data is processed.
 
-The Vision Services Platform contains many publicly available analytics that
-are maintained by Voxel51. The
-[Analytics Documentation](https://console.voxel51.com/docs/analytics#analytics-documentation)
+The platform contains many publicly available analytics that are maintained by
+Voxel51. The [Analytics Documentation](https://console.voxel51.com/docs/analytics#analytics-documentation)
 describes the interface of these analytics in detail. In addition, the platform
 allows users and third-party applications to deploy custom analytics to the
 platform for private use by uploading their own Docker images. This repository
@@ -56,18 +55,18 @@ a Docker entrypoint that implements the platform's analytic interface. See the
 Analytic Deployment section below to learn how to deploy your custom analytics
 to the platform either programmatically via the API or the web-based console.
 
-Regardless of where the platform is deployed, users interact with
-it via the Vision Services API, which exposes the interface through which users
-can upload and manage data resources, run analytics on data, monitor the status
-of their jobs, download the outputs of jobs, access statements and billing,
-and more. For more information about the API, refer to the
+Regardless of where the platform is deployed, users interact with it via the
+Platform API, which exposes the interface through which users can upload and
+manage data resources, run analytics on data, monitor the status of their jobs,
+download the outputs of jobs, access statements and billing, and more. For more
+information about the Platform API, refer to the
 [API Documentation](https://console.voxel51.com/docs/api).
 
 
 ## Analytic Interface
 
-All analytics deployed to the Vision Services Platform must be implemented as
-Docker containers that support the platform's interface as described below.
+All analytics deployed to the platform must be implemented as Docker containers
+that support the platform's interface as described below.
 
 The platform communicates with analytic Docker images by setting the following
 environment variables:
@@ -76,7 +75,7 @@ environment variables:
 describes the task to be performed
 
 - `API_TOKEN` : the API token that the process can use to communicate with the
-Vision Services API
+Platform API
 
 - `ENV` : specifies which deployment environment the task is being run in. The
 possible values are enumerated by the `voxel51.config.DeploymentEnvironments`
@@ -192,10 +191,9 @@ ready for production use!
 
 ### Deployment via API
 
-New analytics can be published programmatically via the Vision Services API
-or any of its client libraries. For example, the following code snippet shows
-how to publish a GPU-enabled analytic using the
-[Python client library](https://github.com/voxel51/api-py):
+New analytics can be published programmatically via the Platform API or any of
+its client libraries. For example, the following code snippet shows how to
+publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
 
 ```py
 from voxe51.api import API
@@ -217,7 +215,7 @@ for more complete instructions for deploying analytics via the API.
 ### Deployment via web console
 
 You can also publish new analytics via the web-based
-[Vision Services Console](https://console.voxel51.com). To do so, simply login
+[Platform Console](https://console.voxel51.com). To do so, simply login
 to your platform account, navigate to the `Analytics` page, and click `Upload`.
 
 

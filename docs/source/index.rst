@@ -1,5 +1,5 @@
-Voxel51 Vision Services Platform SDK
-====================================
+Voxel51 Platform SDK
+====================
 
 .. toctree::
    :maxdepth: 2

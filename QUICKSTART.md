@@ -1,17 +1,17 @@
-# Voxel51 Vision Services Platform Quickstart
+# Voxel51 Platform Quickstart
 
 This guide provides a detailed description of using the
 [Platform SDK](https://github.com/voxel51/platform-sdk) to wrap your custom
-analytic for deployment to the Vision Services Platform in a Docker image.
+analytic for deployment to the Voxel51 Platform in a Docker image.
 
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
 
 ## Docker installation
 
-All analytics are deployed to the Vision Services Platform as
-[Docker images](https://www.docker.com). If you are new to Docker, we
-recommend that you:
+All analytics are deployed to the Voxel51 Platform as
+[Docker images](https://www.docker.com). If you are new to Docker, we recommend
+that you:
 
 - install the Community Edition (CE) on your machine by following the simple
 instructions at https://docs.docker.com/install

@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 '''
-Client for interacting with the Voxel51 Vision Services API.
+Client for interacting with the Voxel51 Platform API.
 
 | Copyright 2017-2019, Voxel51, Inc.
 | `voxel51.com <https://voxel51.com/>`_
@@ -31,8 +31,7 @@ import voxel51.utils as voxu
 
 
 def make_api_client():
-    '''Creates an API instance for communicating with the Voxel51 Vision
-    Services API.
+    '''Creates an API instance for communicating with the Voxel51 Platform API.
 
     Returns:
         an API instance
@@ -45,8 +44,7 @@ def make_api_client():
 
 
 class API(object):
-    '''Internal class for managing a session with the Voxel51 Vision Services
-    API.
+    '''Internal class for managing a session with the Voxel51 Platform API.
 
     Attributes:
         token (Token): the Token for the session

@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 '''
-Utilities for the Voxel51 Vision Analytics SDK.
+Utilities for the Voxel51 Platform SDK.
 
 | Copyright 2017-2019, Voxel51, Inc.
 | `voxel51.com <https://voxel51.com/>`_

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Build configuration file for the Voxel51 Vision Services Platform SDK.
+# Build configuration file for the Voxel51 Platform SDK.
 #
 # Copyright 2017-2019, Voxel51, Inc.
 # voxel51.com
@@ -50,7 +50,7 @@ m2r_parse_relative_links = True
 master_doc = "index"
 
 # General information about the project.
-project = "Voxel51 Vision Services Platform SDK"
+project = "Voxel51 Platform SDK"
 copyright = "2017-2019, Voxel51, Inc"
 author = "Voxel51, Inc."
 
@@ -134,7 +134,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "Voxel51VisionServicesPlatformSDK"
+htmlhelp_basename = "Voxel51PlatformSDK"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -162,8 +162,8 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [(
     master_doc,
-    "Voxel51VisionServicesPlatformSDK.tex",
-    "Voxel51 Vision Services Platform SDK Documentation",
+    "Voxel51PlatformSDK.tex",
+    "Voxel51 Platform SDK Documentation",
     "Voxel51, Inc.",
     "manual",
 )]
@@ -175,8 +175,8 @@ latex_documents = [(
 # (source start file, name, description, authors, manual section).
 man_pages = [(
     master_doc,
-    "voxel51visionservicesplatformsdk",
-    "Voxel51 Vision Services Platform SDK Documentation",
+    "voxel51platformsdk",
+    "Voxel51 Platform SDK Documentation",
     [author],
     1,
 )]
@@ -189,11 +189,11 @@ man_pages = [(
 #  dir menu entry, description, category)
 texinfo_documents = [(
     master_doc,
-    "Voxel51VisionServicesPlatformSDK",
-    "Voxel51Vision Services Platform SDK Documentation",
+    "Voxel51PlatformSDK",
+    "Voxel51 Platform SDK Documentation",
     author,
-    "Voxel51VisionServicesPlatformSDK",
-    "Documentation for the Voxel51 Vision Services Platform SDK",
+    "Voxel51PlatformSDK",
+    "Documentation for the Voxel51 Platform SDK",
     "Miscellaneous",
 )]
 

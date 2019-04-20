@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 '''
-Configuration settings for the Voxel51 Vision Analytics SDK.
+Configuration settings for the Voxel51 Platform SDK.
 
 | Copyright 2017-2019, Voxel51, Inc.
 | `voxel51.com <https://voxel51.com/>`_
@@ -21,19 +21,19 @@ from builtins import *
 
 #
 # The environment variable that will contain the API token to use to
-# communicate with the Vision Services API
+# communicate with the Platform API
 #
 API_TOKEN_ENV_VAR = "API_TOKEN"
 
 #
 # The environment variable that will specify which deployment environment the
-# Vision Services API is currently operating in
+# Platform API is currently operating in
 #
 DEPLOYMENT_ENV_VAR = "ENV"
 
 #
-# The environment variable that will hold the platform on which the Vision
-# Services API is running
+# The environment variable that will hold the platform on which the Platform
+# API is running
 #
 OS_ENV_VAR = "OS"
 
