@@ -158,13 +158,14 @@ def main():
         # The code below assumes the typical case where the analytic has only
         # one input, and that input is a video. If your analytic does not take
         # a single video as input, then you can comment out the lines below;
-        # note, however, that your jobs will not be fully tracked by the
-        # platform.
+        # note, however, that the details of the data processed by your job
+        # will not be fully tracked by the platform, and thus certain features
+        # like output preview and data volume reporting will not be supported.
         #
         input_name = list(inputs.keys())[0]
         input_path = inputs[input_name]
         task_manager.record_input_metadata(input_name, video_path=input_path)
-        task_manager.post_job_metadata(input_path)
+        task_manager.post_job_metadata(video_path=input_path)
 
         #
         # Your code goes here!!
