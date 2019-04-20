@@ -140,33 +140,56 @@ class TaskManager(object):
         return parse_parameters(
             data_params_dir, self.task_config, self.task_status)
 
-    def record_input_metadata(self, name, video_path=None, metadata=None):
+    def record_input_metadata(
+            self, name, image_path=None, video_path=None, metadata=None):
         '''Records metadata about the given input.
 
-        Either ``video_path`` or ``metadata`` must be provided.
+        Exactly one of the keyword arguments must be provided.
+
+        If the input is an image or video, it is recommended to use the
+        `image_path` or `video_path` keyword argument, respectively, so that
+        the SDK controls the format of the metadata that is reported to the
+        platform.
+
+        You can use the `metadata` argument to provide an arbitrary (JSON
+        serializable) dictionary of metadata about the input. Note, however,
+        that certain platform console features such as output preview may not
+        work if you use a custom `metadtaa` format.
 
         Args:
             name (str): the input name
+            image_path (str, optional): (for image inputs only) the path to the
+                input image. If provided, the metadata is computed for you via
+                ``eta.core.image.ImageMetadata``
             video_path (str, optional): (for video inputs only) the path to the
-                input video. The metadata is computed for you via
+                input video. If provided, the metadata is computed for you via
                 ``eta.core.video.VideoMetadata``
             metadata (dict, optional): a metadata dict describing the input
         '''
+        if image_path:
+            metadata = voxu.get_metadata_for_image(image_path).serialize()
         if video_path:
             metadata = voxu.get_metadata_for_video(video_path).serialize()
         self.task_status.record_input_metadata(name, metadata)
 
-    def post_job_metadata(self, video_path):
+    def post_job_metadata(self, image_path=None, video_path=None):
         '''Posts the job metadata for the task.
 
-        Note that this function currently only supports jobs that process
-        a single video.
+        Exactly one keyword argument must be provided.
+
+        Note that this function currently only supports jobs that process a
+        single image or video.
 
         Args:
-            video_path (str): the path to the input video for the job
+            image_path (str, optional): the path to the input image for the job
+            video_path (str, optional): the path to the input video for the job
         '''
-        post_job_metadata_for_video(
-            video_path, self.task_config, self.task_status)
+        if image_path:
+            post_job_metadata_for_image(
+                image_path, self.task_config, self.task_status)
+        if video_path:
+            post_job_metadata_for_video(
+                video_path, self.task_config, self.task_status)
 
     def add_status_message(self, msg):
         '''Adds the given status message to the TaskStatus for the task. The
@@ -512,6 +535,24 @@ def parse_parameters(data_params_dir, task_config, task_status):
             parameters[name] = val
 
     return parameters
+
+
+def post_job_metadata_for_image(image_path, task_config, task_status):
+    '''Posts the job metadata for the task, which must have the given image
+    as its sole input.
+
+    Args:
+        image_path (str): the path to the input image
+        task_config (TaskConfig): the TaskConfig for the task
+        task_status (TaskStatus): the TaskStatus for the task
+    '''
+    im = voxu.get_metadata_for_image(image_path)
+    metadata = {
+        "frame_count": 1,
+        "duration_seconds": 0,
+        "size_bytes": im.size_bytes
+    }
+    post_job_metadata(metadata, task_config, task_status)
 
 
 def post_job_metadata_for_video(video_path, task_config, task_status):
