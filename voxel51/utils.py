@@ -109,7 +109,7 @@ def get_metadata_for_video(video_path):
         video_path (str): the path to the video
 
     Returns:
-        a VideoMetadata instance describing the video
+        an ``eta.core.video.VideoMetadata`` instance describing the video
     '''
     return etav.VideoMetadata.build_for(video_path)
 
