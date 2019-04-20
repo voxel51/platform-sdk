@@ -46,7 +46,7 @@ corresponding analytic is deployed as a Pod in a Kubernetes cluster and the
 specified data is processed.
 
 The platform contains many publicly available analytics that are maintained by
-Voxel51. The [Analytics Documentation](https://console.voxel51.com/docs/analytics#analytics-documentation)
+Voxel51. The [Analytics Documentation](https://voxel51.com/docs/analytics#analytics-documentation)
 describes the interface of these analytics in detail. In addition, the platform
 allows users and third-party applications to deploy custom analytics to the
 platform for private use by uploading their own Docker images. This repository
@@ -60,7 +60,7 @@ Platform API, which exposes the interface through which users can upload and
 manage data resources, run analytics on data, monitor the status of their jobs,
 download the outputs of jobs, access statements and billing, and more. For more
 information about the Platform API, refer to the
-[API Documentation](https://console.voxel51.com/docs/api).
+[API Documentation](https://voxel51.com/docs/api).
 
 
 ## Analytic Interface
@@ -172,13 +172,13 @@ provided by the Platform SDK.
 ## Analytic Deployment
 
 You can deploy new custom analytics or new versions of your existing analytics
-at any time via the [API](https://console.voxel51.com/docs/api) or the
+at any time via the [API](https://voxel51.com/docs/api) or the
 [web console](https://console.voxel51.com). Deploying a new analytic is a
 simple two step process:
 
 - Upload an analytic JSON to the platform that describes the details and
 interface of the analytic you plan to upload. See the
-[API Documentation](https://console.voxel51.com/docs/api#analytics-download-documentation)
+[API Documentation](https://voxel51.com/docs/api#analytics-download-documentation)
 for a description of the format of this JSON file.
 
 - Upload the corresponding Docker image(s) for your analytic. The platform
@@ -209,7 +209,7 @@ api.upload_analytic(upload_analytic_path)
 api.upload_analytic_image(analytic_id, upload_image_tar_path, "gpu")
 ```
 
-See the [API Documentation](https://console.voxel51.com/docs/api#analytics-upload-analytic)
+See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)
 for more complete instructions for deploying analytics via the API.
 
 ### Deployment via web console
