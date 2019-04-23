@@ -1,7 +1,7 @@
 # Platform SDK Integration Test Suite
 
 This project serves as a means for analytic developers using
-Voxel51's platform sdk a quick, simple method for verifying that
+Voxel51's Platform SDK a quick, simple method for verifying that
 their built Docker images are compatible with the Voxel51 Platform
 compute interface. The suite consists of a simple HTTP server that will
 mock the expected behavior of the actual Platform when receiving
