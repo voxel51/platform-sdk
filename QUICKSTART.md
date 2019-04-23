@@ -37,7 +37,7 @@ during execution.
 import logging
 
 # The `platform-sdk` package must be pip installed in your image
-import voxel51.task as voxt
+import voxel51.platform.task as voxt
 
 #
 # The following constants set paths in the internal file system of your Docker

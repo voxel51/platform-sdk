@@ -22,19 +22,18 @@ import os
 
 import mimetypes
 import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
 
-import voxel51.auth as voxa
-import voxel51.config as voxc
-import voxel51.utils as voxu
+import voxel51.platform.auth as voxa
+import voxel51.platform.config as voxc
+import voxel51.platform.utils as voxu
 
 
 def make_api_client():
-    '''Creates an API instance for communicating with the Voxel51 Platform API.
+    '''Creates an :class:`API` instance for communicating with the Voxel51
+    Platform API.
 
     Returns:
-        an API instance
+        an :class:`API` instance
     '''
     private_key = os.environ[voxc.API_TOKEN_ENV_VAR]
     deployment_env = os.environ[voxc.DEPLOYMENT_ENV_VAR]
@@ -47,9 +46,9 @@ class API(object):
     '''Internal class for managing a session with the Voxel51 Platform API.
 
     Attributes:
-        token (Token): the Token for the session
-        deployment_env (DeploymentEnvironments): the deployment
-            environment for the session
+        token (voxel51.platform.auth.Token): the Token for the session
+        deployment_env (voxel51.platform.config.DeploymentEnvironment): the
+            deployment environment for the session
         is_macos (bool): whether this session is running on macOS
         keep_alive (bool): whether the request session should be kept alive
             between requests
@@ -57,15 +56,16 @@ class API(object):
     '''
 
     def __init__(
-            self, token, deployment_env=voxc.DeploymentEnvironments.PROD,
+            self, token, deployment_env=voxc.DeploymentEnvironment.PROD,
             is_macos=False, keep_alive=False):
         '''Starts a new API session.
 
         Args:
-            token_path (Token): the Token to use for this session
-            deployment_env (DeploymentEnvironments, optional): the deployment
-                environment for this session. The default is
-                ``voxel51.config.DeploymentEnvironments.PROD``
+            token_path (voxel51.platform.auth.Token): the Token to use for this
+                session
+            deployment_env (voxel51.platform.config.DeploymentEnvironment,
+                optional): the deployment environment to use. The default is
+                ``voxel51.platform.config.DeploymentEnvironment.PROD``
             is_macos (bool, optional): whether this job is running on macOS.
                 The default is False
             keep_alive (bool, optional): whether to keep the request session
@@ -100,7 +100,7 @@ class API(object):
             metadata (dict): the dictionary of metadata to post
 
         Raises:
-            APIError if the request was unsuccessful
+            :class:`APIError` if the request was unsuccessful
         '''
         endpoint = self.base_url + "/jobs/" + job_id + "/metadata"
         res = self._requests.post(
@@ -116,7 +116,7 @@ class API(object):
             failure_type (str, optional): the job failure type, if any
 
         Raises:
-            APIError if the request was unsuccessful
+            :class:`APIError` if the request was unsuccessful
         '''
         endpoint = self.base_url + "/jobs/" + job_id + "/state"
 
@@ -138,7 +138,7 @@ class API(object):
             the ID of the uploaded data
 
         Raises:
-            APIError if the request was unsuccessful
+            :class:`APIError` if the request was unsuccessful
         '''
         endpoint = self.base_url + "/jobs/" + job_id + "/data"
         filename = os.path.basename(path)
@@ -157,7 +157,7 @@ class API(object):
 
 
 class APIError(Exception):
-    '''Exception raised when an API request fails.'''
+    '''Exception raised when an :class:`API` request fails.'''
 
     def __init__(self, message, code):
         '''Creates a new APIError object.
@@ -179,9 +179,8 @@ class APIError(Exception):
             an instance of APIError
 
         Raises:
-            ValueError: if the given response is not an error response
-            HTTPError: if the error was caused by the HTTP connection, not
-                the API itself
+            :class:`ValueError` if the given response is not an error response
+            :class:`HTTPError` if the error was caused by the HTTP connection
         '''
         if res.ok:
             raise ValueError("Response is not an error")
@@ -190,19 +189,6 @@ class APIError(Exception):
         except ValueError:
             res.raise_for_status()
         return cls(message, res.status_code)
-
-
-class SourcePortAdapter(HTTPAdapter):
-    '''Custom HTTPAdapter that allows the source port to be specified.'''
-
-    def __init__(self, source_port, *args, **kwargs):
-        self._source_port = source_port
-        super(SourcePortAdapter, self).__init__(*args, **kwargs)
-
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(
-            num_pools=connections, maxsize=maxsize,
-            block=block, source_address=("", self._source_port))
 
 
 def _get_mime_type(path):

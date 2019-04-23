@@ -33,9 +33,9 @@ import eta.core.log as etal
 from eta.core.serial import Serializable
 import eta.core.utils as etau
 
-import voxel51.api as voxa
-import voxel51.config as voxc
-import voxel51.utils as voxu
+import voxel51.platform.api as voxa
+import voxel51.platform.config as voxc
+import voxel51.platform.utils as voxu
 
 
 _API_CLIENT = None
@@ -101,7 +101,8 @@ class TaskManager(object):
         URL.
 
         Args:
-            task_config_url (str): a URL from which to download a TaskConfig
+            task_config_url (str): a URL from which to download a
+                :class:`TaskConfig`
 
         Returns:
             a TaskManager instance
@@ -110,8 +111,8 @@ class TaskManager(object):
         return cls(task_config)
 
     def start(self):
-        '''Marks the task as started and publishes the TaskStatus to the
-        platform.
+        '''Marks the task as started and publishes the :class:`TaskStatus` to
+        the platform.
         '''
         start_task(self.task_status)
 
@@ -135,7 +136,7 @@ class TaskManager(object):
 
         Returns:
             a dictionary mapping parameter names to values (builtin parameters)
-                or paths (data parameters)
+            or paths (data parameters)
         '''
         return parse_parameters(
             data_params_dir, self.task_config, self.task_status)
@@ -192,8 +193,8 @@ class TaskManager(object):
                 video_path, self.task_config, self.task_status)
 
     def add_status_message(self, msg):
-        '''Adds the given status message to the TaskStatus for the task. The
-        status is not yet published to the platform.
+        '''Adds the given status message to the :class:`TaskStatus` for the
+        task. The status is not yet published to the platform.
 
         Args:
             msg (str): a status message
@@ -223,8 +224,8 @@ class TaskManager(object):
             name, output_path, self.task_config, self.task_status)
 
     def complete(self, logfile_path=None):
-        '''Marks the task as complete and publishes the TaskStatus to the
-        platform.
+        '''Marks the task as complete and publishes the :class:`TaskStatus` to
+        the platform.
 
         Args:
             logfile_path (str): an optional path to a logfile to upload for the
@@ -254,14 +255,15 @@ class TaskStatus(Serializable):
     Attributes:
         analytic (str): name of the analytic
         version (str): version of the analytic
-        state (TaskState): current TaskState of the task
+        state (TaskState): current state of the task
         start_time (str): time the task was started, or None if not started
         complete_time (str): time the task was completed, or None if not
             completed
         fail_time (str): time the task failed, or None if not failed
         failure_type (TaskFailureType): the TaskFailureType of the task, if
             applicable
-        messages (list): list of TaskStatusMessage instances for the task
+        messages (list): list of :class:`TaskStatusMessage` instances for the
+            task
         inputs (dict): a dictionary containing metadata about the inputs to the
             task
         posted_data (dict): a dictionary mapping names of outputs posted as
@@ -292,8 +294,8 @@ class TaskStatus(Serializable):
 
         Args:
             name (str): the input name
-            metadata (dict): a dictionary or Serializable object describing the
-                input
+            metadata (dict): a dictionary or ``eta.core.serial.Serializable``
+                object describing the input
         '''
         self.inputs[name] = metadata
 
@@ -352,7 +354,9 @@ class TaskStatus(Serializable):
         return message.time
 
     def publish(self):
-        '''Publishes the task status using ``self._publish_callback``.'''
+        '''Publishes the task status using
+        :func:`TaskStatus._publish_callback``.
+        '''
         self._publish_callback(self)
 
     def attributes(self):
@@ -402,20 +406,21 @@ def setup_logging(logfile_path, rotate=True):
 
 
 def get_task_config_url():
-    '''Gets the TaskConfig URL for this task from the
-    ``voxel51.config.TASK_DESCRIPTION_ENV_VAR`` environment variable.
+    '''Gets the :class:`TaskConfig` URL for this task from the
+    ``voxel51.platform.config.TASK_DESCRIPTION_ENV_VAR`` environment variable.
 
     Returns:
-        the URL from which the TaskConfig for the task can be read
+        the URL from which the :class:`TaskConfig` for the task can be read
     '''
     return os.environ[voxc.TASK_DESCRIPTION_ENV_VAR]
 
 
 def download_task_config(task_config_url):
-    '''Downloads the TaskConfig from the given URL.
+    '''Downloads the :class:`TaskConfig` from the given URL.
 
     Args:
-        task_config_url (str): the URL from which the TaskConfig can be read
+        task_config_url (str): the URL from which the :class:`TaskConfig` can
+            be read
 
     Returns:
         the TaskConfig instance
@@ -427,13 +432,13 @@ def download_task_config(task_config_url):
 
 
 def make_task_status(task_config):
-    '''Makes a TaskStatus instance for the given TaskConfig.
+    '''Makes a :class:`TaskStatus` instance for the given :class:`TaskConfig`.
 
     Args:
         task_config (TaskConfig): a TaskConfig instance describing the task
 
     Returns:
-        a TaskStatus instance for tracking the progress of the task
+        a :class:`TaskStatus` instance for tracking the progress of the task
     '''
     task_status = TaskStatus(task_config)
     logger.info("TaskStatus instance created")
@@ -441,7 +446,8 @@ def make_task_status(task_config):
 
 
 def start_task(task_status):
-    '''Marks the task as started and publishes the TaskStatus to the platform.
+    '''Marks the task as started and publishes the :class:`TaskStatus` to the
+    platform.
 
     Args:
         task_status (TaskStatus): the TaskStatus for the task
@@ -457,12 +463,12 @@ def make_publish_callback(job_id, status_path_config):
 
     Args:
         job_id (str): the ID of the underlying job
-        status_path_config (RemotePathConfig): a RemotePathConfig specifying
-            where to publish the TaskStatus
+        status_path_config (voxel51.platform.utils.RemotePathConfig): a
+            RemotePathConfig specifying how to publish the :class:`TaskStatus`
 
     Returns:
-        a function that can publish a TaskStatus instance via the syntax
-            ``publish_callback(task_status)``
+        a function that can publish a :class:`TaskStatus` instance via the
+        syntax :func:`publish_callback(task_status)`
     '''
     def _publish_status(task_status):
         voxu.upload_bytes(
@@ -520,7 +526,7 @@ def parse_parameters(data_params_dir, task_config, task_status):
 
     Returns:
         a dictionary mapping parameter names to values (builtin parameters) or
-            downloaded filepaths (data parameters)
+        downloaded filepaths (data parameters)
     '''
     parameters = {}
     for name, val in iteritems(task_config.parameters):
@@ -646,7 +652,7 @@ def upload_logfile(logfile_path, task_config):
 def fail_gracefully(
         task_config, task_status, failure_type=None, logfile_path=None):
     '''Marks the task as failed and gracefully winds up by posting any
-    available information (status, logfile, etc.).
+    available information (status, logfile, etc).
 
     Args:
         task_config (TaskConfig): the TaskConfig for the task
@@ -680,13 +686,13 @@ def fail_gracefully(
 
 
 def fail_epically(task_config_url):
-    '''Handles an epic failure of a task that occurs before the TaskConfig was
-    succesfully downloaded. The platform is notified of the failure as fully
-    as possible.
+    '''Handles an epic failure of a task that occurs before the
+    :class:`TaskConfig` was succesfully downloaded. The platform is notified
+    of the failure as fully as possible.
 
     Args:
-        task_config_url (str): the URL from which the TaskConfig was to be
-            download
+        task_config_url (str): the URL from which the :class:`TaskConfig` was
+            to be downloaded
     '''
     #
     # Log exception, even though we'll be unable to upload the logfile

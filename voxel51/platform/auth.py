@@ -32,7 +32,7 @@ class Token(object):
 
     def get_header(self):
         '''Gets a header dictionary for authenticating requests with this
-        agent token.
+        token.
 
         Returns:
             a header dictionary
