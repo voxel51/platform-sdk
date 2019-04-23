@@ -44,7 +44,7 @@ OS_ENV_VAR = "OS"
 TASK_DESCRIPTION_ENV_VAR = "TASK_DESCRIPTION"
 
 
-class DeploymentEnvironments(object):
+class DeploymentEnvironment(object):
     '''Class enumerating the possible deployment environments.'''
 
     DEV = "DEV"
@@ -56,8 +56,8 @@ class DeploymentEnvironments(object):
 # The base API URLs to use for each deployment environment
 #
 BASE_API_URLS = {
-    DeploymentEnvironments.DEV: "https://dev.api.voxel51.com/v1",
-    DeploymentEnvironments.STAGING: "https://staging.api.voxel51.com/v1",
-    DeploymentEnvironments.PROD: "https://api.voxel51.com/v1",
-    DeploymentEnvironments.LOCAL: "http://127.0.0.1:4000/v1",
+    DeploymentEnvironment.DEV: "https://dev.api.voxel51.com/v1",
+    DeploymentEnvironment.STAGING: "https://staging.api.voxel51.com/v1",
+    DeploymentEnvironment.PROD: "https://api.voxel51.com/v1",
+    DeploymentEnvironment.LOCAL: "http://127.0.0.1:4000/v1",
 }

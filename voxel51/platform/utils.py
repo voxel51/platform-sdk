@@ -21,6 +21,9 @@ from builtins import *
 import json
 import os
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
+
 try:
     import urllib.parse as urlparse  # Python 3
 except ImportError:
@@ -31,7 +34,7 @@ import eta.core.image as etai
 import eta.core.storage as etas
 import eta.core.video as etav
 
-import voxel51.config as voxc
+import voxel51.platform.config as voxc
 
 
 _HTTP_CLIENT = None
@@ -87,7 +90,7 @@ def handle_macos_localhost(url):
 
     Returns:
         a URL with ``localhost`` replaced with ``docker.for.mac.localhost``,
-            if necessary
+        if necessary
     '''
     if not is_macos():
         return url
@@ -198,6 +201,30 @@ def load_json(str_or_bytes):
     except TypeError:
         # Must be a Python version for which json.loads() cannot handle bytes
         return json.loads(str_or_bytes.decode("utf-8"))
+
+
+class SourcePortAdapter(HTTPAdapter):
+    '''Custom :class:`requests.adapters.HTTPAdapter` that allows the source
+    port to be specified.
+    '''
+
+    def __init__(self, source_port, *args, **kwargs):
+        '''Creates a SourcePortAdapter instance.
+
+        Args:
+            source_port (int): the source port to use
+            *args: valid positional arguments for
+                :class:`requests.adapters.HTTPAdapter`
+            **kwargs: valid keyword arguments for
+                :class:`requests.adapters.HTTPAdapter`
+        '''
+        self._source_port = source_port
+        super(SourcePortAdapter, self).__init__(*args, **kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(
+            num_pools=connections, maxsize=maxsize,
+            block=block, source_address=("", self._source_port))
 
 
 def _get_http_client():
