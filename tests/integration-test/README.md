@@ -41,18 +41,31 @@ To initially setup the test suite, run:
 ```shell
 # from test suite root directory
 npm install # yarn
-npm run test-setup # yarn run test-setup
 ```
+
+
+That's it! Running `npm start` will display helpful error messages
+if variables are not set correctly or, if they are set, will
+spin up the test server and output the correct docker run command.
+
+The three environment variables that require setting are:
+
+- TEST_DOCKER_IMAGE - the docker image to test
+- TEST_INPUT_FILE - the test input file (multiple input support
+in development).
+- TEST_ANALYTIC-JSON - the analytic JSON file for the test docker image
 
 
 ## Executing
-TODO
 
-```shell
-# generates output command to launch server and start docker image
-npm run generate-test-command # yarn run generate-test-command
-# copy and paste output command, substituting for variables where needed!
-```
+To execute the test suite, run `npm start`. Then copy and paste
+the output `docker run` command in another terminal/shell. Once the
+docker image finishes (either error or success), return to the
+server shell and kill it (`Ctrl-C`). A simple JSON report will
+provide information on server and docker interactions that
+were registered during the test.
+
+> NOTE: Restart a new server instance for each test!
 
 
 ## Cleanup
@@ -61,14 +74,10 @@ To cleanup the generated and written test files, run:
 
 
 ```
-npm run clean-up # yarn run clean-up
+npm run clean # yarn run clean
 ```
 
 Cleanup of Docker containers/images is left to the developer.
-
-
-## Understanding Test Results
-TODO
 
 
 ## Copyright
