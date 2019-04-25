@@ -234,7 +234,32 @@ its dependencies in a GPU-enabled Docker image that runs the `main.py`
 entrypoint that you provide. It can be easily extended to include any custom
 installation requirements for your analytic.
 
+To aid debugging analytics deployed in the platform, a specific Docker
+`ENTRYPOINT` setup is recommended. It is comprised of two parts:
+
+- `runner.sh`, a simple shell script that acts as the alternate entrypoint
+- `/var/log/image.log`, a pre-defined logfile location
+
+The `runner.sh` file should be coded to pipe both `stdout` and `stderr`
+from your typical entrypoint file (e.g. `main.py`) to the pre-defined
+logfile. Below is an example of `runner.sh`.
+
+
 ```
+#!/bin/bash
+
+python main.py >> /var/log/image.log 2>&1
+```
+
+> Note: The logfile MUST match this path. The platform will only attempt to
+read and upload logs piped to this file location on the Docker image.
+
+A few additional lines in the Dockerfile should create this logfile, and
+make the `runner.sh` entrypoint executable. Constructing your Dockerfile
+in this manner is optional, but provides a more reliable chance of retrieving
+logfiles from malformed or failing Docker images.
+
+
 # A typical base image for GPU deployments. Others are possible
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 
@@ -281,9 +306,14 @@ EXPOSE 8000
 
 # Setup entrypoint
 COPY main.py /engine/main.py
-RUN chmod +x /engine/main.py
+COPY runn.sh /engine/runner.sh
+RUN chmod +x /engine/main.py \
+  && mkdir -p /var/log \
+  && touch /var/log/image.log \
+  && chmod +x /engine/runner.sh
+
 WORKDIR /engine
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["bash", "runner.sh"]
 ```
 
 You can build your image from the above `Dockerfile` by running:
