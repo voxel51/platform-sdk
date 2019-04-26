@@ -235,7 +235,7 @@ entrypoint that you provide. It can be easily extended to include any custom
 installation requirements for your analytic.
 
 To aid debugging analytics deployed in the platform, a specific Docker
-`ENTRYPOINT` setup is recommended. It is comprised of two parts:
+`ENTRYPOINT` setup is strongly recommended. It is comprised of two parts:
 
 - `runner.sh`, a simple shell script that acts as the alternate entrypoint
 - `/var/log/image.log`, a pre-defined logfile location
@@ -248,7 +248,7 @@ logfile. Below is an example of `runner.sh`.
 ```
 #!/bin/bash
 
-python main.py >> /var/log/image.log 2>&1
+python main.py >> /var/log/image.log 2>&1 || curl -X PUT -T /var/log/image.log "${LOGFILE_SIGNED_URL}"
 ```
 
 > Note: The logfile MUST match this path. The platform will only attempt to
@@ -299,7 +299,7 @@ RUN apt-get update \
 # Declare environment variables that the platform will use to communicate with
 # the image at runtime
 #
-ENV TASK_DESCRIPTION=null ENV=null API_TOKEN=null
+ENV TASK_DESCRIPTION=null ENV=null API_TOKEN=null LOGFILE_SIGNED_URL=null OS=null
 
 # Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
