@@ -55,7 +55,7 @@ const server = require('./server.js');
     debug('Spinning up mock server.');
     const socket = await server.spinup(task);
 
-    const dockerCmd = await generateDockerCommand(taskURL);
+    const dockerCmd = await generateDockerCommand(taskURL, task.logfile['signed-url']);
     console.log('\n\nRun the following docker command to test your image now:\n\n',
       dockerCmd, '\n\nCleanup generated files via npm run clean or ' +
       'yarn run clean.\n\n');
@@ -71,7 +71,7 @@ const server = require('./server.js');
     process.exit(1);
   }
 
-  function generateDockerCommand(taskURL) {
+  function generateDockerCommand(taskURL, logfileURL) {
     return new Promise(function(resolve, reject) {
       debug('Generating the docker run command.');
       var cmd = 'docker run ';
@@ -83,8 +83,9 @@ const server = require('./server.js');
         `-e ENV="LOCAL" ` +
         `-e API_TOKEN="${API_TOKEN}" ` +
         `-e OS="${process.platform}" ` +
+        `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
         `--network="host" ${TEST_DOCKER_IMAGE}; ` +
-        `echo -e "\n\nNow close the server (Ctrl-C) to finish the ` +
+        `echo -e "Now close the server (Ctrl-C) to finish the ` +
         `test and retrive your results!"`;
       debug('Docker command generation complete.');
       return resolve(cmd);
