@@ -248,7 +248,21 @@ logfile. Below is an example of `runner.sh`.
 ```
 #!/bin/bash
 
-python main.py >> /var/log/image.log 2>&1 || curl -X PUT -T /var/log/image.log "${LOGFILE_SIGNED_URL}"
+LOGFILE_PATH=/var/log/image.log
+
+python main.py > "${LOGFILE_PATH}" 2>&1
+
+if [ $? -ne 0 ]; then
+    # The task failed, so...
+    # Upload the logfile to the platform
+    curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
+    # Notify the api that the job failed
+    curl -X PUT "${JOB_FAILURE_URL}" \
+      -H "X-Voxel51-Agent: ${API_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
+    wait
+fi
 ```
 
 > Note: The logfile MUST match this path. The platform will only attempt to
@@ -306,10 +320,9 @@ EXPOSE 8000
 
 # Setup entrypoint
 COPY main.py /engine/main.py
-COPY runn.sh /engine/runner.sh
+COPY runner.sh /engine/runner.sh
 RUN chmod +x /engine/main.py \
   && mkdir -p /var/log \
-  && touch /var/log/image.log \
   && chmod +x /engine/runner.sh
 
 WORKDIR /engine
