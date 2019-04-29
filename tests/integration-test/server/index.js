@@ -12,17 +12,17 @@ const server = require('./server.js');
 
 (async function main() {
   // declare global consts
-  var STORAGE_BASE_DIR,
-    GIVEN_INPUT_FILE,
-    API_TOKEN,
+  var GIVEN_INPUT_FILE,
     TEST_DOCKER_IMAGE,
-    GIVEN_ANALYTIC_FILE,
-    PORT,
-    JOB_ID;
+    GIVEN_ANALYTIC_FILE;
+  const JOB_ID = uuid4();
+  const config = require('../config.js');
 
   try {
     debug('Beginning setup of image test.');
     debug('Validating required environment variables.');
+    // TODO parse command-line args
+    //
     GIVEN_INPUT_FILE = process.env.TEST_INPUT_FILE;
     if (!GIVEN_INPUT_FILE) {
       throw new Error(`A valid absolute path to the desired input test ` +
@@ -41,12 +41,8 @@ const server = require('./server.js');
         `test file must be set via TEST_ANALYTIC_FILE environment variable.`);
     }
 
-    PORT = 4000;
     debug('Environment variable validation complete.');
 
-    STORAGE_BASE_DIR = path.join(__dirname, './storage');
-    API_TOKEN = 'my-very-special-key12345';
-    JOB_ID = uuid4();
     const analyticFields = await parseAndVerifyAnalyticJSON();
     // TODO add support for parameters?
     const {taskURL, task} = await generateTaskJSON(analyticFields);
@@ -81,9 +77,10 @@ const server = require('./server.js');
       cmd += `--name ${JOB_ID} ` +
         `-e TASK_DESCRIPTION="${taskURL}" ` +
         `-e ENV="LOCAL" ` +
-        `-e API_TOKEN="${API_TOKEN}" ` +
+        `-e API_TOKEN="${config.API_TOKEN}" ` +
         `-e OS="${process.platform}" ` +
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
+        `-e API_BASE_URL="${API_BASE_URL}" ` +
         `--network="host" ${TEST_DOCKER_IMAGE}; ` +
         `echo -e "Now close the server (Ctrl-C) to finish the ` +
         `test and retrive your results!"`;
@@ -95,7 +92,7 @@ const server = require('./server.js');
   async function generateTaskJSON(analyticFields, params={}) {
     debug('Generating task JSON file using analytic fields:', analyticFields);
     const inputFilename = path.basename(GIVEN_INPUT_FILE);
-    const inputFilepath = path.join(STORAGE_BASE_DIR, inputFilename);
+    const inputFilepath = path.join(config.STORAGE_BASE_DIR, inputFilename);
     debug(`Copying analytic file to new location, ${inputFilepath}.`);
     await pExec(`cp ${GIVEN_INPUT_FILE} ${inputFilepath}`);
     const task = {
@@ -128,15 +125,15 @@ const server = require('./server.js');
   }
 
   function generateSignedUrl(filepath, type) {
-    return Promise.resolve(`http://127.0.0.1:${PORT}/v1` +
-      `/local/file?${type}=${path.join(STORAGE_BASE_DIR, filepath)}`);
+    return Promise.resolve(`http://127.0.0.1:${config.PORT}/v1` +
+      `/local/file?${type}=${path.join(config.STORAGE_BASE_DIR, filepath)}`);
   }
 
   async function parseAndVerifyAnalyticJSON() {
     debug('Starting reading and parsing of analytic JSON file.');
     const analyticFilename = path.basename(GIVEN_ANALYTIC_FILE);
     debug('Analytic filename read as:', analyticFilename);
-    const analyticFilepath = path.join(STORAGE_BASE_DIR, analyticFilename);
+    const analyticFilepath = path.join(config.STORAGE_BASE_DIR, analyticFilename);
     debug('Analytic filepath created as:', analyticFilepath);
     await pExec(`cp ${GIVEN_ANALYTIC_FILE} ${analyticFilepath}`);
     debug('Analytic file copied to new location.');
@@ -214,7 +211,7 @@ const server = require('./server.js');
 
   function readFile(filepath) {
     return new Promise(function(resolve, reject) {
-      const file = path.join(STORAGE_BASE_DIR, filepath);
+      const file = path.join(config.STORAGE_BASE_DIR, filepath);
       fs.readFile(file, async (err, data) => {
         if (err) {
           return reject(err);
@@ -227,7 +224,7 @@ const server = require('./server.js');
 
   function writeFile(filepath, data) {
     return new Promise(function(resolve, reject) {
-      const file = path.join(STORAGE_BASE_DIR, filepath);
+      const file = path.join(config.STORAGE_BASE_DIR, filepath);
       fs.writeFile(file, data, (err) => {
         if (err) {
           return reject(err);
