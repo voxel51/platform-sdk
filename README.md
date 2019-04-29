@@ -112,20 +112,21 @@ the `vehicle-sense` analytic:
 In the above JSON, the `analytic` key specifies the name of the analytic being
 run, and the `version` key specifies the particular version of the analytic.
 The `job_id` specifies the ID of the platform job being executed, which is used
-by the SDK when communicating the status of the task to the platform. The
-`inputs` object specifies where the process should download its input(s), and
-the `parameters` object specifies any parameters that were set. Finally the
-`output`, `status`, and `logfile` objects specify where to upload the task
-outputs, status file, and logfile, respectively.
+by the SDK when communicating the status of the task to the platform. The job
+ID is also provided via environment variable as a safety measure in case the
+task JSON cannot be downloaded or parsed. The `inputs` object specifies where
+the process should download its input(s), and the `parameters` object specifies
+any parameters that were set. Finally the `output`, `status`, and `logfile`
+objects specify where to upload the task outputs, status file, and logfile,
+respectively.
 
-The Platform SDK provides a :class:`voxel51.platform.task.TaskConfig` class
-that conveniently encapsulates reading and parsing the above specification. In
+The Platform SDK provides a `voxel51.platform.task.TaskConfig` class that
+conveniently encapsulates reading and parsing the above specification. In
 particular, each of the remote file locations are encapsulated by the
-:class:`voxel51.platform.utils.RemotePathConfig` class, which abstracts the
-nature and location of the remote files from your analytic. Thus _no changes_
-to your code are required for your analytic to support reading/writing files
-from different remote storage providers (Google Cloud, AWS Cloud, private
-datacenters, etc.)
+`voxel51.platform.utils.RemotePathConfig` class, which abstracts the nature and
+location of the remote files from your analytic. Thus _no changes_ to your code
+are required for your analytic to support reading/writing files from different
+remote storage providers (Google Cloud, AWS Cloud, private datacenters, etc.)
 
 As a task is being executed, the Platform SDK provides a convenient interface
 for reporting the status of the task to the platform. The following JSON file
