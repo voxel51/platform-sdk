@@ -26,20 +26,20 @@ from builtins import *
 TASK_DESCRIPTION_ENV_VAR = "TASK_DESCRIPTION"
 
 #
+# The environment variable that holds the ID of the job being executed
+#
+JOB_ID_ENV_VAR = "JOB_ID"
+
+#
 # The environment variable that will contain the API token to use to
 # communicate with the Platform API
 #
 API_TOKEN_ENV_VAR = "API_TOKEN"
 
 #
-# The environment variable that holds the ID of the job being executed
-#
-JOB_ID_ENV_VAR = "JOB_ID"
-
-#
 # The environment variable that holds the base URL of the API
 #
-BASE_URL_ENV_VAR = "BASE_URL"
+API_BASE_URL_ENV_VAR = "API_BASE_URL"
 
 #
 # The environment variable that will hold the platform on which the Platform
