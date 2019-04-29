@@ -79,10 +79,9 @@ describes the task to be performed
 - `API_TOKEN` : the API token that the process can use to communicate with the
 Platform API
 
-- `ENV` : specifies which deployment environment the task is being run in. The
-possible values are enumerated by the
-:class:`voxel51.platform.config.DeploymentEnvironment` enum. This value
-determines which API endpoint the process should communicate with
+- `JOB_ID` : the ID of the job being executed by this task
+
+- `BASE_URL`: the base URL of the Platform API that the SDK will use
 
 The following JSON file shows an example of a task specification provided to
 the `vehicle-sense` analytic:
