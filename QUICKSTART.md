@@ -250,30 +250,32 @@ logfile. Below is an example of `runner.sh`.
 
 LOGFILE_PATH=/var/log/image.log
 
-python main.py > "${LOGFILE_PATH}" 2>&1
+# Run analytic
+# Pipes stdout/stderr to disk so that we can post it manually in case of errors
+python {{entrypoint}} > "${LOGFILE_PATH}" 2>&1
 
 if [ $? -ne 0 ]; then
     # The task failed, so...
-    # Upload the logfile to the platform
+
+    # Upload the logfile
     curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
-    # Notify the api that the job failed
-    curl -X PUT "${JOB_FAILURE_URL}" \
-      -H "X-Voxel51-Agent: ${API_TOKEN}" \
-      -H "Content-Type: application/json" \
-      -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
+
+    # Post the job failure
+    curl -X PUT "${BASE_URL}/jobs/${JOB_ID}/state" \
+        -H "X-Voxel51-Agent: ${API_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
+
     wait
 fi
 ```
-
-> Note: The logfile MUST match this path. The platform will only attempt to
-read and upload logs piped to this file location on the Docker image.
 
 A few additional lines in the Dockerfile should create this logfile, and
 make the `runner.sh` entrypoint executable. Constructing your Dockerfile
 in this manner is optional, but provides a more reliable chance of retrieving
 logfiles from malformed or failing Docker images.
 
-
+```
 # A typical base image for GPU deployments. Others are possible
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 
