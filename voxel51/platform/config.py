@@ -20,44 +20,29 @@ from builtins import *
 
 
 #
+# The environment variable that will hold the URL from which to download the
+# TaskConfig for the task
+#
+TASK_DESCRIPTION_ENV_VAR = "TASK_DESCRIPTION"
+
+#
 # The environment variable that will contain the API token to use to
 # communicate with the Platform API
 #
 API_TOKEN_ENV_VAR = "API_TOKEN"
 
 #
-# The environment variable that will specify which deployment environment the
-# Platform API is currently operating in
+# The environment variable that holds the ID of the job being executed
 #
-DEPLOYMENT_ENV_VAR = "ENV"
+JOB_ID_ENV_VAR = "JOB_ID"
+
+#
+# The environment variable that holds the base URL of the API
+#
+BASE_URL_ENV_VAR = "BASE_URL"
 
 #
 # The environment variable that will hold the platform on which the Platform
 # API is running
 #
 OS_ENV_VAR = "OS"
-
-#
-# The environment variable that will hold the URL from which to download the
-# TaskConfig for the task
-#
-TASK_DESCRIPTION_ENV_VAR = "TASK_DESCRIPTION"
-
-
-class DeploymentEnvironment(object):
-    '''Class enumerating the possible deployment environments.'''
-
-    DEV = "DEV"
-    STAGING = "STAGING"
-    PROD = "PROD"
-    LOCAL = "LOCAL"
-
-#
-# The base API URLs to use for each deployment environment
-#
-BASE_API_URLS = {
-    DeploymentEnvironment.DEV: "https://dev.api.voxel51.com/v1",
-    DeploymentEnvironment.STAGING: "https://staging.api.voxel51.com/v1",
-    DeploymentEnvironment.PROD: "https://api.voxel51.com/v1",
-    DeploymentEnvironment.LOCAL: "http://127.0.0.1:4000/v1",
-}
