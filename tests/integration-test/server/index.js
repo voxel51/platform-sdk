@@ -21,21 +21,23 @@ const server = require('./server.js');
   try {
     debug('Beginning setup of image test.');
     debug('Validating required environment variables.');
-    // TODO parse command-line args
-    //
-    GIVEN_INPUT_FILE = process.env.TEST_INPUT_FILE;
+    const cliArgs = await parseCLIArgs();
+    debug('Parsed command-line arguments are:', cliArgs);
+    process.exit(0);
+
+    GIVEN_INPUT_FILE = cliArgs.['input-file'];
     if (!GIVEN_INPUT_FILE) {
       throw new Error(`A valid absolute path to the desired input test ` +
         `file must be set via TEST_INPUT_FILE environment variable.`);
     }
 
-    TEST_DOCKER_IMAGE = process.env.TEST_DOCKER_IMAGE;
+    TEST_DOCKER_IMAGE = cliArgs['analytic-image'];
     if (!TEST_DOCKER_IMAGE) {
       throw new Error(`A valid, local docker image must be set via ` +
         `TEST_DOCKER_IMAGE environment variable.`);
     }
 
-    GIVEN_ANALYTIC_FILE = process.env.TEST_ANALYTIC_FILE;
+    GIVEN_ANALYTIC_FILE = cliArgs['analytic-json'];
     if (!GIVEN_ANALYTIC_FILE) {
       throw new Error(`A valid absolute path to the desired analytic JSON ` +
         `test file must be set via TEST_ANALYTIC_FILE environment variable.`);
@@ -252,5 +254,17 @@ const server = require('./server.js');
         process.exit(0);
       });
     };
+  }
+
+  function parseCLIArgs() {
+    return new Promise(function(resolve, reject) {
+      const args = process.argv.slice(2);
+      var argsObj = {};
+      args.forEach((arg) => {
+        const [key, value] = arg.split('=');
+        argsObj[key.slice(2)] = value;
+      });
+      return resolve(argsObj);
+    });
   }
 }());
