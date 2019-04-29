@@ -81,16 +81,16 @@ def is_macos():
 
 
 def handle_macos_localhost(url):
-    '''Converts ``localhost`` to ``docker.for.mac.localhost`` in the given URL,
-    if necessary, when running on macOS. This is required for Docker containers
-    running on macOS.
+    '''Converts ``localhost`` or ``127.0.0.X`` to ``docker.for.mac.localhost``
+    in the given URL, if necessary, when running on macOS. This is required for
+    Docker containers running on macOS.
 
     Args:
         url (str): a URL
 
     Returns:
-        a URL with ``localhost`` replaced with ``docker.for.mac.localhost``,
-        if necessary
+        a URL with ``localhost`` or ``127.0.0.X`` replaced with
+        ``docker.for.mac.localhost``, if necessary, when running on macOS
     '''
     if not is_macos():
         return url
