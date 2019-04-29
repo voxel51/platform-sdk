@@ -36,10 +36,8 @@ def make_api_client():
         an :class:`API` instance
     '''
     private_key = os.environ[voxc.API_TOKEN_ENV_VAR]
-    deployment_env = os.environ[voxc.DEPLOYMENT_ENV_VAR]
-    is_macos = voxu.is_macos()
     token = voxa.Token(private_key)
-    return API(token, deployment_env=deployment_env, is_macos=is_macos)
+    return API(token)
 
 
 class API(object):
@@ -47,35 +45,25 @@ class API(object):
 
     Attributes:
         token (voxel51.platform.auth.Token): the Token for the session
-        deployment_env (voxel51.platform.config.DeploymentEnvironment): the
-            deployment environment for the session
-        is_macos (bool): whether this session is running on macOS
         keep_alive (bool): whether the request session should be kept alive
             between requests
         base_url (str): the base URL of the API for the session
     '''
 
-    def __init__(
-            self, token, deployment_env=voxc.DeploymentEnvironment.PROD,
-            is_macos=False, keep_alive=False):
+    def __init__(self, token, keep_alive=False):
         '''Starts a new API session.
 
         Args:
-            token_path (voxel51.platform.auth.Token): the Token to use for this
+            token (voxel51.platform.auth.Token): the Token to use for the
                 session
-            deployment_env (voxel51.platform.config.DeploymentEnvironment,
-                optional): the deployment environment to use. The default is
-                ``voxel51.platform.config.DeploymentEnvironment.PROD``
-            is_macos (bool, optional): whether this job is running on macOS.
-                The default is False
             keep_alive (bool, optional): whether to keep the request session
                 alive between requests. By default, this is False
         '''
         self.token = token
-        self.deployment_env = deployment_env
-        self.is_macos = is_macos
         self.keep_alive = keep_alive
-        self.base_url = self._get_base_url(deployment_env, is_macos)
+        self.base_url = voxu.handle_macos_localhost(
+            os.environ[voxc.BASE_URL_ENV_VAR])
+
         self._header = self.token.get_header()
         self._requests = requests.Session() if keep_alive else requests
 
@@ -149,11 +137,6 @@ class API(object):
                 endpoint, files=files, headers=self._header)
         _validate_response(res)
         return _parse_json_response(res)["data"]["data_id"]
-
-    @staticmethod
-    def _get_base_url(deployment_env, is_macos):
-        base_url = voxc.BASE_API_URLS[deployment_env]
-        return voxu.handle_macos_localhost(base_url) if is_macos else base_url
 
 
 class APIError(Exception):
