@@ -38,6 +38,5 @@ git submodule update
 # Install ETA and its dependencies
 echo "Installing ETA"
 cd eta
-bash install_externals.bash
+bash install.bash
 cp config-example.json config.json
-pip install -e .
