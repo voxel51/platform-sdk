@@ -10,8 +10,8 @@ const url = require('url');
 const R = require('ramda');
 
 const server = (function genServer() {
+  const config = require('./config.js');
   const BASE_DIR = __dirname;
-  const PORT = 4000;
   var TASK = {};
   var eventList = {
     getTaskJSON: false,
@@ -103,8 +103,8 @@ const server = (function genServer() {
         debug('Response handler found. Calling controller.');
         return await resHandler(req, res);
       });
-      const socket = server.listen(PORT, 'localhost', () => {
-        console.log(`Server is now listening on port ${PORT}.`);
+      const socket = server.listen(config.PORT, 'localhost', () => {
+        console.log(`Server is now listening on port ${config.PORT}.`);
       });
       socket.on('close', () => {
         console.log('Server is closing.\n');

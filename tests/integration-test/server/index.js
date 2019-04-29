@@ -16,7 +16,7 @@ const server = require('./server.js');
     TEST_DOCKER_IMAGE,
     GIVEN_ANALYTIC_FILE;
   const JOB_ID = uuid4();
-  const config = require('../config.js');
+  const config = require('./config.js');
 
   try {
     debug('Beginning setup of image test.');
