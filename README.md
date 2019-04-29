@@ -96,9 +96,7 @@ the `vehicle-sense` analytic:
             "signed-url": "https://storage.googleapis.com/XXXX"
         }
     },
-    "parameters": {
-        "size": [-1, 720]
-    },
+    "parameters": {},
     "output": {
         "signed-url": "https://storage.googleapis.com/XXXX"
     },
