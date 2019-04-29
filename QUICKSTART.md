@@ -234,6 +234,13 @@ its dependencies in a GPU-enabled Docker image that runs the `main.py`
 entrypoint that you provide. It can be easily extended to include any custom
 installation requirements for your analytic.
 
+> NOTE: The following section pertains to analytics when deployed in
+the production cloud environment! While running local tests, it is
+advisable to NOT use this `runner.sh` wrapper, as the typical logs
+seen in live `stdout` from `docker run` are piped to a file. It is
+easier to debug your own custom entrypoint locally with an entrypoint
+like this: `ENTRYPOINT ["python", "main.py"]`.
+
 To aid debugging analytics deployed in the platform, a specific Docker
 `ENTRYPOINT` setup is strongly recommended. It is comprised of two parts:
 
