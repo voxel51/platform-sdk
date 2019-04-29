@@ -248,6 +248,7 @@ logfile. Below is an example of `runner.sh`.
 ```
 #!/bin/bash
 
+# Don't change this path
 LOGFILE_PATH=/var/log/image.log
 
 # Run analytic
@@ -261,7 +262,7 @@ if [ $? -ne 0 ]; then
     curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
 
     # Post the job failure
-    curl -X PUT "${BASE_URL}/jobs/${JOB_ID}/state" \
+    curl -X PUT "${API_BASE_URL}/jobs/${JOB_ID}/state" \
         -H "X-Voxel51-Agent: ${API_TOKEN}" \
         -H "Content-Type: application/json" \
         -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
