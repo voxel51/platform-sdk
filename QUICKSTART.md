@@ -20,20 +20,31 @@ instructions at https://docs.docker.com/install
 get familar with the concepts
 
 
-## Docker entrypoint
+## Analytic executable
 
-The following code provides an annotated example of a generic Docker entrypoint
-that uses the Platform SDK to:
+The following code provides an annotated example of a generic Python executable
+that acts as the main entrypoint for an analytic Docker image.
+This executable that uses the Platform SDK to:
  - parse the task description provided to the image at runtime
  - download the inputs and parameters for the task
  - report the necessary metadata to the platform
+ - invoke the analytic-specific implementation
  - publish the outputs of the task to the platform
  - mark the task as complete
 
 It also demonstrates how to appropriately handle runtime errors that may occur
 during execution.
 
+You can easily adapt this template to run your custom algorithm by inserting
+the appropriate calls in the `Your code here!` section.
+
 ```python
+'''
+Template main executable for an analytic Docker image.
+
+Syntax:
+    python main.py
+'''
 import logging
 
 # The `platform-sdk` package must be pip installed in your image
@@ -44,15 +55,25 @@ import voxel51.platform.task as voxt
 # image to which you want to download task input(s), write outputs, etc.
 #
 
-# A directory to which to download the task input(s) for your task
-INPUTS_DIR = "/path/to/inputs"
+#
+# A path to write the logfile for this task.
+#
+# Don't change this path; the platform attaches a pre-stop hook to all images
+# that will upload any logfile from this location whenever a task is
+# terminated unexpectedly (e.g., preemption, resource violation, etc.)
+#
+TASK_LOGFILE_PATH = "/var/log/image.log"
 
-# A path to write the logfile for this task
-TASK_LOGFILE_PATH = "/path/to/task.log"
+#
+# A directory to which to download the task input(s) for your task.
+# This location can be anything you want.
+#
+INPUTS_DIR = "/path/to/inputs"
 
 #
 # The local path to which your analytic will write it's final output. The file
-# type you specify here depends on the nature of your analytic.
+# type you specify here depends on the nature of your analytic. This location
+# can be anything you want.
 #
 OUTPUT_PATH = "/path/to/output.json"
 
@@ -61,7 +82,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    '''The main entrypoint for your Docker.
+    '''The main method for the analytic Docker image.
 
     Note that no arguments are required here because the Platform SDK reads the
     necessary configuration settings from environment variables.
@@ -168,7 +189,7 @@ def main():
         task_manager.post_job_metadata(video_path=input_path)
 
         #
-        # Your code goes here!!
+        # Your code goes here!
         #
         # Now you have the inputs and parameters required to run your task, so
         # you can perform your custom work!
@@ -223,67 +244,146 @@ if __name__ == "__main__":
 ```
 
 
+## Docker entrypoint
+
+In order to gracefully handle any uncaught exceptions in the analytic
+executable defined above, we strongly recommend wrapping your executable in the
+following simple `main.bash` script, which will act as the entrypoint to your
+Docker image.
+
+The script simply executes the main executable from the previous section, pipes
+its `stdout` and `stderr` to disk, and, if the executable exits with a non-zero
+status code, will upload the logfile to the platform and mark the job as
+`FAILED`.
+
+This extra layer of protection is important to catch and appropriately report
+errors that prevent the Platform SDK loading. E.g., an `import` error caused
+from incomplete installation instructions in the `Dockerfile`.
+
+```shell
+#!/bin/bash
+# Main entrypoint for demo analytic
+#
+# Syntax:
+#     bash main.bash
+#
+
+# Don't change this path; the platform attaches a pre-stop hook to all images
+# running production tasks that tries to
+LOGFILE_PATH=/var/log/image.log
+
+#
+# Execute analytic and pipe stdout/stderr to disk so that we can post it
+# manually in case of errors.
+#
+# If necessary, replace `python main.py` here with the appropriate invocation
+# for your analytic.
+#
+python main.py > "${LOGFILE_PATH}" 2>&1
+
+# Gracefully handle uncaught failures in analytic
+if [ $? -ne 0 ]; then
+    # The task failed, so...
+
+    # Upload the logfile
+    curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
+
+    # Post the job failure
+    curl -X PUT "${API_BASE_URL}/jobs/${JOB_ID}/state" \
+        -H "X-Voxel51-Agent: ${API_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
+
+    wait
+fi
+```
+
+
 ## Docker build
 
-This section assumes that you have extended the template in the previous
-section to obtain a `main.py` entrypoint for your Docker image that runs your
-custom analytic.
+This section assumes that you have populated the template in the
+[Analytic executable](#analytic-executable) section and the entrypoint script
+in the [Docker entrypoint](#docker-entrypoint) section to run your custom
+analytic.
 
 The snippet below defines a `Dockerfile` that installs the Platform SDK and
-its dependencies in a GPU-enabled Docker image that runs the `main.py`
-entrypoint that you provide. It can be easily extended to include any custom
-installation requirements for your analytic.
+its dependencies in a GPU-enabled Docker image that runs the `main.bash` and
+`main.py` scripts that you provide. It can be easily extended to include any
+custom installation requirements for your analytic.
 
-```
+```shell
 # A typical base image for GPU deployments. Others are possible
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 
 #
-# Your custom installation goes here!
+# Your custom installation here!
 #
 
 #
 # Install `platform-sdk` and its dependencies
 #
-# The following tensorflow + numpy options are supported:
-#   - Python 2.7.X: tensorflow(-gpu)==1.12.0 and numpy==1.14.0
-#   - Python 3.6.X: tensorflow(-gpu)==1.12.0 and numpy==1.16.0
+# The Platform SDK supports either Python 2.7.X or Python 3.6.X
+#
+# For CPU-enabled images, install tensorflow==1.12.0
+#
+# For GPU-enabled images, use the TensorFlow version compatible with the CUDA
+# version in your image:
+#   - CUDA 8: tensorflow-gpu==1.4.0
+#   - CUDA 9: tensorflow-gpu==1.12.0
+#
+# The following installs Python 3.6 with TensorFlow 1.12.0 to suit the base
+# NVIDIA image chosen above.
 #
 COPY platform-sdk/ /engine/platform-sdk/
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
+        software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install \
+        sudo \
+        build-essential \
+        pkg-config \
+        ca-certificates \
+        unzip \
+        git \
+        curl \
         libcupti-dev \
-        python2.7 \
-        python-dev \
-        python-pip \
-        python-setuptools \
+        python3.6 \
+        python3-dev \
+        python3-pip \
+        python3-setuptools \
         ffmpeg \
         imagemagick \
-    && pip install --upgrade pip==9.0.3 \
-    && pip --no-cache-dir install -r /engine/platform-sdk/requirements.txt \
-    && pip --no-cache-dir install -r /engine/platform-sdk/eta/requirements.txt \
-    && pip --no-cache-dir install -e /engine/platform-sdk/. \
-    && pip --no-cache-dir install -e /engine/platform-sdk/eta/.
-    && pip --no-cache-dir install opencv-python-headless \
-    && pip --no-cache-dir install --upgrade requests \
-    && pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
-    && pip --no-cache-dir install --upgrade numpy==1.14.0 \
+    && ln -s /usr/bin/python3 /usr/bin/python \
+    && ln -s /usr/bin/pip3 /usr/bin/pip \
+    && python -m pip install --upgrade pip \
+    && python -m pip --no-cache-dir install -r /engine/platform-sdk/requirements.txt \
+    && python -m pip --no-cache-dir install -r /engine/platform-sdk/eta/requirements.txt \
+    && python -m pip --no-cache-dir install -e /engine/platform-sdk/. \
+    && python -m pip --no-cache-dir install -e /engine/platform-sdk/eta/.
+    && python -m pip --no-cache-dir install opencv-python-headless \
+    && python -m pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
+    && python -m pip --no-cache-dir install --upgrade numpy==1.16.0 \
     && rm -rf /var/lib/apt
 
 #
 # Declare environment variables that the platform will use to communicate with
 # the image at runtime
 #
-ENV TASK_DESCRIPTION=null ENV=null API_TOKEN=null
+ENV TASK_DESCRIPTION=null JOB_ID=null API_TOKEN=null API_BASE_URL=null OS=null LOGFILE_SIGNED_URL=null
 
 # Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
 
 # Setup entrypoint
+COPY main.bash /engine/main.bash
 COPY main.py /engine/main.py
-RUN chmod +x /engine/main.py
+RUN mkdir -p /var/log \
+    && chmod +x /engine/main.bash \
+    && chmod +x /engine/main.py
 WORKDIR /engine
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["bash", "main.bash"]
 ```
 
 You can build your image from the above `Dockerfile` by running:
@@ -295,7 +395,7 @@ git submodule init
 git submodule update
 
 #
-# Your custom setup goes here!
+# Your custom setup here!
 #
 
 # Build image
