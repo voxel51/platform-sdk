@@ -701,20 +701,12 @@ def fail_epically(task_config_url):
     #
     logger.error("Uncaught exception", exc_info=sys.exc_info())
 
-    #
-    # Get job ID from task path
-    #
-    # This assumes the signed URL is of the following form:
-    #   task_config_url = "<arbitrary>/:jobId/status.json?<query-params>
-    #
-    path = urlparse.unquote(urlparse.urlparse(task_config_url).path)
-    job_id = os.path.basename(os.path.dirname(path))
-
     try:
         #
         # The only thing we can do is update the job status to FAILED
         # and blame it on the platform
         #
+        job_id = os.environ[voxc.JOB_ID_ENV_VAR]
         _get_api_client().update_job_state(
             job_id, TaskState.FAILED, failure_type=TaskFailureType.PLATFORM)
         logger.info(
