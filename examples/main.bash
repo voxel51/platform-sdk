@@ -7,12 +7,16 @@
 # Brian Moore, brian@voxel51.com
 #
 
-# Don't change this path
+#
+# Don't change this path; the platform attaches a pre-stop hook to images at
+# runtime that will upload the logfile from this location whenever a task is
+# terminated unexpectedly (e.g., preemption, resource violation, etc.)
+#
 LOGFILE_PATH=/var/log/image.log
 
 # Run analytic
 # Pipes stdout/stderr to disk so that we can post it manually in case of errors
-python {{entrypoint}} > "${LOGFILE_PATH}" 2>&1
+python main.py 2>&1 | tee "${LOGFILE_PATH}"
 
 # Gracefully handle uncaught failures in analytic
 if [ $? -ne 0 ]; then
