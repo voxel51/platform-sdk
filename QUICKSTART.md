@@ -260,7 +260,7 @@ This extra layer of protection is important to catch and appropriately report
 errors that prevent the Platform SDK loading. E.g., an `import` error caused
 from incomplete installation instructions in the `Dockerfile`.
 
-```
+```shell
 #!/bin/bash
 # Main entrypoint for demo analytic
 #
@@ -311,7 +311,7 @@ its dependencies in a GPU-enabled Docker image that runs the `main.bash` and
 `main.py` scripts that you provide. It can be easily extended to include any
 custom installation requirements for your analytic.
 
-```
+```shell
 # A typical base image for GPU deployments. Others are possible
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 
