@@ -388,29 +388,29 @@ const server = (function genServer() {
       reportAssertion('Check for task JSON retrieval.',
         () => eventList.getTaskJSON,
         'Task JSON not retrieved.',
-        'Use SDK function task.<fill-in> to retrieve the task JSON.');
+        'Use SDK function voxt.TaskManager.from_url() to retrieve the task JSON.');
       reportAssertion('Check for posting RUNNING state.',
         () => eventList.running,
         'RUNNING state not posted.',
-        'Use SDK function task.<fill-in> to post the state. Must be ' +
+        'Use SDK function task_manager.start() to post the state. Must be ' +
         'done PRIOR to running custom analytic logic!');
       reportAssertion('Check for input file retrieval.',
         () => eventList.getInputFile,
         'Input not retrieved.',
-        'Use SDK function task.<fill-in> to retrieve input file(s).');
+        'Use SDK function task_manager.download_inputs() to retrieve input file(s).');
       reportAssertion('Check for job metadata report.',
         () => eventList.reportMetadata,
         'Job metadata not reported.',
-        'Use SDK function task.<fill-in> to report job metadata. ' +
+        'Use SDK function task_manger.post_job_metadata() to report job metadata. ' +
         'Failure to report job metadata violates terms of service agreement.');
       reportAssertion('Check for write of status JSON file.',
         () => eventList.writeStatus && eventList.numStatusWrites > 0,
         'Status file not written.',
-        'Use SDK function task.<fill-in> to write status JSON file.');
+        'Use SDK function task_manager.publish_status() to write status JSON file.');
       reportAssertion('Check for write of logfile.',
         () => eventList.writeLogfile && eventList.numLogfileWrites > 0,
         'Logfile not written.',
-        'Use SDK function task.<fill-in> to write the logfile.');
+        'Use SDK function task_manager.complete() or task_manager.fail_gracefully() to write the logfile.');
       reportAssertion('Check for only one of COMPLETE or FAILED state updates.',
         () => !(eventList.complete && eventList.failed),
         'Both COMPLETE and FAILED states written.',
@@ -420,13 +420,13 @@ const server = (function genServer() {
         reportAssertion('Check that if failed, failure type provided.',
           () => (eventList.failureType !== null && typeof eventList.failureType === 'string'),
           'Valid failure type not provided.',
-          'Use SDK function task.<fill-in> to write failure state and use ' +
-          '<fill-in> parameter of supported failure types.');
+          'Use SDK function task_manager.fail_gracefully() to write failure state and use ' +
+          'one of voxt.TaskFailureType ENUM as the failure type.');
       }
       reportAssertion('Check for output write state.',
         () => eventList.writeOutput,
         'Output file not written.',
-        'Use SDK function task.<fill-in> to write the output file.');
+        'Use SDK function task.upload_output() to write the output file.');
       console.log('\n----- End of report -----\n');
     });
 
