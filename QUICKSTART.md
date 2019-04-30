@@ -266,14 +266,17 @@ caused from buggy installation instructions in the `Dockerfile`).
 
 ```shell
 #!/bin/bash
-# Main entrypoint for demo analytic
+# Main entrypoint for an analytic Docker image.
 #
 # Syntax:
 #     bash main.bash
 #
 
-# Don't change this path; the platform attaches a pre-stop hook to all images
-# running production tasks that tries to
+#
+# Don't change this path; the platform attaches a pre-stop hook to images at
+# runtime that will upload the logfile from this location whenever a task is
+# terminated unexpectedly (e.g., preemption, resource violation, etc.)
+#
 LOGFILE_PATH=/var/log/image.log
 
 #
@@ -283,7 +286,7 @@ LOGFILE_PATH=/var/log/image.log
 # If necessary, replace `python main.py` here with the appropriate invocation
 # for your analytic.
 #
-python main.py > "${LOGFILE_PATH}" 2>&1
+python main.py 2>&1 | tee "${LOGFILE_PATH}"
 
 # Gracefully handle uncaught failures in analytic
 if [ $? -ne 0 ]; then
