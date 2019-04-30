@@ -22,6 +22,32 @@ get familar with the concepts
 
 ## Docker entrypoint
 
+In order to
+
+A few additional lines in the Dockerfile should create this logfile, and
+make the `main.bash` entrypoint executable. Constructing your Dockerfile
+in this manner is optional, but provides a more reliable chance of retrieving
+logfiles from malformed or failing Docker images.
+
+To aid debugging analytics deployed in the platform, a specific Docker
+`ENTRYPOINT` setup is strongly recommended. It is comprised of two parts:
+
+- `main.bash`, a simple shell script that acts as the alternate entrypoint
+- `/var/log/image.log`, a pre-defined logfile location
+
+The `main.bash` file should be coded to pipe both `stdout` and `stderr`
+from your typical entrypoint file (e.g. `main.py`) to the pre-defined
+logfile. Below is an example of `main.bash`.
+
+
+```
+
+```
+
+
+## Analytic wrapper
+
+
 The following code provides an annotated example of a generic Docker entrypoint
 that uses the Platform SDK to:
  - parse the task description provided to the image at runtime
@@ -226,55 +252,13 @@ if __name__ == "__main__":
 ## Docker build
 
 This section assumes that you have extended the template in the previous
-section to obtain a `main.py` entrypoint for your Docker image that runs your
+section to obtain a `main.py` script for your Docker image that runs your
 custom analytic.
 
 The snippet below defines a `Dockerfile` that installs the Platform SDK and
 its dependencies in a GPU-enabled Docker image that runs the `main.py`
-entrypoint that you provide. It can be easily extended to include any custom
+script that you provide. It can be easily extended to include any custom
 installation requirements for your analytic.
-
-To aid debugging analytics deployed in the platform, a specific Docker
-`ENTRYPOINT` setup is strongly recommended. It is comprised of two parts:
-
-- `runner.sh`, a simple shell script that acts as the alternate entrypoint
-- `/var/log/image.log`, a pre-defined logfile location
-
-The `runner.sh` file should be coded to pipe both `stdout` and `stderr`
-from your typical entrypoint file (e.g. `main.py`) to the pre-defined
-logfile. Below is an example of `runner.sh`.
-
-
-```
-#!/bin/bash
-
-# Don't change this path
-LOGFILE_PATH=/var/log/image.log
-
-# Run analytic
-# Pipes stdout/stderr to disk so that we can post it manually in case of errors
-python {{entrypoint}} > "${LOGFILE_PATH}" 2>&1
-
-if [ $? -ne 0 ]; then
-    # The task failed, so...
-
-    # Upload the logfile
-    curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
-
-    # Post the job failure
-    curl -X PUT "${API_BASE_URL}/jobs/${JOB_ID}/state" \
-        -H "X-Voxel51-Agent: ${API_TOKEN}" \
-        -H "Content-Type: application/json" \
-        -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
-
-    wait
-fi
-```
-
-A few additional lines in the Dockerfile should create this logfile, and
-make the `runner.sh` entrypoint executable. Constructing your Dockerfile
-in this manner is optional, but provides a more reliable chance of retrieving
-logfiles from malformed or failing Docker images.
 
 ```
 # A typical base image for GPU deployments. Others are possible
@@ -287,49 +271,68 @@ FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 #
 # Install `platform-sdk` and its dependencies
 #
-# The following tensorflow + numpy options are supported:
-#   - Python 2.7.X: tensorflow(-gpu)==1.12.0 and numpy==1.14.0
-#   - Python 3.6.X: tensorflow(-gpu)==1.12.0 and numpy==1.16.0
+# The Platform SDK supports either Python 2.7.X or Python 3.6.X
+#
+# For CPU-enabled images, install tensorflow==1.12.0
+#
+# For GPU-enabled images, use the TensorFlow version compatible with the CUDA
+# version in your image:
+#   - CUDA 8: tensorflow-gpu==1.4.0
+#   - CUDA 9: tensorflow-gpu==1.12.0
+#
+# The following installs Python 3.6 with TensorFlow 1.12.0 to suit the base
+# NVIDIA image chosen above
 #
 COPY platform-sdk/ /engine/platform-sdk/
 RUN apt-get update \
     && apt-get -y --no-install-recommends install \
+        software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get -y --no-install-recommends install \
+        sudo \
+        build-essential \
+        pkg-config \
+        ca-certificates \
+        unzip \
+        git \
+        curl \
         libcupti-dev \
-        python2.7 \
-        python-dev \
-        python-pip \
-        python-setuptools \
+        python3.6 \
+        python3-dev \
+        python3-pip \
+        python3-setuptools \
         ffmpeg \
         imagemagick \
-    && pip install --upgrade pip==9.0.3 \
-    && pip --no-cache-dir install -r /engine/platform-sdk/requirements.txt \
-    && pip --no-cache-dir install -r /engine/platform-sdk/eta/requirements.txt \
-    && pip --no-cache-dir install -e /engine/platform-sdk/. \
-    && pip --no-cache-dir install -e /engine/platform-sdk/eta/.
-    && pip --no-cache-dir install opencv-python-headless \
-    && pip --no-cache-dir install --upgrade requests \
-    && pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
-    && pip --no-cache-dir install --upgrade numpy==1.14.0 \
+    && ln -s /usr/bin/python3 /usr/bin/python \
+    && ln -s /usr/bin/pip3 /usr/bin/pip \
+    && python -m pip install --upgrade pip \
+    && python -m pip --no-cache-dir install -r /engine/platform-sdk/requirements.txt \
+    && python -m pip --no-cache-dir install -r /engine/platform-sdk/eta/requirements.txt \
+    && python -m pip --no-cache-dir install -e /engine/platform-sdk/. \
+    && python -m pip --no-cache-dir install -e /engine/platform-sdk/eta/.
+    && python -m pip --no-cache-dir install opencv-python-headless \
+    && python -m pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
+    && python -m pip --no-cache-dir install --upgrade numpy==1.16.0 \
     && rm -rf /var/lib/apt
 
 #
 # Declare environment variables that the platform will use to communicate with
 # the image at runtime
 #
-ENV TASK_DESCRIPTION=null ENV=null API_TOKEN=null LOGFILE_SIGNED_URL=null OS=null
+ENV TASK_DESCRIPTION=null JOB_ID=null API_TOKEN=null API_BASE_URL=null OS=null LOGFILE_SIGNED_URL=null
 
 # Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
 
 # Setup entrypoint
+COPY main.bash /engine/main.bash
 COPY main.py /engine/main.py
-COPY runner.sh /engine/runner.sh
-RUN chmod +x /engine/main.py \
-  && mkdir -p /var/log \
-  && chmod +x /engine/runner.sh
-
+RUN mkdir -p /var/log \
+    && chmod +x /engine/main.bash \
+    && chmod +x /engine/main.py
 WORKDIR /engine
-ENTRYPOINT ["bash", "runner.sh"]
+ENTRYPOINT ["bash", "main.bash"]
 ```
 
 You can build your image from the above `Dockerfile` by running:
