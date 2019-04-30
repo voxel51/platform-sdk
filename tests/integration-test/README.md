@@ -48,25 +48,45 @@ That's it! Running `npm start` will display helpful error messages
 if variables are not set correctly or, if they are set, will
 spin up the test server and output the correct docker run command.
 
-The three environment variables that require setting are:
+If you are more comfortable using bash scripts, a number of "runner"
+scripts are provided:
 
-- TEST_DOCKER_IMAGE - the docker image to test
-- TEST_INPUT_FILE - the test input file (multiple input support
+- `run.sh` - main script with no extra debug logging
+- `debug.sh` - main debug script with all debug logging turned on
+- `debug-setup.sh` - debug script with only setup debug logging turned on
+- `debug-server.sh` - debug script with only server debug logging turned on
+
+The three command line variables that require setting are:
+
+- analytic-image - the docker image to test
+- input-file - the test input file (multiple input support
 in development).
-- TEST_ANALYTIC-JSON - the analytic JSON file for the test docker image
+- analytic-json - the analytic JSON file for the test docker image
+
+All command line variables must be used in this form:
+`--analytic-image=<my-image-name>`. Not using this format will cause the
+scrip to fail.
 
 
 ## Executing
 
-To execute the test suite, run `npm start`. Then copy and paste
-the output `docker run` command in another terminal/shell. Once the
-docker image finishes (either error or success), return to the
+Below is an example of starting the test suite. This will output a `docker run`
+command that you must then copy and paste in another terminal/shell.
+Once the docker image finishes (either error or success), return to the
 server shell and kill it (`Ctrl-C`). A simple JSON report will
 provide information on server and docker interactions that
 were registered during the test.
 
 > NOTE: Restart a new server instance for each test!
 
+```shell
+# bash run.sh or ./run.sh are supported
+./run.sh --analytic-image=<my-docker-image> \
+  --analytic-json=<absolute-path-to-analytic-json-file> \
+  --input-file=<absolute-path-to-input-test-file>
+
+# then copy and paste the run command in another shell
+```
 
 ## Cleanup
 
@@ -78,6 +98,18 @@ npm run clean # yarn run clean
 ```
 
 Cleanup of Docker containers/images is left to the developer.
+
+
+## Docker Entrypoint Recommendation
+
+If following the `platform-sdk` recommendations on using the `main.bash`
+entrypoint wrapper, running that image locally will result in no live logs
+posted, as `stdout` and `stderr` are both piped to the logfile. This can
+be undesirable during local testing, so consider using a simple entrypoint,
+like `ENTRYPOINT ["python", "main.py"]`, so that debugging logs are readily
+available for local tests! The entrypoint wrapper version can be quickly
+built after testing and the wrapped version is *strongly* recommended
+when you are ready to register your analytic in the Platform system!
 
 
 ## Copyright
