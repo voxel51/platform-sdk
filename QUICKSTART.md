@@ -20,7 +20,6 @@ that you:
 
 - install the Community Edition (CE) on your machine by following the simple
 instructions at https://docs.docker.com/install
-
 - read the Docker orientation guide at https://docs.docker.com/get-started to
 get familar with the concepts
 
@@ -28,8 +27,9 @@ get familar with the concepts
 ## Analytic executable
 
 The following code provides an annotated example of a generic Python executable
-that acts as the main entrypoint for an analytic Docker image.
-This executable that uses the Platform SDK to:
+`main.py` that acts as the main entrypoint for an analytic Docker image. It
+uses the Platform SDK to:
+
  - parse the task description provided to the image at runtime
  - download the inputs and parameters for the task
  - report the necessary metadata to the platform
@@ -258,12 +258,11 @@ Docker image.
 
 The script simply executes the main executable from the previous section, pipes
 its `stdout` and `stderr` to disk, and, if the executable exits with a non-zero
-status code, will upload the logfile to the platform and mark the job as
-`FAILED`.
+status code, uploads the logfile to the platform and marks the job as `FAILED`.
 
 This extra layer of protection is important to catch and appropriately report
-errors that prevent the Platform SDK loading. E.g., an `import` error caused
-from incomplete installation instructions in the `Dockerfile`.
+errors that prevent the Platform SDK from loading (e.g., an `import` error
+caused from buggy installation instructions in the `Dockerfile`).
 
 ```shell
 #!/bin/bash
@@ -306,10 +305,8 @@ fi
 
 ## Docker build
 
-This section assumes that you have populated the template in the
-[Analytic executable](#analytic-executable) section and the entrypoint script
-in the [Docker entrypoint](#docker-entrypoint) section to run your custom
-analytic.
+This section assumes that you have populated the analytic executable and
+entrypoint scripts from the previous sections to run your custom analytic.
 
 The snippet below defines a `Dockerfile` that installs the Platform SDK and
 its dependencies in a GPU-enabled Docker image that runs the `main.bash` and
@@ -404,7 +401,7 @@ git submodule update
 #
 
 # Build image
-docker build -t "<analytic>-<version>" .
+docker build -t "<your-image-name>" .
 
 # Cleanup
 rm -rf platform-sdk
@@ -418,11 +415,8 @@ it as a `.tar.gz` file so that you can upload it to the Voxel51 Platform.
 To do so, simply execute a command like:
 
 ```shell
-docker save <image> | gzip -c > <image>.tar.gz
+docker save <your-image-name> | gzip -c > <your-image-name>.tar.gz
 ```
-
-where, if you built your image as described in the previous section,
-`<image>=<analytic>-<version>`.
 
 Finally, follow the instructions in the Analytic Deployment section of the
 [README](README.md) to publish your analytic to the platform.
