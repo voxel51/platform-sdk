@@ -23,9 +23,8 @@ const server = require('./server.js');
     debug('Validating required environment variables.');
     const cliArgs = await parseCLIArgs();
     debug('Parsed command-line arguments are:', cliArgs);
-    process.exit(0);
 
-    GIVEN_INPUT_FILE = cliArgs.['input-file'];
+    GIVEN_INPUT_FILE = cliArgs['input-file'];
     if (!GIVEN_INPUT_FILE) {
       throw new Error(`A valid absolute path to the desired input test ` +
         `file must be set via TEST_INPUT_FILE environment variable.`);
@@ -82,7 +81,7 @@ const server = require('./server.js');
         `-e API_TOKEN="${config.API_TOKEN}" ` +
         `-e OS="${process.platform}" ` +
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
-        `-e API_BASE_URL="${API_BASE_URL}" ` +
+        `-e API_BASE_URL="${config.API_BASE_URL}" ` +
         `--network="host" ${TEST_DOCKER_IMAGE}; ` +
         `echo -e "Now close the server (Ctrl-C) to finish the ` +
         `test and retrive your results!"`;

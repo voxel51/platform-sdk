@@ -26,7 +26,6 @@ const server = (function genServer() {
     failureType: null,
     writeOutput: false,
     reportMetadata: false,
-    reportTransactionUnits: false,
   };
 
   const getQueryFilename = (qp) => qp.split('/').pop();
@@ -44,12 +43,6 @@ const server = (function genServer() {
       regex: new RegExp('\\/v1\\/jobs\\/.*\\/metadata'),
       methods: ['POST'],
       handler: reportJobMetadata,
-    },
-    {
-      name: 'job transaction',
-      regex: new RegExp('\\/v1\\/jobs\\/.*\\/transaction'),
-      methods: ['PUT'],
-      handler: reportJobTransaction,
     },
     {
       name: 'get task json',
@@ -106,9 +99,9 @@ const server = (function genServer() {
       const socket = server.listen(config.PORT, 'localhost', () => {
         console.log(`Server is now listening on port ${config.PORT}.`);
       });
-      socket.on('close', () => {
+      socket.on('close', async () => {
         console.log('Server is closing.\n');
-        console.log('The following events were logged:\n\n', eventList);
+        await generateOutputReport();
       });
       return resolve(socket);
     });
@@ -215,23 +208,6 @@ const server = (function genServer() {
       return {
         code: 400,
         body: {code: 400, message: 'All three job metadata fields should be valid numbers.'},
-      };
-    }
-    return {
-      code: 204,
-      body: {},
-    };
-  }
-
-  async function reportJobTransaction(req, res) {
-    debug('report job transaction units handler reached.');
-    await markEvent('reportTransactionUnits', true);
-    const body = await readRequestBody(req);
-    debug('The parsed request body is:', body);
-    if (!existsAndNumber(body.transaction_units)) {
-      return {
-        code: 400,
-        body: {code: 400, message: 'Transaction units must be a valid number.'},
       };
     }
     return {
@@ -404,6 +380,66 @@ const server = (function genServer() {
       debug('The constructed body', bodyShell);
       return resolve(bodyShell);
     });
+  }
+
+  function generateOutputReport() {
+    return new Promise(function(resolve, reject) {
+      console.log('\n----- Test report -----\n');
+      reportAssertion('Check for task JSON retrieval.',
+        () => eventList.getTaskJSON,
+        'Task JSON not retrieved.',
+        'Use SDK function task.<fill-in> to retrieve the task JSON.');
+      reportAssertion('Check for posting RUNNING state.',
+        () => eventList.running,
+        'RUNNING state not posted.',
+        'Use SDK function task.<fill-in> to post the state. Must be ' +
+        'done PRIOR to running custom analytic logic!');
+      reportAssertion('Check for input file retrieval.',
+        () => eventList.getInputFile,
+        'Input not retrieved.',
+        'Use SDK function task.<fill-in> to retrieve input file(s).');
+      reportAssertion('Check for job metadata report.',
+        () => eventList.reportMetadata,
+        'Job metadata not reported.',
+        'Use SDK function task.<fill-in> to report job metadata. ' +
+        'Failure to report job metadata violates terms of service agreement.');
+      reportAssertion('Check for write of status JSON file.',
+        () => eventList.writeStatus && eventList.numStatusWrites > 0,
+        'Status file not written.',
+        'Use SDK function task.<fill-in> to write status JSON file.');
+      reportAssertion('Check for write of logfile.',
+        () => eventList.writeLogfile && eventList.numLogfileWrites > 0,
+        'Logfile not written.',
+        'Use SDK function task.<fill-in> to write the logfile.');
+      reportAssertion('Check for only one of COMPLETE or FAILED state updates.',
+        () => !(eventList.complete && eventList.failed),
+        'Both COMPLETE and FAILED states written.',
+        'Only one of COMPLETE or FAILED should be written. This ' +
+        'suggests either an analytic error or invalid use of the SDK.');
+      if (eventList.failed) {
+        reportAssertion('Check that if failed, failure type provided.',
+          () => (eventList.failureType !== null && typeof eventList.failureType === 'string'),
+          'Valid failure type not provided.',
+          'Use SDK function task.<fill-in> to write failure state and use ' +
+          '<fill-in> parameter of supported failure types.');
+      }
+      reportAssertion('Check for output write state.',
+        () => eventList.writeOutput,
+        'Output file not written.',
+        'Use SDK function task.<fill-in> to write the output file.');
+      console.log('\n----- End of report -----\n');
+    });
+
+    function reportAssertion(checkMessage, pred, errMessage, instructionCall) {
+      try {
+        console.log(checkMessage);
+        assert.ok(pred(), errMessage);
+        console.log('\x1b[32mCheck passed!\x1b[39m\n');
+      } catch (error) {
+        console.error('\x1b[31mCheck failed.\x1b[39m\n');
+        console.error(instructionCall);
+      }
+    }
   }
 }());
 
