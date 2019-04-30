@@ -4,26 +4,49 @@ This guide provides a end-to-end example of building and deploying an analytic
 to the Voxel51 Platform.
 
 
-## Implementing the analytic
+## Overview
 
-This directory contains the following files, which define a `platform-demo`
-analytic that is ready for deployment to the Voxel51 Platform. The analytic
-is defined in the `main.py` file, and it simply downloads an input video and
-randomly generates a labels file that contains a single randomly
+This directory defines a `platform-demo` analytic that is ready for deployment
+to the Voxel51 Platform. The actual functionality of the analytic is defined in
+the `main.py` file; it simply downloads an input video and randomly generates a
+labels file that contains a single randomly oriented object detection.
 
-- `main.bash`: the main Docker entrypoint script. The only thing that needs to
-be customized about this script is the name of the main executable for the
-analytic (in this case, `main.py`)
+The following files constitute the definition of the analytic:
 
-- `main.py`: the main executable for the analytic. In this demo, the entire
-analytic is contained in this single file
+- `main.bash`: the main Docker entrypoint script, which calls `main.py` and
+gracefully handles any uncaught errors that are raised therein
+
+- `main.py`: the main executable for the analytic. In this simple demo, the
+entire analytic is contained in this single file
 
 - `analytic.json`: the analytic JSON file for the analytic, which declares
-the inputs and outputs
+the inputs and outputs that the analytic exposes
 
-- `Dockerfile`: the Dockerfile that specifies how to build
+- `Dockerfile`: the Dockerfile that specifies how to build an image containing
+the analytic and its dependencies
 
-You can build your image from the above `Dockerfile` by running:
+
+## Setup
+
+Download a short test video to work with:
+
+```shell
+mkdir -p data
+wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg7CtlQPiVkJJKmi662nfraCF'
+```
+
+Install the [Python client library](https://github.com/voxel51/api-py) for the
+Voxel51 Platform:
+
+```shell
+# Clone the repository
+git clone https://github.com/voxel51/api-py
+cd api-py
+
+# Install the library
+pip install -r requirements.txt
+pip install -e .
+```
 
 
 ## Building the image
@@ -49,15 +72,22 @@ rm -rf platform-sdk
 ## Testing locally
 
 Before deploying the analytic to the platform, it is helpful to test your
-Docker images locally to ensure that they are functioning properly. You can
-use the included local test server to test the image that you built in the
-previous step by executing:
+Docker images locally to ensure that they are functioning properly. Follow
+the simple instructions below to use the SDK's local test server to run an job
+with the image that you built:
 
 ```shell
-bash start_server.bash \
+# Launch a test server
+bash ../local-tests/start_server.bash \
     --analytic-json ./analytic.json \
-    --analytic-image platform-demo
+    --analytic-image platform-demo \
+    --inputs video=data/test.mp4
+
+# Open a new terminal and copy-paste the command printed by the server to
+# execute a job with your image
 ```
+
+@todo complete local testing instructions
 
 
 ## Deploying to the platform
@@ -70,7 +100,7 @@ docker save platform-demo | gzip -c > platform-demo.tar.gz
 ```
 
 The following code snippet publishes the analytic to the platform using the
-[Python client library](https://github.com/voxel51/api-py):
+Python client library:
 
 ```py
 from voxe51.api import API
@@ -82,6 +112,39 @@ api = API()
 api.upload_analytic(analytic_json_path)
 api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
 ```
+
+You can also upload analytics by logging into your
+[Platform Console account](https://console.voxel51.com).
+
+
+## Using the analytic on the platform
+
+After the analytic has been processed and is ready for use (check the Platform
+Console to verify), you can run a test platform job on the `data/test.mp4`
+video by executing the following code with the Python client library:
+
+```py
+from voxel51.api import API
+from voxel51.jobs import JobRequest
+
+api = API()
+
+# Upload data
+data = api.upload_data("data/test.mp4")
+data_id = data["id"]
+
+# Upload and start job
+job_request = JobRequest("<your-username>/platform-demo")
+job_request.set_input("video", data_id=data_id)
+job = api.upload_job_request(job_request, "sdk-test", auto_start=True)
+job_id = job["id"]
+
+# Wait until job completes, then download output
+api.wait_until_job_completes(job_id)
+api.download_job_output(job_id, "out/labels.json")
+```
+
+In the above, replace `<your-username>` with your username on the platform.
 
 
 ## Copyright
