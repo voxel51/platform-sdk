@@ -6,8 +6,8 @@ analytic for deployment to the Voxel51 Platform in a Docker image.
 
 See the
 [examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
-for a concrete pre-defined demo analytic that you can build and deploy to the
-platform to get comfortable with the workflow.
+for a pre-defined test analytic that you can build and deploy to the platform
+to get comfortable with the workflow.
 
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 

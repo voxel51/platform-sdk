@@ -29,6 +29,9 @@ See the [Quickstart Guide](QUICKSTART.md) for step-by-step instructions on
 using this SDK to wrap your custom analytic for deployment to the Voxel51
 Platform.
 
+See the [Example Analytic](EXAMPLES) directory for an end-to-end
+example of building and deploying a test analytic to the platform.
+
 
 ## Overview
 
@@ -65,7 +68,7 @@ information about the Platform API, refer to the
 [API Documentation](https://voxel51.com/docs/api).
 
 
-## Analytic Interface
+## Analytic interface
 
 All analytics deployed to the platform must be implemented as Docker containers
 that support the platform's interface as described below.
@@ -170,7 +173,7 @@ See the [Quickstart Guide](QUICKSTART.md) for more details about the interface
 provided by the Platform SDK.
 
 
-## Analytic Deployment
+## Analytic deployment
 
 You can deploy new custom analytics or new versions of your existing analytics
 at any time via the [API](https://voxel51.com/docs/api) or the
