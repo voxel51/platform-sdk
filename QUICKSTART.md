@@ -411,17 +411,26 @@ rm -rf platform-sdk
 ```
 
 
+## Local testing
+
+After you have built the Docker image for your custom analytic, you can use
+the local test server in the
+[tests folder](https://github.com/voxel51/platform-sdk/tree/develop/tests)
+to verify that your image is functioning properly before deploying it to the
+Voxel51 Platform. See the README in that folder for detailed instructions.
+
+
 ## Docker deployment
 
-After you have built the Docker image for your custom analytic, you must save
-it as a `.tar.gz` file so that you can upload it to the Voxel51 Platform.
-To do so, simply execute a command like:
+Once your Docker image is ready for deployment, you must save it as a `.tar.gz`
+file so that you can upload it to the Voxel51 Platform. To do so, simply
+execute a command like:
 
 ```shell
 docker save <your-image-name> | gzip -c > <your-image-name>.tar.gz
 ```
 
-Finally, follow the instructions in the Analytic Deployment section of the
+Finally, follow the instructions in the `Analytic deployment` section of the
 [README](README.md) to publish your analytic to the platform.
 
 
