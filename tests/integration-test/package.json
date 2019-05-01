@@ -4,8 +4,8 @@
   "description": "Server and integration test suite to permit analytic developers local testing of images prior to platform upload.",
   "main": "./server/index.js",
   "repository": "https://github.com/voxel51/platform-sdk",
-  "author": "Voxel51",
-  "license": "MIT",
+  "author": "Voxel51, Inc.",
+  "license": "BSD-4-Clause",
   "private": true,
   "dependencies": {
     "joi": "^14.3.1",

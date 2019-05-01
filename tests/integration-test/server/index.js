@@ -14,7 +14,8 @@ const server = require('./server.js');
   // declare global consts
   var GIVEN_INPUT_FILE,
     TEST_DOCKER_IMAGE,
-    GIVEN_ANALYTIC_FILE;
+    GIVEN_ANALYTIC_FILE,
+    COMPUTE_TYPE;
   const JOB_ID = uuid4();
   const config = require('./config.js');
 
@@ -41,6 +42,8 @@ const server = require('./server.js');
       throw new Error(`A valid absolute path to the desired analytic JSON ` +
         `test file must be set via TEST_ANALYTIC_FILE environment variable.`);
     }
+
+    COMPUTE_TYPE = cliArgs['compute-type'] || 'cpu';
 
     debug('Environment variable validation complete.');
 
@@ -72,12 +75,11 @@ const server = require('./server.js');
     return new Promise(function(resolve, reject) {
       debug('Generating the docker run command.');
       var cmd = 'docker run ';
-      if (process.env.TEST_USE_GPU) {
+      if (COMPUTE_TYPE === 'gpu') {
         cmd += '--runtime=nvidia ';
       }
       cmd += `--name ${JOB_ID} ` +
         `-e TASK_DESCRIPTION="${taskURL}" ` +
-        `-e ENV="LOCAL" ` +
         `-e API_TOKEN="${config.API_TOKEN}" ` +
         `-e OS="${process.platform}" ` +
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +

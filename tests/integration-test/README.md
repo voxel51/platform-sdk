@@ -67,6 +67,10 @@ All command line variables must be used in this form:
 `--analytic-image=<my-image-name>`. Not using this format will cause the
 scrip to fail.
 
+The test suite also supports optionally using `nvidia-docker2` runtime
+via the optional `--compute-type=gpu` command line argument. This
+requires both a working GPU and Docker setup for the required runtime support.
+
 
 ## Executing
 
