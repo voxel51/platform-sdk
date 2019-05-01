@@ -35,8 +35,9 @@ mkdir -p data
 wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg7CtlQPiVkJJKmi662nfraCF'
 ```
 
-Install the [Python client library](https://github.com/voxel51/api-py) for the
-Voxel51 Platform:
+If you would like to programmatically test the demo analytic once you have
+uploaded it to the platform, you will also need to install the
+[Python client library](https://github.com/voxel51/api-py):
 
 ```shell
 # Clone the repository
@@ -77,17 +78,24 @@ the simple instructions below to use the SDK's local test server to run an job
 with the image that you built:
 
 ```shell
-# Launch a test server
-bash ../local-tests/start_server.bash \
-    --analytic-json ./analytic.json \
-    --analytic-image platform-demo \
-    --inputs video=data/test.mp4
-
-# Open a new terminal and copy-paste the command printed by the server to
-# execute a job with your image
+# Launch test server
+bash ../tests/integration-tests/run.bash \
+    --analytic-json="./analytic.json" \
+    --analytic-image="platform-demo" \
+    --inputs="video=data/test.mp4" \
+    --use-gpu
 ```
 
-@todo complete local testing instructions
+The server will print a `docker run` command that you should execute in
+another terminal (from the same working directory). This will locally execute
+the job that you specified, using your test server as a proxy for the platform.
+
+After the Docker image exits, press `Ctrl-C` in the terminal session running
+the server. This will generate a report summarizing the function of your
+analytic and highlight any issues identified with your analytic.
+
+After your analytic image passes local tests, it is ready for deployment to
+the Voxel51 Platform!
 
 
 ## Deploying to the platform
