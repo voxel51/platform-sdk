@@ -9,4 +9,5 @@ module.exports = {
   API_TOKEN: 'my-very-special-key12345',
   API_BASE_URL: `http://localhost:${PORT}/v1`,
   PORT,
+  TEST_REPORT_PATH: join(__dirname, './storage/report.txt'),
 };

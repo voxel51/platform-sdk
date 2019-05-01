@@ -382,8 +382,9 @@ const server = (function genServer() {
   }
 
   function generateOutputReport() {
-    return new Promise(function(resolve, reject) {
-      console.log('\n----- Test report -----\n');
+    var report = '';
+    return new Promise(async function(resolve, reject) {
+      log('\n----- Test report -----\n');
       reportAssertion('Check for task JSON retrieval.',
         () => eventList.getTaskJSON,
         'Task JSON not retrieved.',
@@ -426,18 +427,38 @@ const server = (function genServer() {
         () => eventList.writeOutput,
         'Output file not written.',
         'Use SDK function task.upload_output() to write the output file.');
-      console.log('\n----- End of report -----\n');
+      log('\n----- End of report -----\n');
+      await writeReport();
+      return resolve();
     });
 
     function reportAssertion(checkMessage, pred, errMessage, instructionCall) {
       try {
-        console.log(checkMessage);
+        log(checkMessage);
         assert.ok(pred(), errMessage);
-        console.log('\x1b[32mCheck passed!\x1b[39m\n');
+        log('\x1b[32mCheck passed!\x1b[39m\n');
       } catch (error) {
-        console.error('\x1b[31mCheck failed.\x1b[39m\n');
-        console.error(instructionCall);
+        led.\x1b[39m\n');
+        ll);
       }
+    }
+
+    function log(msg, isError=false) {
+      report += msg;
+      if (isError) {
+        console.error(msg);
+      } else {
+        console.log(msg);
+      }
+    }
+
+    function writeReport() {
+      return new Promise(function(resolve, reject) {
+        fs.writeFile(config.TEST_REPORT_PATH, report, (err) => {
+          if (err) return reject(err);
+          return resolve();
+        });
+      });
     }
   }
 }());
