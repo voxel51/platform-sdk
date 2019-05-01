@@ -12,15 +12,39 @@ Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel5
 To install the library, first clone it:
 
 ```shell
+# Clone the repository
 git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
+
+# Run the install script
+bash install.bash
+
+cd ..
 ```
 
-and then run the install script:
+Next, if you have not already, go to
+[https://console.voxel51.com](https://console.voxel51.com) and create a
+Platform Account.
+
+If you would like to programmatically upload your analytics and test them via
+the Platform API, you also need to install the
+[Python client library](https://github.com/voxel51/api-py):
 
 ```shell
-bash install.bash
+# Clone the repository
+git clone https://github.com/voxel51/api-py
+cd api-py
+
+# Install the library
+pip install -r requirements.txt
+pip install -e .
+
+cd ..
 ```
+
+After installing the client library, follow the instructions at
+[https://voxel51.com/docs/api/#api-documentation](https://voxel51.com/docs/api/#api-documentation)
+to download and activiate an API token to enable use of the client library.
 
 
 ## Quickstart
