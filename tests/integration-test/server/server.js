@@ -1,6 +1,5 @@
 'use strict';
 
-const Busboy = require('busboy');
 const debug = require('debug')('sdk-integration-server');
 const fs = require('fs');
 const path = require('path');

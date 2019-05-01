@@ -1,6 +1,6 @@
 {
   "name": "voxel51-platform-sdk-integration-test",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Server and integration test suite to permit analytic developers local testing of images prior to platform upload.",
   "main": "./server/index.js",
   "repository": "https://github.com/voxel51/platform-sdk",
@@ -8,14 +8,13 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "busboy": "^0.3.1",
     "joi": "^14.3.1",
     "ramda": "^0.26.1",
     "uuid": "^3.3.2"
   },
   "scripts": {
     "start": "node server/index.js",
-    "clean": "rm ./server/storage/*",
+    "clean": "node server/cleanup.js",
     "debug": "DEBUG=sdk-integration,sdk-integration-server node server/index.js",
     "debug-server": "DEBUG=sdk-integration-server node server/index.js",
     "debug-setup": "DEBUG=sdk-integration node server/index.js"
