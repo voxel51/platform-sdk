@@ -1,4 +1,4 @@
-# Platform Demo Analytic
+# Example Analytic
 
 This guide provides a end-to-end example of building and deploying an analytic
 to the Voxel51 Platform.
@@ -6,10 +6,10 @@ to the Voxel51 Platform.
 
 ## Overview
 
-This directory defines a `platform-demo` analytic that is ready for deployment
-to the Voxel51 Platform. The actual functionality of the analytic is defined in
-the `main.py` file; it simply downloads an input video and randomly generates a
-labels file that contains a single randomly oriented object detection.
+The `examples/` directory of this repository defines a `platform-demo` analytic
+that is ready for deployment to the Voxel51 Platform. The actual functionality
+of the analytic is simple: it downloads an input video and randomly generates
+a `VideoLabels` file that contains a single randomly oriented object detection.
 
 The following files constitute the definition of the analytic:
 
@@ -35,19 +35,9 @@ mkdir -p data
 wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg7CtlQPiVkJJKmi662nfraCF'
 ```
 
-If you would like to programmatically test the demo analytic once you have
-uploaded it to the platform, you will also need to install the
-[Python client library](https://github.com/voxel51/api-py):
-
-```shell
-# Clone the repository
-git clone https://github.com/voxel51/api-py
-cd api-py
-
-# Install the library
-pip install -r requirements.txt
-pip install -e .
-```
+In addition, make sure that you followed the installation instructions in the
+[README](../README.md) to get setup with a Platform Account, the Python client,
+and an API token.
 
 
 ## Building the image
