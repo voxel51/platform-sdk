@@ -383,6 +383,8 @@ const server = (function genServer() {
 
   function generateOutputReport() {
     var report = '';
+    var expectedCheckPasses = 8;
+    var checksPassed = 0;
     return new Promise(async function(resolve, reject) {
       log('\n----- Test report -----\n');
       reportAssertion('Check for task JSON retrieval.',
@@ -417,6 +419,7 @@ const server = (function genServer() {
         'Only one of COMPLETE or FAILED should be written. This ' +
         'suggests either an analytic error or invalid use of the SDK.');
       if (eventList.failed) {
+        expectedCheckPasses += 1;
         reportAssertion('Check that if failed, failure type provided.',
           () => (eventList.failureType !== null && typeof eventList.failureType === 'string'),
           'Valid failure type not provided.',
@@ -427,6 +430,11 @@ const server = (function genServer() {
         () => eventList.writeOutput,
         'Output file not written.',
         'Use SDK function task.upload_output() to write the output file.');
+      log('Number of checks passed:');
+      log(`${checksPassed} / ${expectedCheckPasses} = ${checksPassed/expectedCheckPasses * 100}%\n`);
+      if (checksPassed === expectedCheckPasses) {
+        log('All checks passed!');
+      }
       log('\n----- End of report -----\n');
       await writeReport();
       return resolve();
@@ -436,10 +444,11 @@ const server = (function genServer() {
       try {
         log(checkMessage);
         assert.ok(pred(), errMessage);
-        log('\x1b[32mCheck passed!\x1b[39m\n');
+        log('\x1b[32m[\u2713] Check passed!\x1b[39m\n');
+        checksPassed += 1;
       } catch (error) {
-        led.\x1b[39m\n');
-        ll);
+        log('\x1b[31m[x] Check failed.\x1b[39m\n', true);
+        log(instructionCall, true);
       }
     }
 
