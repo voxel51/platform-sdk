@@ -12,9 +12,9 @@ const server = require('./server.js');
 
 (async function main() {
   // declare global consts
-  var GIVEN_INPUT_FILE,
-    TEST_DOCKER_IMAGE,
+  var TEST_DOCKER_IMAGE,
     GIVEN_ANALYTIC_FILE,
+    GIVEN_INPUTS,
     COMPUTE_TYPE;
   const JOB_ID = uuid4();
   const config = require('./config.js');
@@ -25,31 +25,39 @@ const server = require('./server.js');
     const cliArgs = await parseCLIArgs();
     debug('Parsed command-line arguments are:', cliArgs);
 
-    GIVEN_INPUT_FILE = cliArgs['input-file'];
-    if (!GIVEN_INPUT_FILE) {
+    if (cliArgs['inputs']) {
+      GIVEN_INPUTS = cliArgs['inputs'].split(',');
+    } else {
+      GIVEN_INPUTS = cliArgs['input-file'];
+    }
+    if (!GIVEN_INPUTS) {
       throw new Error(`A valid absolute path to the desired input test ` +
-        `file must be set via TEST_INPUT_FILE environment variable.`);
+        `file OR a comma-separated list of absolute paths ` +
+        `must be set via --inputs or --input-file command line arguments.`);
     }
 
     TEST_DOCKER_IMAGE = cliArgs['analytic-image'];
     if (!TEST_DOCKER_IMAGE) {
       throw new Error(`A valid, local docker image must be set via ` +
-        `TEST_DOCKER_IMAGE environment variable.`);
+        `--analytic-image command line argument.`);
     }
 
     GIVEN_ANALYTIC_FILE = cliArgs['analytic-json'];
     if (!GIVEN_ANALYTIC_FILE) {
       throw new Error(`A valid absolute path to the desired analytic JSON ` +
-        `test file must be set via TEST_ANALYTIC_FILE environment variable.`);
+        `test file must be set via --analytic-json command line argument.`);
     }
 
     COMPUTE_TYPE = cliArgs['compute-type'] || 'cpu';
 
     debug('Environment variable validation complete.');
 
-    const analyticFields = await parseAndVerifyAnalyticJSON();
+    const parsedInputs = await parseInputs(GIVEN_INPUTS);
     // TODO add support for parameters?
-    const {taskURL, task} = await generateTaskJSON(analyticFields);
+    // const parsedParameters = await parseParameters(cliArgs);
+    const analyticFields = await parseAndVerifyAnalyticJSON();
+    const {taskURL, task} = await generateTaskJSON(analyticFields,
+      parsedInputs, {});
     debug('Test setup complete.');
 
     debug('Spinning up mock server.');
@@ -92,22 +100,14 @@ const server = require('./server.js');
     });
   }
 
-  async function generateTaskJSON(analyticFields, params={}) {
+  async function generateTaskJSON(analyticFields, inputs, parameters={}) {
     debug('Generating task JSON file using analytic fields:', analyticFields);
-    const inputFilename = path.basename(GIVEN_INPUT_FILE);
-    const inputFilepath = path.join(config.STORAGE_BASE_DIR, inputFilename);
-    debug(`Copying analytic file to new location, ${inputFilepath}.`);
-    await pExec(`cp ${GIVEN_INPUT_FILE} ${inputFilepath}`);
     const task = {
       analytic: analyticFields.name,
       version: analyticFields.version,
       job_id: JOB_ID,
-      inputs: {
-        video: {
-          'signed-url': await generateSignedUrl(inputFilename, 'inputs'),
-        },
-      },
-      parameters: params,
+      inputs,
+      parameters,
       output: {
         'signed-url': await generateSignedUrl(analyticFields.output, 'output'),
       },
@@ -267,5 +267,29 @@ const server = require('./server.js');
       });
       return resolve(argsObj);
     });
+  }
+
+  async function parseInputs(inputs) {
+    var parsedInputs = {};
+    if (Array.isArray(inputs)) {
+      for (const inp of inputs) {
+        const [key, path] = inputs.split(':');
+        const inputFilename = await copyInputToStorage(path);
+        parsedInputs[key] = {'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
+      }
+    } else {
+      // single input
+      const [key, path] = inputs.split(':');
+      const inputFilename = await copyInputToStorage(path);
+      parsedInputs[key] = {'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
+    }
+  }
+
+  async function copyInputToStorage(fullPath) {
+    const inputFilename = path.basename(fullPath);
+    const inputFilepath = path.join(config.STORAGE_BASE_DIR, inputFilename);
+    debug(`Copying input file to new location, ${inputFilepath}.`);
+    await pExec(`cp ${path} ${inputFilepath}`);
+    return inputFilename;
   }
 }());
