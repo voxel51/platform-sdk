@@ -59,13 +59,31 @@ scripts are provided:
 The three command line variables that require setting are:
 
 - analytic-image - the docker image to test
-- input-file - the test input file (multiple input support
-in development).
+- input-file - the test input file
 - analytic-json - the analytic JSON file for the test docker image
 
-All command line variables must be used in this form:
-`--analytic-image=<my-image-name>`. Not using this format will cause the
-scrip to fail.
+Multiple inputs are supported via the `--inputs` flag. This argument
+will supercede any setting of `--input-file`. `--inputs` must be a
+comma-separated list formatted like `--input-file`, so:
+
+```
+# single input
+--input-file=<key>:<absolute-path-to-file>
+
+# multiple inputs
+--inputs=<key1>:<path1>,<key2>:<path2>,...
+```
+
+> Note: Key is referring to the input's property name, e.g. `video`.
+
+Setting non-default parameters is also supported via the `--params` flag.
+The value passed to the `--params` flag MUST be a JSON parseable value. This
+permits proper setting of value types. The example below shows a parameter
+flag setting of the four main types - string, number, array, and object.
+
+```
+--params='{"number": 42.0, "array": [1,2,3,4], "string": "foobarbaz", "object": {"a": 12}}'
+```
 
 The test suite also supports optionally using `nvidia-docker2` runtime
 via the optional `--compute-type=gpu` command line argument. This
@@ -84,12 +102,18 @@ were registered during the test.
 > NOTE: Restart a new server instance for each test!
 
 ```shell
-# bash run.sh or ./run.sh are supported
-./run.sh --analytic-image=<my-docker-image> \
+# bash run.bash or ./run.bash are supported
+./run.bash --analytic-image=<my-docker-image> \
   --analytic-json=<absolute-path-to-analytic-json-file> \
   --input-file=<absolute-path-to-input-test-file>
 
 # then copy and paste the run command in another shell
+
+# example with multiple inputs and setting non-default parameters
+./run.bash --analytic-image=<my-docker-image> \
+  --analytic-json=<absolute-path-to-analytic-json-file> \
+  --inputs=<key1>:<path1>,<key2>:<path2>,<key3>:<path3>,... \
+  --params='{"fps": 25, "schema": ["car", "bus", "bike"]}'
 ```
 
 ## Cleanup

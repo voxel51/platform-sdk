@@ -15,7 +15,8 @@ const server = require('./server.js');
   var TEST_DOCKER_IMAGE,
     GIVEN_ANALYTIC_FILE,
     GIVEN_INPUTS,
-    COMPUTE_TYPE;
+    COMPUTE_TYPE,
+    GIVEN_PARAMETERS;
   const JOB_ID = uuid4();
   const config = require('./config.js');
 
@@ -48,16 +49,17 @@ const server = require('./server.js');
         `test file must be set via --analytic-json command line argument.`);
     }
 
+    GIVEN_PARAMETERS = cliArgs['params'] || {};
+
     COMPUTE_TYPE = cliArgs['compute-type'] || 'cpu';
 
     debug('Environment variable validation complete.');
 
     const parsedInputs = await parseInputs(GIVEN_INPUTS);
-    // TODO add support for parameters?
-    // const parsedParameters = await parseParameters(cliArgs);
+    const parsedParameters = await parseParameters(GIVEN_PARAMETERS);
     const analyticFields = await parseAndVerifyAnalyticJSON();
     const {taskURL, task} = await generateTaskJSON(analyticFields,
-      parsedInputs, {});
+      parsedInputs, parsedParameters);
     debug('Test setup complete.');
 
     debug('Spinning up mock server.');
@@ -291,5 +293,16 @@ const server = require('./server.js');
     debug(`Copying input file to new location, ${inputFilepath}.`);
     await pExec(`cp ${path} ${inputFilepath}`);
     return inputFilename;
+  }
+
+  function parseParameters(params) {
+    return new Promise(function(resolve, reject) {
+      try {
+        const parsedParameters = JSON.parse(params);
+        return resolve(parsedParameters);
+      } catch (error) {
+        return reject(error);
+      }
+    });
   }
 }());
