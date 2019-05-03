@@ -1,60 +1,47 @@
-# Platform SDK Integration Test Suite
+# Local Analytic Testing Suite
 
-This project serves as a means for analytic developers using
-Voxel51's Platform SDK a quick, simple method for verifying that
-their built Docker images are compatible with the Voxel51 Platform
-compute interface. The suite consists of a simple HTTP server that will
-mock the expected behavior of the actual Platform when receiving
-requests from the Docker image. In addition, the suite will also provide
-a short report detailing if any necessary integration points/calls are
-missing from the current Docker image.
+This directory provides a local testing server that you can use to test your
+analytic Docker image locally on your machine to verify that it works properly
+before deploying it to the Voxel51 Platform.
+
+The test suite consists of a simple HTTP server that will mock the expected
+behavior of the Platform API when your analytic Docker communicates with it.
+When you launch the server, it provides a `docker run` command that you can
+copy and paste into another terminal to run your Docker image locally.
+When the server is killed, it will generate a report that assesses
+whether your analytic executed successfully and invoked all necessary SDK
+methods.
 
 
-## Dependencies
+## Installation
 
-The suite only requires `node` and `npm` or `yarn` to be available. Voxel51
-recommends using [nvm](https://github.com/creationix/nvm)
-to install `node` and `nvm`. `yarn` can be installed by various methods, but
-once `npm` is installed it can easily be added via `npm install -g yarn`. Be
-sure to use the above link to grab the latest verion of `nvm`! For additional
-`yarn` installation methods, see
-[here](https://yarnpkg.com/en/docs/install#debian-stable).
+The test suite requires [Node.js](https://nodejs.org) and
+[npm](https://www.npmjs.com). We recommend that you use
+[nvm](https://github.com/creationix/nvm) to install them, if necessary.
 
 ```shell
-# example installation of nvm, node, npm, and yarn
-# with curl
+# Install node and npm via nvm
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
 source ~/.bashrc
-nvm install node # version can be specified here if desired
-node -v
-npm -v
-
-# install yarn via npm or other method (optional)
-npm install -g yarn
+nvm install node
 ```
 
-
-## Setup
-
-To initially setup the test suite, run:
+To setup the test suite, simply run the following command from the `tests/`
+directory:
 
 ```shell
-# from test suite root directory
-npm install # yarn
+npm install
 ```
 
 
-That's it! Running `npm start` will display helpful error messages
-if variables are not set correctly or, if they are set, will
-spin up the test server and output the correct docker run command.
+## Quickstart
+
+The `run.bash` script
 
 If you are more comfortable using bash scripts, a number of "runner"
 scripts are provided:
 
 - `run.sh` - main script with no extra debug logging
-- `debug.sh` - main debug script with all debug logging turned on
-- `debug-setup.sh` - debug script with only setup debug logging turned on
-- `debug-server.sh` - debug script with only server debug logging turned on
 
 The three command line variables that require setting are:
 
@@ -140,9 +127,12 @@ built after testing and the wrapped version is *strongly* recommended
 when you are ready to register your analytic in the Platform system!
 
 
+
+
 ## Copyright
 
 Copyright 2017-2019, Voxel51, Inc.<br>
 voxel51.com
 
-David Hodgson, david@voxel51.com
+David Hodgson, david@voxel51.com<br>
+Brian Moore, brian@voxel51.com
