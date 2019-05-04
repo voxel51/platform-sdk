@@ -69,11 +69,11 @@ with the image that you built:
 
 ```shell
 # Launch test server
-bash ../tests/integration-tests/run.bash \
-    --analytic-json="./analytic.json" \
-    --analytic-image="platform-demo" \
-    --inputs="video=data/test.mp4" \
-    --use-gpu
+bash ../tests/run.bash \
+    --analytic-image platform-demo \
+    --analytic-json ./analytic.json \
+    --inputs video=data/test.mp4 \
+    --compute-type cpu
 ```
 
 The server will print a `docker run` command that you should execute in
