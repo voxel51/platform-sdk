@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
+FROM ubuntu:16.04
 
 # Install `platform-sdk` and its dependencies
 COPY platform-sdk/ /engine/platform-sdk/
@@ -30,7 +30,7 @@ RUN apt-get update \
     && python -m pip --no-cache-dir install -e /engine/platform-sdk/. \
     && python -m pip --no-cache-dir install -e /engine/platform-sdk/eta/. \
     && python -m pip --no-cache-dir install opencv-python-headless \
-    && python -m pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
+    && python -m pip --no-cache-dir install -I tensorflow==1.12.0 \
     && python -m pip --no-cache-dir install --upgrade numpy==1.16.0 \
     && rm -rf /var/lib/apt
 
