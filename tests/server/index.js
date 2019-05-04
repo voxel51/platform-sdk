@@ -19,49 +19,47 @@ const schema = require('./schema.js');
 const server = require('./server.js');
 
 (async function main() {
-  // declare global consts
-  var TEST_DOCKER_IMAGE,
-    GIVEN_ANALYTIC_FILE,
-    GIVEN_INPUTS,
-    COMPUTE_TYPE,
-    GIVEN_PARAMETERS;
+  var TEST_DOCKER_IMAGE;
+  var GIVEN_ANALYTIC_FILE;
+  var GIVEN_INPUTS;
+  var COMPUTE_TYPE;
+  var GIVEN_PARAMETERS;
   const JOB_ID = uuid4();
   const config = require('./config.js');
 
   try {
     debug('Beginning setup of image test.');
-    debug('Validating required environment variables.');
+
     const cliArgs = await parseCLIArgs();
     debug('Parsed command-line arguments are:', cliArgs);
 
-    if (cliArgs['inputs']) {
-      GIVEN_INPUTS = cliArgs['inputs'].split(',');
-    } else {
-      GIVEN_INPUTS = cliArgs['input-file'];
-    }
-    if (!GIVEN_INPUTS) {
-      throw new Error(`A valid absolute path to the desired input test ` +
-        `file OR a comma-separated list of absolute paths ` +
-        `must be set via --inputs or --input-file command line arguments.`);
-    }
-
     TEST_DOCKER_IMAGE = cliArgs['analytic-image'];
     if (!TEST_DOCKER_IMAGE) {
-      throw new Error(`A valid, local docker image must be set via ` +
-        `--analytic-image command line argument.`);
+      throw new Error(
+        `The --analytic-image flag must be set to provide the name of the ` +
+        `local Docker image to test.`);
     }
 
     GIVEN_ANALYTIC_FILE = cliArgs['analytic-json'];
     if (!GIVEN_ANALYTIC_FILE) {
-      throw new Error(`A valid absolute path to the desired analytic JSON ` +
-        `test file must be set via --analytic-json command line argument.`);
+      throw new Error(
+        `The --anlytic-json flag must be set to provide the path to the ` +
+        `analytic JSON file for the test.`);
+    }
+
+    if (cliArgs['inputs']) {
+      GIVEN_INPUTS = cliArgs['inputs'].split(',');
+    } else {
+      throw new Error(
+        `The --inputs flag must be set to provide the name(s) and path(s) ` +
+        `to the desired test files.`);
     }
 
     GIVEN_PARAMETERS = cliArgs['params'] || {};
 
     COMPUTE_TYPE = cliArgs['compute-type'] || 'cpu';
 
-    debug('Environment variable validation complete.');
+    debug('Commandline arguments ingested');
 
     const parsedInputs = await parseInputs(GIVEN_INPUTS);
     const parsedParameters = await parseParameters(GIVEN_PARAMETERS);
@@ -73,10 +71,13 @@ const server = require('./server.js');
     debug('Spinning up mock server.');
     const socket = await server.spinup(task);
 
-    const dockerCmd = await generateDockerCommand(taskURL, task.logfile['signed-url']);
-    console.log('\n\nRun the following docker command to test your image now:\n\n',
-      dockerCmd, '\n\nCleanup generated files via npm run clean or ' +
-      'yarn run clean.\n\n');
+    const dockerCmd = await generateDockerCommand(
+      taskURL, task.logfile['signed-url']);
+    console.log(
+      '\n\nExecute the following command in a separate terminal to run your ' +
+      'image now:\n\n', dockerCmd, '\n\nAfter the image terminates, kill ' +
+      'the server via Ctrl + C to generate a report summarizing the test.' +
+      '\n\nTo cleanup after the test, run \'bash clean.bash\'\n\n');
 
     process.on('SIGTERM', shutdown(socket));
     process.on('SIGINT', shutdown(socket));
@@ -98,13 +99,13 @@ const server = require('./server.js');
       }
       cmd += `--name ${JOB_ID} ` +
         `-e TASK_DESCRIPTION="${taskURL}" ` +
-        `-e API_TOKEN="${config.API_TOKEN}" ` +
+        `-e API_TOKEN="xxxxxxxxxxxxxxxx" ` +
         `-e OS="${process.platform}" ` +
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
         `-e API_BASE_URL="${config.API_BASE_URL}" ` +
         `--network="host" ${TEST_DOCKER_IMAGE}; ` +
-        `echo -e "Now close the server (Ctrl-C) to finish the ` +
-        `test and retrive your results!"`;
+        `echo -e "Now kill the server (Ctrl-C) to retrieve your results!"`;
+
       debug('Docker command generation complete.');
       return resolve(cmd);
     });
