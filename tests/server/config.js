@@ -13,9 +13,8 @@ const { join } = require('path');
 const PORT = 4000;
 
 module.exports = {
-  STORAGE_BASE_DIR: join(__dirname, './storage'),
-  API_TOKEN: 'my-very-special-key12345',
-  API_BASE_URL: `http://localhost:${PORT}/v1`,
-  PORT,
-  TEST_REPORT_PATH: join(__dirname, './storage/report.txt'),
+  STORAGE_BASE_DIR: './out',
+  API_BASE_URL: `http://127.0.0.1:${PORT}/v1`,
+  PORT: PORT,
+  TEST_REPORT_PATH: './out/test-report.txt',
 };
