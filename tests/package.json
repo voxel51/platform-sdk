@@ -1,7 +1,7 @@
 {
-  "name": "voxel51-platform-sdk-integration-test",
+  "name": "@voxel51/platform-sdk-test-server",
   "version": "0.1.0",
-  "description": "Server and integration test suite to permit analytic developers local testing of images prior to platform upload.",
+  "description": "Local test server for developing analytics to deploy to the Voxel51 Platform",
   "main": "./server/index.js",
   "repository": "https://github.com/voxel51/platform-sdk",
   "author": "Voxel51, Inc.",
