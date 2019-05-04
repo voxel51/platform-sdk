@@ -2,8 +2,8 @@
     "info": {
         "version": "0.1",
         "name": "platform-demo",
-        "supports_cpu": false,
-        "supports_gpu": true,
+        "supports_cpu": true,
+        "supports_gpu": false,
         "description": "A demo analytic for the Voxel51 Plaform"
     },
     "inputs": [
