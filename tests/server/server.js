@@ -8,12 +8,11 @@
  */
 'use strict';
 
-const debug = require('debug')('sdk-integration-server');
+const debug = require('debug')('server');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const url = require('url');
-
 const R = require('ramda');
 
 const server = (function genServer() {
