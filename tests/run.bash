@@ -1,14 +1,13 @@
 #!/bin/bash
-#
-# Main test script. Spins up server and posts docker run command to copy/paste
-# in a separate terminal. Note: `=` are required.
-# Also supports --compute-type=gpu to indicate nvidia2 docker runtime.
-# Default behavior is cpu.
+# Local test suite runner script.
 #
 # Usage:
-#   ./run.sh --analytic-json=<path-to-json> \
-#     --analytic-image=<image-name> \
-#     --input-file=<path-to-input-file>
+# bash run.bash \
+#     --analytic-image='image-name' \
+#     --analytic-json='/path/to/analytic.json' \
+#     [ --inputs='<input1>:<path1>,...' ] \
+#     [ --params='{"<param1>": <value1>, ...}' ] \
+#     [ --compute-type=cpu|gpu ]
 #
 # Copyright 2017-2019, Voxel51, Inc.
 # voxel51.com
