@@ -1,82 +1,178 @@
 /**
- * Local testing server index.
+ * Local testing server entrypoint.
  *
  * Copyright 2017-2019, Voxel51, Inc.
  * voxel51.com
  *
  * David Hodgson, david@voxel51.com
+ * Brian Moore, brian@voxel51.com
  */
 'use strict';
 
-const debug = require('debug')('sdk-integration');
+const commandLineArgs = require('command-line-args');
+const commandLineUsage = require('command-line-usage');
+const debug = require('debug')('server');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-
 const uuid4 = require('uuid/v4');
 
+const config = require('./config.js');
 const schema = require('./schema.js');
 const server = require('./server.js');
 
+const optionDefinitions = [
+  {
+    name: 'analytic-image',
+    type: String,
+    description: 'The name of the analytic Docker image to run. This flag ' +
+      'is required.',
+    typeLabel: '<image-name>',
+  },
+  {
+    name: 'analytic-json',
+    type: String,
+    description: 'The path to the analytic JSON file to use. This flag ' +
+      'is required.',
+    typeLabel: '<analytic-json>',
+  },
+  {
+    name: 'inputs',
+    alias: 'i',
+    type: String,
+    multiple: true,
+    description: 'Name=path pair(s) specifying the inputs to use. Can be ' +
+      'repeated multiple times if necessary. At least one input is required.',
+    typeLabel: '<name>=<path>',
+  },
+  {
+    name: 'parameters',
+    alias: 'p',
+    type: String,
+    multiple: true,
+    description: 'Name=value pair(s) specifying parameter settings to use. ' +
+      '`value` must be JSON parsable. Can be repeated multiple times if ' +
+      ' necessary.',
+    typeLabel: '<name>=<value>',
+  },
+  {
+    name: 'compute-type',
+    type: String,
+    defaultValue: 'cpu',
+    description: 'The compute type to use. Your Docker image must support ' +
+      'this compute type. If GPU execution is requested, `--runtime=nvidia` ' +
+      'is added to the `docker run` command; it is assumed that your ' +
+      'machine and Docker installation are configured to support this. ' +
+      'The default is `cpu`.',
+    typeLabel: '<cpu|gpu>',
+  },
+  {
+    name: 'help',
+    alias: 'h',
+    type: Boolean,
+    description: 'Displays this usage guide.'
+  },
+];
+
+const usageDefinition = [
+  {
+    content: 'Voxel51 Platform local analytic test server'
+  },
+  {
+    header: 'Example usage',
+    content: 'bash run.bash \\\n' +
+      '--analytic-image <image-name> \\\n' +
+      '--analytic-json <analytic-json> \\\n' +
+      '--inputs <name>=<path> \\\n' +
+      '--compute-type gpu'
+  },
+  {
+    header: 'Options',
+    optionList: optionDefinitions
+  }
+];
+
+const JOB_ID = uuid4();
+
 (async function main() {
-  var TEST_DOCKER_IMAGE;
-  var GIVEN_ANALYTIC_FILE;
-  var GIVEN_INPUTS;
+  var DOCKER_IMAGE_NAME;
+  var ANALYTIC_JSON_PATH;
+  var INPUTS;
+  var PARAMETERS;
   var COMPUTE_TYPE;
-  var GIVEN_PARAMETERS;
-  const JOB_ID = uuid4();
-  const config = require('./config.js');
 
   try {
-    debug('Beginning setup of image test.');
+    debug('Parsing command-line args.');
+    const options = commandLineArgs(optionDefinitions);
 
-    const cliArgs = await parseCLIArgs();
-    debug('Parsed command-line arguments are:', cliArgs);
-
-    TEST_DOCKER_IMAGE = cliArgs['analytic-image'];
-    if (!TEST_DOCKER_IMAGE) {
-      throw new Error(
-        `The --analytic-image flag must be set to provide the name of the ` +
-        `local Docker image to test.`);
+    // Handle help flag
+    if (options.help) {
+      debug('Displaying help.');
+      const usage = commandLineUsage(usageDefinition);
+      console.log(usage);
+      process.exit(0);
     }
 
-    GIVEN_ANALYTIC_FILE = cliArgs['analytic-json'];
-    if (!GIVEN_ANALYTIC_FILE) {
+    // Parse Docker image flag
+    DOCKER_IMAGE_NAME = options['analytic-image'];
+    if (!DOCKER_IMAGE_NAME) {
       throw new Error(
-        `The --anlytic-json flag must be set to provide the path to the ` +
-        `analytic JSON file for the test.`);
+        'The --analytic-image flag must be set to provide the name of the ' +
+        'local Docker image to test.');
     }
 
-    if (cliArgs['inputs']) {
-      GIVEN_INPUTS = cliArgs['inputs'].split(',');
-    } else {
+    // Parse analytic JSON flag
+    ANALYTIC_JSON_PATH = options['analytic-json'];
+    if (!ANALYTIC_JSON_PATH) {
       throw new Error(
-        `The --inputs flag must be set to provide the name(s) and path(s) ` +
-        `to the desired test files.`);
+        'The --anlytic-json flag must be set to provide the path to the ' +
+        'analytic JSON file for the test.');
     }
 
-    GIVEN_PARAMETERS = cliArgs['params'] || {};
+    // Parse inputs
+    INPUTS = options['inputs'];
+    if (!INPUTS) {
+      throw new Error(
+        'The --inputs flag must be set to provide the name(s) and path(s) ' +
+        'to the desired test files.');
+    }
+    try {
+      const parsedInputs = await parseInputs(INPUTS);
+    } catch (err) {
+      console.error(`Unable to parse inputs: ${INPUTS}`);
+      console.error(err);
+    }
 
-    COMPUTE_TYPE = cliArgs['compute-type'] || 'cpu';
+    // Parse parameters
+    PARAMETERS = options['parameters'] || [];
+    try {
+      const parsedParameters = parseParameters(PARAMETERS);
+    } catch (err) {
+      console.error(`Unable to parse parameters: ${PARAMETERS}`);
+      console.error(err);
+    }
 
-    debug('Commandline arguments ingested');
+    // Parse compute type
+    COMPUTE_TYPE = options['compute-type'];
 
-    const parsedInputs = await parseInputs(GIVEN_INPUTS);
-    const parsedParameters = await parseParameters(GIVEN_PARAMETERS);
+    debug('Command-line args ingested.');
+
     const analyticFields = await parseAndVerifyAnalyticJSON();
-    const {taskURL, task} = await generateTaskJSON(analyticFields,
-      parsedInputs, parsedParameters);
-    debug('Test setup complete.');
+    const {taskURL, task} = await generateTaskJSON(
+      analyticFields, parsedInputs, parsedParameters);
+    debug('Setup complete.');
 
     debug('Spinning up mock server.');
     const socket = await server.spinup(task);
 
     const dockerCmd = await generateDockerCommand(
       taskURL, task.logfile['signed-url']);
+
+    // Print Docker run instructions
     console.log(
       '\n\nExecute the following command in a separate terminal to run your ' +
       'image now:\n\n', dockerCmd, '\n\nAfter the image terminates, kill ' +
-      'the server via Ctrl + C to generate a report summarizing the test.' +
+      'the server via Ctrl-C to generate a report summarizing the test.' +
       '\n\nTo cleanup after the test, run \'bash clean.bash\'\n\n');
 
     process.on('SIGTERM', shutdown(socket));
@@ -88,6 +184,41 @@ const server = require('./server.js');
   } catch (err) {
     console.error(err);
     process.exit(1);
+  }
+
+  async function parseInputs(inputs) {
+    var parsedInputs = {};
+    for (const namePath of inputs) {
+      const [name, path] = namePath.split('=');
+      const inputFilename = await copyInputToStorage(path);
+      parsedInputs[name] = {
+        'signed-url': await generateSignedUrl(inputFilename, 'inputs')
+      };
+    };
+    return parsedInputs;
+  }
+
+  async function copyInputToStorage(fullPath) {
+    const inputFilename = path.basename(fullPath);
+    const inputFilepath = path.join(config.STORAGE_BASE_DIR, inputFilename);
+    debug(`Copying input ${fullPath} to ${inputFilepath}.`);
+    await pExec(`cp ${fullPath} ${inputFilepath}`);
+    return inputFilename;
+  }
+
+  function parseParameters(parameters) {
+    const parsedParameters = {};
+    parameters.forEach(function(nameValue) {
+      let [name, value] = nameValue.split('=');
+      parsedParameters[name] = JSON.parse(value);
+    });
+    return parsedParameters;
+  }
+
+  function generateSignedUrl(filepath, type) {
+    let localPath = path.join(config.STORAGE_BASE_DIR, filepath);
+    return Promise.resolve(
+      `${config.API_BASE_URL}/local/file?${type}=${localPath}`);
   }
 
   function generateDockerCommand(taskURL, logfileURL) {
@@ -103,7 +234,7 @@ const server = require('./server.js');
         `-e OS="${process.platform}" ` +
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
         `-e API_BASE_URL="${config.API_BASE_URL}" ` +
-        `--network="host" ${TEST_DOCKER_IMAGE}; ` +
+        `--network="host" ${DOCKER_IMAGE_NAME}; ` +
         `echo -e "Now kill the server (Ctrl-C) to retrieve your results!"`;
 
       debug('Docker command generation complete.');
@@ -138,20 +269,14 @@ const server = require('./server.js');
     return {taskURL, task};
   }
 
-  function generateSignedUrl(filepath, type) {
-    let localPath = path.join(config.STORAGE_BASE_DIR, filepath);
-    return Promise.resolve(
-      `${config.API_BASE_URL}/local/file?${type}=${localPath}`);
-  }
-
   async function parseAndVerifyAnalyticJSON() {
     debug('Starting reading and parsing of analytic JSON file.');
-    const analyticFilename = path.basename(GIVEN_ANALYTIC_FILE);
+    const analyticFilename = path.basename(ANALYTIC_JSON_PATH);
     debug('Analytic filename read as:', analyticFilename);
     const analyticFilepath = path.join(
       config.STORAGE_BASE_DIR, analyticFilename);
     debug('Analytic filepath created as:', analyticFilepath);
-    await pExec(`cp ${GIVEN_ANALYTIC_FILE} ${analyticFilepath}`);
+    await pExec(`cp ${ANALYTIC_JSON_PATH} ${analyticFilepath}`);
     debug('Analytic file copied to new location.');
     const analytic = await readFile(analyticFilename);
     debug('Analytic file read and parsed successfully. Beginning validation.');
@@ -268,54 +393,5 @@ const server = require('./server.js');
         process.exit(0);
       });
     };
-  }
-
-  function parseCLIArgs() {
-    return new Promise(function(resolve, reject) {
-      const args = process.argv.slice(2);
-      var argsObj = {};
-      args.forEach((arg) => {
-        const [key, value] = arg.split('=');
-        argsObj[key.slice(2)] = value;
-      });
-      return resolve(argsObj);
-    });
-  }
-
-  async function parseInputs(inputs) {
-    var parsedInputs = {};
-    if (Array.isArray(inputs)) {
-      for (const inp of inputs) {
-        const [key, path] = inputs.split(':');
-        const inputFilename = await copyInputToStorage(path);
-        parsedInputs[key] = {
-          'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
-      }
-    } else {
-      // single input
-      const [key, path] = inputs.split(':');
-      const inputFilename = await copyInputToStorage(path);
-      parsedInputs[key] = {
-        'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
-    }
-  }
-
-  async function copyInputToStorage(fullPath) {
-    const inputFilename = path.basename(fullPath);
-    const inputFilepath = path.join(config.STORAGE_BASE_DIR, inputFilename);
-    debug(`Copying input file to new location, ${inputFilepath}.`);
-    await pExec(`cp ${path} ${inputFilepath}`);
-    return inputFilename;
-  }
-
-  function parseParameters(params) {
-    return new Promise(function(resolve, reject) {
-      try {
-        const parsedParameters = JSON.parse(params);
-        return resolve(parsedParameters);
-      } catch (error) {
-        return reject(error);
-      }
-    });
   }
 }());
