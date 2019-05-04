@@ -36,33 +36,34 @@ npm install
 
 ## Quickstart
 
-The `run.bash` script runs the local test server. The basic syntax is:
+The `run.bash` script runs the local test server. The script is used as
+follows:
 
-```shell
-bash run.bash \
-    --analytic-image='image-name' \
-    --analytic-json='/path/to/analytic.json' \
-    [ --inputs='<input1>:<path1>' ] \
-    [ --params='{"<param1>": <value1>, ...}' ] \
-    [ --compute-type=cpu|gpu ]
 ```
+  Voxel51 Platform local analytic test server
 
-where the command-line flags are used as follows:
+Example usage
 
-- `--analytic-image` *(required)*: the name of the Docker image to run
+  bash run.bash \
+  --analytic-image <image-name> \
+  --analytic-json <analytic-json> \
+  --inputs <name>=<path> \
+  --compute-type gpu
 
-- `--analytic-json` *(required)*: the path to the analytic JSON file
+Options
 
-- `--inputs` *(required)*: a comma-separated list of `name:path` pairs of
-    inputs to feed to the analytic
-
-- `--params` *(optional)*: a JSON string specifying `name: value` pairs of
-    parameters to feed to the analytic. By default, no parameters are set.
-
-- `--compute-type` *(optional)*: the compute type to use. Can be `cpu` or `gpu`.
-    The default is `cpu`. If GPU execution is requested, `--runtime=nvidia`
-    is added to the `docker run` command; it is assumed that your machine and
-    Docker installation are configured to support this option
+  --analytic-image <image-name>     The name of the analytic Docker image to run. This flag is required.
+  --analytic-json <analytic-json>   The path to the analytic JSON file to use. This flag is required.
+  -i, --inputs <name>=<path>        Name=path pair(s) specifying the inputs to use. Can be repeated multiple
+                                    times if necessary. At least one input is required.
+  -p, --parameters <name>=<value>   Name=value pair(s) specifying parameter settings to use. `value` must be JSON
+                                    parsable. Can be repeated multiple times if  necessary.
+  --compute-type <cpu|gpu>          The compute type to use. Your Docker image must support this compute type. If
+                                    GPU execution is requested, `--runtime=nvidia` is added to the `docker run`
+                                    command; it is assumed that your machine and Docker installation are
+                                    configured to support this. The default is `cpu`.
+  -h, --help                        Displays this usage guide.
+```
 
 Running the `run.bash` script will output a `docker run` command that you must
 copy and paste into another terminal window in order to run your analytic.
