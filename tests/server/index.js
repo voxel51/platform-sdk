@@ -138,15 +138,17 @@ const server = require('./server.js');
   }
 
   function generateSignedUrl(filepath, type) {
-    return Promise.resolve(`http://127.0.0.1:${config.PORT}/v1` +
-      `/local/file?${type}=${path.join(config.STORAGE_BASE_DIR, filepath)}`);
+    let localPath = path.join(config.STORAGE_BASE_DIR, filepath);
+    return Promise.resolve(
+      `${config.API_BASE_URL}/local/file?${type}=${localPath}`);
   }
 
   async function parseAndVerifyAnalyticJSON() {
     debug('Starting reading and parsing of analytic JSON file.');
     const analyticFilename = path.basename(GIVEN_ANALYTIC_FILE);
     debug('Analytic filename read as:', analyticFilename);
-    const analyticFilepath = path.join(config.STORAGE_BASE_DIR, analyticFilename);
+    const analyticFilepath = path.join(
+      config.STORAGE_BASE_DIR, analyticFilename);
     debug('Analytic filepath created as:', analyticFilepath);
     await pExec(`cp ${GIVEN_ANALYTIC_FILE} ${analyticFilepath}`);
     debug('Analytic file copied to new location.');
@@ -285,13 +287,15 @@ const server = require('./server.js');
       for (const inp of inputs) {
         const [key, path] = inputs.split(':');
         const inputFilename = await copyInputToStorage(path);
-        parsedInputs[key] = {'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
+        parsedInputs[key] = {
+          'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
       }
     } else {
       // single input
       const [key, path] = inputs.split(':');
       const inputFilename = await copyInputToStorage(path);
-      parsedInputs[key] = {'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
+      parsedInputs[key] = {
+        'signed-url': await generateSignedUrl(inputFilename, 'inputs')};
     }
   }
 

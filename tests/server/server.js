@@ -19,7 +19,9 @@ const R = require('ramda');
 const server = (function genServer() {
   const config = require('./config.js');
   const BASE_DIR = __dirname;
+
   var TASK = {};
+
   var eventList = {
     getTaskJSON: false,
     getInputFile: false,
@@ -146,7 +148,9 @@ const server = (function genServer() {
         debug(code, body);
         debug('Have the headers been sent?', res.headersSent);
         if (res.headersSent || (!code && !body) || req.method === 'GET') {
-          debug('If yes, OR no code and no body OR it was a GET to download file, return.');
+          debug(
+            'If yes, OR no code and no body OR it was a GET to download ' +
+            'file, return.');
           return resolve();
         }
         if (!body || Object.keys(body).length === 0) {
@@ -214,7 +218,10 @@ const server = (function genServer() {
     if (!fields.every((f) => existsAndNumber(body[f]))) {
       return {
         code: 400,
-        body: {code: 400, message: 'All three job metadata fields should be valid numbers.'},
+        body: {
+          code: 400,
+          message: 'All three job metadata fields should be valid numbers.'
+        },
       };
     }
     return {
@@ -241,7 +248,8 @@ const server = (function genServer() {
     if (req.method === 'HEAD') {
       const filename = getQueryFilename(u.query.path);
       debug('The proposed filename for header in HEAD request:', filename);
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader(
+        'Content-Disposition', `attachment; filename="${filename}"`);
       return {
         code: 200,
         body: {},
@@ -344,7 +352,8 @@ const server = (function genServer() {
       });
       const filename = getQueryFilename(url.query.path);
       debug('The proposed filename for header:', filename);
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader(
+        'Content-Disposition', `attachment; filename="${filename}"`);
       res.on('finish', () => {
         debug('The response stream completed.');
         debug('The response object', res);
@@ -395,55 +404,87 @@ const server = (function genServer() {
     var checksPassed = 0;
     return new Promise(async function(resolve, reject) {
       log('\n----- Test report -----\n');
-      reportAssertion('Check for task JSON retrieval.',
+
+      reportAssertion(
+        'Check for task JSON retrieval.',
         () => eventList.getTaskJSON,
         'Task JSON not retrieved.',
-        'Use SDK function voxt.TaskManager.from_url() to retrieve the task JSON.');
-      reportAssertion('Check for posting RUNNING state.',
+        'Use SDK function voxt.TaskManager.from_url() to retrieve the task ' +
+        'JSON.');
+
+      reportAssertion(
+        'Check for posting RUNNING state.',
         () => eventList.running,
         'RUNNING state not posted.',
         'Use SDK function task_manager.start() to post the state. Must be ' +
         'done PRIOR to running custom analytic logic!');
-      reportAssertion('Check for input file retrieval.',
+
+      reportAssertion(
+        'Check for input file retrieval.',
         () => eventList.getInputFile,
         'Input not retrieved.',
-        'Use SDK function task_manager.download_inputs() to retrieve input file(s).');
-      reportAssertion('Check for job metadata report.',
+        'Use SDK function task_manager.download_inputs() to retrieve input ' +
+        'file(s).');
+
+      reportAssertion(
+        'Check for job metadata report.',
         () => eventList.reportMetadata,
         'Job metadata not reported.',
-        'Use SDK function task_manger.post_job_metadata() to report job metadata. ' +
-        'Failure to report job metadata violates terms of service agreement.');
-      reportAssertion('Check for write of status JSON file.',
+        'Use SDK function task_manger.post_job_metadata() to report job ' +
+        'metadata. Failure to report job metadata violates terms of service ' +
+        'agreement.');
+
+      reportAssertion(
+        'Check for write of status JSON file.',
         () => eventList.writeStatus && eventList.numStatusWrites > 0,
         'Status file not written.',
-        'Use SDK function task_manager.publish_status() to write status JSON file.');
-      reportAssertion('Check for write of logfile.',
+        'Use SDK function task_manager.publish_status() to write status ' +
+        'JSON file.');
+
+      reportAssertion(
+        'Check for write of logfile.',
         () => eventList.writeLogfile && eventList.numLogfileWrites > 0,
         'Logfile not written.',
-        'Use SDK function task_manager.complete() or task_manager.fail_gracefully() to write the logfile.');
-      reportAssertion('Check for only one of COMPLETE or FAILED state updates.',
+        'Use SDK function task_manager.complete() or ' +
+        'task_manager.fail_gracefully() to write the logfile.');
+
+      reportAssertion(
+        'Check for only one of COMPLETE or FAILED state updates.',
         () => !(eventList.complete && eventList.failed),
         'Both COMPLETE and FAILED states written.',
         'Only one of COMPLETE or FAILED should be written. This ' +
         'suggests either an analytic error or invalid use of the SDK.');
+
       if (eventList.failed) {
         expectedCheckPasses += 1;
-        reportAssertion('Check that if failed, failure type provided.',
-          () => (eventList.failureType !== null && typeof eventList.failureType === 'string'),
+        reportAssertion(
+          'Check that if failed, failure type provided.',
+          () => (
+            eventList.failureType !== null &&
+            typeof eventList.failureType === 'string'),
           'Valid failure type not provided.',
-          'Use SDK function task_manager.fail_gracefully() to write failure state and use ' +
-          'one of voxt.TaskFailureType ENUM as the failure type.');
+          'Use SDK function task_manager.fail_gracefully() to write failure ' +
+          'state and use one of voxt.TaskFailureType ENUM as the failure ' +
+          'type.');
       }
+
       reportAssertion('Check for output write state.',
         () => eventList.writeOutput,
         'Output file not written.',
         'Use SDK function task.upload_output() to write the output file.');
+
       log('Number of checks passed:');
-      log(`${checksPassed} / ${expectedCheckPasses} = ${checksPassed/expectedCheckPasses * 100}%\n`);
+      log(
+        `${checksPassed} / ${expectedCheckPasses} checks = ` +
+        `${100 * checksPassed / expectedCheckPasses}%\n`
+      );
+
       if (checksPassed === expectedCheckPasses) {
         log('All checks passed!');
       }
+
       log('\n----- End of report -----\n');
+
       await writeReport();
       return resolve();
     });
