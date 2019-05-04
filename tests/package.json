@@ -17,9 +17,7 @@
   "scripts": {
     "start": "node server/index.js",
     "clean": "node server/cleanup.js",
-    "debug": "DEBUG=sdk-integration,sdk-integration-server node server/index.js",
-    "debug-server": "DEBUG=sdk-integration-server node server/index.js",
-    "debug-setup": "DEBUG=sdk-integration node server/index.js"
+    "debug": "DEBUG=server node server/index.js"
   },
   "devDependencies": {
     "debug": "^4.1.1"
