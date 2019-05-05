@@ -12,14 +12,34 @@ Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel5
 To install the library, first clone it:
 
 ```shell
+# Clone the repository
 git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
+
+# Run the install script
+bash install.bash
+
+cd ..
 ```
 
-and then run the install script:
+Next, if you have not already, go to
+[https://console.voxel51.com](https://console.voxel51.com) and create a
+Platform Account.
+
+If you would like to programmatically upload your analytics and test them via
+the Platform API, you also need to install the
+[Python client library](https://github.com/voxel51/api-py):
 
 ```shell
-bash install.bash
+# Clone the repository
+git clone https://github.com/voxel51/api-py
+cd api-py
+
+# Install the library
+pip install -r requirements.txt
+pip install -e .
+
+cd ..
 ```
 
 After installing the client library, follow
@@ -32,6 +52,9 @@ download and activiate an API token to enable use of the client library.
 See the [Quickstart Guide](QUICKSTART.md) for step-by-step instructions on
 using this SDK to wrap your custom analytic for deployment to the Voxel51
 Platform.
+
+See the [Example Analytic](EXAMPLES) directory for an end-to-end
+example of building and deploying a test analytic to the platform.
 
 
 ## Overview
@@ -69,7 +92,7 @@ information about the Platform API, refer to the
 [API Documentation](https://voxel51.com/docs/api).
 
 
-## Analytic Interface
+## Analytic interface
 
 All analytics deployed to the platform must be implemented as Docker containers
 that support the platform's interface as described below.
@@ -174,7 +197,7 @@ See the [Quickstart Guide](QUICKSTART.md) for more details about the interface
 provided by the Platform SDK.
 
 
-## Analytic Deployment
+## Analytic deployment
 
 You can deploy new custom analytics or new versions of your existing analytics
 at any time via the [API](https://voxel51.com/docs/api) or the
@@ -201,17 +224,19 @@ its client libraries. For example, the following code snippet shows how to
 publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
 
 ```py
-from voxe51.api import API
+from voxel51.users.api import API
 
-# Local path to the analytic JSON file
-upload_analytic_path = "/path/to/analytic.json"
-
-# Local path to a tar.gz of your GPU-enabled image
-upload_image_tar_path = "/path/to/image.tar.gz"
+analytic_json_path = "/path/to/analytic.json"
+analytic_image_path = "/path/to/image.tar.gz"
 
 api = API()
-api.upload_analytic(upload_analytic_path)
-api.upload_analytic_image(analytic_id, upload_image_tar_path, "gpu")
+
+# Upload analytic JSON
+analytic = api.upload_analytic(analytic_json_path)
+analytic_id = analytic["id"]
+
+# Upload image
+api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)
