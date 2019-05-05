@@ -2,3 +2,4 @@ data/
 out/
 platform-sdk/
 api-py/
+*.tar.gz
