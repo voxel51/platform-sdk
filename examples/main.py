@@ -54,7 +54,7 @@ def _generate_random_labels(video_path, labels_path):
     metadata = etav.VideoMetadata.build_for(video_path)
     labels = etav.VideoLabels()
     for frame_number in range(1, metadata.total_frame_count + 1):
-        obj = _generate_random_object("object", "Demo", 1)
+        obj = _generate_random_object("object", "demo", 1)
         labels.add_object(obj, frame_number)
     labels.write_json(labels_path)
 
