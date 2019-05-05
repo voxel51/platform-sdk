@@ -64,10 +64,13 @@ rm -rf platform-sdk
 
 ## Testing locally
 
-Before deploying the analytic to the platform, it is helpful to test your
-Docker images locally to ensure that they are functioning properly. Follow
-the simple instructions below to use the SDK's local test server to run an job
-with the image that you built:
+Before deploying analytics to the platform, it is helpful to test the Docker
+images locally to ensure that they are functioning properly. The
+[tests folder](https://github.com/voxel51/platform-sdk/tree/develop/tests)
+defines a local testing server that you can use to perform such tests.
+
+Run the following command to spawn a test server to run a job on the
+`platform-demo` image locally:
 
 ```shell
 # Launch test server
