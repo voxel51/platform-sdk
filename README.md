@@ -224,17 +224,19 @@ its client libraries. For example, the following code snippet shows how to
 publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
 
 ```py
-from voxe51.api import API
+from voxel51.users.api import API
 
-# Local path to the analytic JSON file
-upload_analytic_path = "/path/to/analytic.json"
-
-# Local path to a tar.gz of your GPU-enabled image
-upload_image_tar_path = "/path/to/image.tar.gz"
+analytic_json_path = "/path/to/analytic.json"
+analytic_image_path = "/path/to/image.tar.gz"
 
 api = API()
-api.upload_analytic(upload_analytic_path)
-api.upload_analytic_image(analytic_id, upload_image_tar_path, "gpu")
+
+# Upload analytic JSON
+analytic = api.upload_analytic(analytic_json_path)
+analytic_id = analytic["id"]
+
+# Upload image
+api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)

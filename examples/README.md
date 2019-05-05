@@ -103,7 +103,7 @@ The following code snippet publishes the analytic to the platform using the
 Python client library:
 
 ```py
-from voxe51.users.api import API
+from voxel51.users.api import API
 
 analytic_json_path = "./analytic.json"
 analytic_image_path = "./platform-demo.tar.gz"
