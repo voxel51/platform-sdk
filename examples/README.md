@@ -49,8 +49,10 @@ and then cleanup the generated files.
 ```shell
 # Clone platform-sdk
 git clone https://github.com/voxel51/platform-sdk
+cd platform-sdk
 git submodule init
 git submodule update
+cd ..
 
 # Build image
 docker build -t "platform-demo" .
