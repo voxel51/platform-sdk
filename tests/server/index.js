@@ -76,7 +76,7 @@ const optionDefinitions = [
 
 const usageDefinition = [
   {
-    content: 'Voxel51 Platform local analytic test server'
+    content: 'Voxel51 Platform local analytic testing server'
   },
   {
     header: 'Example usage',
@@ -113,6 +113,10 @@ const JOB_ID = uuid4();
       process.exit(0);
     }
 
+    // Make storage directory
+    debug(`Making storage directory ${config.STORAGE_BASE_DIR}.`);
+    await pExec(`mkdir -p ${config.STORAGE_BASE_DIR}`);
+
     // Parse Docker image flag
     DOCKER_IMAGE_NAME = options['analytic-image'];
     if (!DOCKER_IMAGE_NAME) {
@@ -136,8 +140,9 @@ const JOB_ID = uuid4();
         'The --inputs flag must be set to provide the name(s) and path(s) ' +
         'to the desired test files.');
     }
+    var parsedInputs;
     try {
-      const parsedInputs = await parseInputs(INPUTS);
+      parsedInputs = await parseInputs(INPUTS);
     } catch (err) {
       console.error(`Unable to parse inputs: ${INPUTS}`);
       console.error(err);
@@ -145,8 +150,9 @@ const JOB_ID = uuid4();
 
     // Parse parameters
     PARAMETERS = options['parameters'] || [];
+    var parsedParameters;
     try {
-      const parsedParameters = parseParameters(PARAMETERS);
+      parsedParameters = parseParameters(PARAMETERS);
     } catch (err) {
       console.error(`Unable to parse parameters: ${PARAMETERS}`);
       console.error(err);
@@ -162,18 +168,16 @@ const JOB_ID = uuid4();
       analyticFields, parsedInputs, parsedParameters);
     debug('Setup complete.');
 
-    debug('Spinning up mock server.');
+    debug('Spinning up server.');
     const socket = await server.spinup(task);
 
+    // Print Docker run instructions
     const dockerCmd = await generateDockerCommand(
       taskURL, task.logfile['signed-url']);
-
-    // Print Docker run instructions
     console.log(
-      '\n\nExecute the following command in a separate terminal to run your ' +
-      'image now:\n\n', dockerCmd, '\n\nAfter the image terminates, kill ' +
-      'the server via Ctrl-C to generate a report summarizing the test.' +
-      '\n\nTo cleanup after the test, run \'bash clean.bash\'\n\n');
+      '\n\nTo run your image, execute the following command in a separate ' +
+      'terminal:\n\n' + dockerCmd + '\n\nAfter the image terminates, kill ' +
+      'the server via Ctrl-C to generate a test report\n');
 
     process.on('SIGTERM', shutdown(socket));
     process.on('SIGINT', shutdown(socket));
@@ -187,12 +191,12 @@ const JOB_ID = uuid4();
   }
 
   async function parseInputs(inputs) {
-    var parsedInputs = {};
+    let parsedInputs = {};
     for (const namePath of inputs) {
       const [name, path] = namePath.split('=');
       const inputFilename = await copyInputToStorage(path);
       parsedInputs[name] = {
-        'signed-url': await generateSignedUrl(inputFilename, 'inputs')
+        'signed-url': await generateSignedURL(inputFilename, 'inputs')
       };
     };
     return parsedInputs;
@@ -207,7 +211,7 @@ const JOB_ID = uuid4();
   }
 
   function parseParameters(parameters) {
-    const parsedParameters = {};
+    let parsedParameters = {};
     parameters.forEach(function(nameValue) {
       let [name, value] = nameValue.split('=');
       parsedParameters[name] = JSON.parse(value);
@@ -215,7 +219,7 @@ const JOB_ID = uuid4();
     return parsedParameters;
   }
 
-  function generateSignedUrl(filepath, type) {
+  function generateSignedURL(filepath, type) {
     let localPath = path.join(config.STORAGE_BASE_DIR, filepath);
     return Promise.resolve(
       `${config.API_BASE_URL}/local/file?${type}=${localPath}`);
@@ -224,7 +228,7 @@ const JOB_ID = uuid4();
   function generateDockerCommand(taskURL, logfileURL) {
     return new Promise(function(resolve, reject) {
       debug('Generating the docker run command.');
-      var cmd = 'docker run ';
+      let cmd = 'docker run ';
       if (COMPUTE_TYPE === 'gpu') {
         cmd += '--runtime=nvidia ';
       }
@@ -235,15 +239,15 @@ const JOB_ID = uuid4();
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
         `-e API_BASE_URL="${config.API_BASE_URL}" ` +
         `--network="host" ${DOCKER_IMAGE_NAME}; ` +
-        `echo -e "Now kill the server (Ctrl-C) to retrieve your results!"`;
+        `echo -e "\\nTask complete. Kill the server (Ctrl-C) to retrieve ` +
+        `your test results\\n"`;
 
-      debug('Docker command generation complete.');
       return resolve(cmd);
     });
   }
 
   async function generateTaskJSON(analyticFields, inputs, parameters={}) {
-    debug('Generating task JSON file using analytic fields:', analyticFields);
+    debug('Generating task JSON.');
     const task = {
       analytic: analyticFields.name,
       version: analyticFields.version,
@@ -251,57 +255,63 @@ const JOB_ID = uuid4();
       inputs,
       parameters,
       output: {
-        'signed-url': await generateSignedUrl(analyticFields.output, 'output'),
+        'signed-url': await generateSignedURL(analyticFields.output, 'output'),
       },
       status: {
-        'signed-url': await generateSignedUrl('status.json', 'status'),
+        'signed-url': await generateSignedURL('status.json', 'status'),
       },
       logfile: {
-        'signed-url': await generateSignedUrl('logfile.log', 'logfile'),
+        'signed-url': await generateSignedURL('logfile.log', 'logfile'),
       },
     };
-    const taskJSON = await safeJSONStringify(task);
-    debug('Stringified task JSON:', taskJSON);
-    await writeFile('task.json', taskJSON);
-    debug('Generating signed url for task JSON file.');
-    const taskURL = await generateSignedUrl('task.json', 'task');
-    debug('Task JSON generation complete.');
+    const taskStr = JSON.stringify(task, null, 4);
+    debug('Task JSON:', taskStr);
+
+    let taskPath = path.join(config.STORAGE_BASE_DIR, 'task.json');
+    debug(`Writing task JSON to ${taskPath}.`);
+    fs.writeFileSync(taskPath, taskStr);
+
+    debug('Generating signed URL for task JSON.');
+    const taskURL = await generateSignedURL('task.json', 'task');
+
     return {taskURL, task};
   }
 
   async function parseAndVerifyAnalyticJSON() {
     debug('Starting reading and parsing of analytic JSON file.');
     const analyticFilename = path.basename(ANALYTIC_JSON_PATH);
+
     debug('Analytic filename read as:', analyticFilename);
     const analyticFilepath = path.join(
       config.STORAGE_BASE_DIR, analyticFilename);
-    debug('Analytic filepath created as:', analyticFilepath);
+
+    debug(`Copying analytic JSON to '${analyticFilepath}'`);
     await pExec(`cp ${ANALYTIC_JSON_PATH} ${analyticFilepath}`);
-    debug('Analytic file copied to new location.');
-    const analytic = await readFile(analyticFilename);
-    debug('Analytic file read and parsed successfully. Beginning validation.');
+
+    debug('Validing analytic JSON schema');
+    const analytic = JSON.parse(fs.readFileSync(analyticFilepath, 'utf8'));
     await validateAnalyticSchema(analytic);
-    debug('Validation complete. Parsing required fields for test setup.');
-    const analyticFields = await parseNeededAnalyticFields(analytic);
-    debug('Required fields parsed.');
+    const analyticFields = await extractAnalyticInfo(analytic);
+
     return analyticFields;
   }
 
   async function validateAnalyticSchema(a) {
-    debug('Validating the overall analytic schema.');
+    debug('Validating analytic schema');
+    debug('Validating top-level schema.');
     await schema.validate.structure(a);
-    debug('Validating each input field schema.');
+    debug('Validating input schemas.');
     await Promise.all(a.inputs.map(schema.validate.input));
-    debug('Validating each parameter field schema.');
+    debug('Validating parameter schemas.');
     await Promise.all(a.parameters.map(schema.validate.parameter));
-    debug('Validating each output field schema.');
+    debug('Validating output schemas.');
     await Promise.all(a.outputs.map(schema.validate.output));
-    debug('Validation of analytic JSON file complete.');
+    debug('Analytic validation complete');
   }
 
-  function parseNeededAnalyticFields(a) {
+  function extractAnalyticInfo(a) {
     return new Promise(function(resolve, reject) {
-      var fields = {
+      let fields = {
         name: a.info.name,
         version: a.info.version,
         supportsCPU: a.info.supports_cpu,
@@ -312,66 +322,18 @@ const JOB_ID = uuid4();
       } else {
         const nonDataOutputs = a.outputs.filter((o) => !o.post_as_data);
         if (nonDataOutputs.length > 1) {
-          debug('The platform assumes one output file only, so if multiple ' +
-            'files are desired, they must be zipped into a single file.');
-          throw new Error(`If zip_outputs is false, only one output ` +
-            `can be NOT posted as data.`);
+          throw new Error(
+            'If `zip_outputs == false`, at most one output can have ' +
+            '`post_as_data == false`');
         } else if (nonDataOutputs.length === 0) {
-          debug('No outputs are assigned to this analytic');
-          fields.output = 'output';
+          debug('Analytic generates no outputs');
+          fields.output = 'null';
         } else {
-          debug('The first possible non-data output is used by default');
+          debug('Analytic has one output');
           fields.output = nonDataOutputs[0].filename;
         }
       }
       return resolve(fields);
-    });
-  }
-
-  function safeJSONParse(input) {
-    return new Promise(function(resolve, reject) {
-      try {
-        const data = JSON.parse(input);
-        return resolve(data);
-      } catch (err) {
-        return reject(err);
-      }
-    });
-  }
-
-  function safeJSONStringify(input) {
-    return new Promise(function(resolve, reject) {
-      try {
-        const obj = JSON.stringify(input);
-        return resolve(obj);
-      } catch (err) {
-        return reject(err);
-      }
-    });
-  }
-
-  function readFile(filepath) {
-    return new Promise(function(resolve, reject) {
-      const file = path.join(config.STORAGE_BASE_DIR, filepath);
-      fs.readFile(file, async (err, data) => {
-        if (err) {
-          return reject(err);
-        }
-        const obj = await safeJSONParse(data);
-        return resolve(obj);
-      });
-    });
-  }
-
-  function writeFile(filepath, data) {
-    return new Promise(function(resolve, reject) {
-      const file = path.join(config.STORAGE_BASE_DIR, filepath);
-      fs.writeFile(file, data, (err) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve();
-      });
     });
   }
 
@@ -388,7 +350,7 @@ const JOB_ID = uuid4();
 
   function shutdown(socket) {
     return function() {
-      console.log('Exiting. Wrapping up remaining connections...');
+      console.log('Shutting down server...\n');
       socket.close(() => {
         process.exit(0);
       });
