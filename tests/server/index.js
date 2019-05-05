@@ -121,7 +121,7 @@ const JOB_ID = uuid4();
     DOCKER_IMAGE_NAME = options['analytic-image'];
     if (!DOCKER_IMAGE_NAME) {
       throw new Error(
-        'The --analytic-image flag must be set to provide the name of the ' +
+        'The `--analytic-image` flag must be set to provide the name of the ' +
         'local Docker image to test.');
     }
 
@@ -129,7 +129,7 @@ const JOB_ID = uuid4();
     ANALYTIC_JSON_PATH = options['analytic-json'];
     if (!ANALYTIC_JSON_PATH) {
       throw new Error(
-        'The --anlytic-json flag must be set to provide the path to the ' +
+        'The `--analytic-json` flag must be set to provide the path to the ' +
         'analytic JSON file for the test.');
     }
 
@@ -137,7 +137,7 @@ const JOB_ID = uuid4();
     INPUTS = options['inputs'];
     if (!INPUTS) {
       throw new Error(
-        'The --inputs flag must be set to provide the name(s) and path(s) ' +
+        'The `--inputs` flag must be set to provide the name(s) and path(s) ' +
         'to the desired test files.');
     }
     var parsedInputs;
@@ -145,7 +145,8 @@ const JOB_ID = uuid4();
       parsedInputs = await parseInputs(INPUTS);
     } catch (err) {
       console.error(`Unable to parse inputs: ${INPUTS}`);
-      console.error(err);
+      console.error(`Expected <name>=<path> pair(s).`);
+      throw(err);
     }
 
     // Parse parameters
@@ -155,7 +156,8 @@ const JOB_ID = uuid4();
       parsedParameters = parseParameters(PARAMETERS);
     } catch (err) {
       console.error(`Unable to parse parameters: ${PARAMETERS}`);
-      console.error(err);
+      console.error(`Expected <name>=<json-value> pair(s).`);
+      throw(err);
     }
 
     // Parse compute type
@@ -239,8 +241,8 @@ const JOB_ID = uuid4();
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
         `-e API_BASE_URL="${config.API_BASE_URL}" ` +
         `--network="host" ${DOCKER_IMAGE_NAME}; ` +
-        `echo -e "\\nTask complete. Kill the server (Ctrl-C) to retrieve ` +
-        `your test results\\n"`;
+        `echo -e "\\nDocker has exited. Kill the server (Ctrl-C) to ` +
+        `retrieve your test results\\n"`;
 
       return resolve(cmd);
     });
