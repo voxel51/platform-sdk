@@ -1,7 +1,7 @@
 {
   "name": "@voxel51/platform-sdk-test-server",
   "version": "0.1.0",
-  "description": "Local test server for developing analytics to deploy to the Voxel51 Platform",
+  "description": "Local testing server for developing analytics to deploy to the Voxel51 Platform",
   "main": "./server/index.js",
   "repository": "https://github.com/voxel51/platform-sdk",
   "author": "Voxel51, Inc.",
