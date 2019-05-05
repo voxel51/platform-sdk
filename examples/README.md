@@ -79,8 +79,8 @@ bash ../tests/run.bash \
 ```
 
 The server will print a `docker run` command that you should execute in
-another terminal (from the same working directory). This will locally execute
-the job that you specified, using your test server as a proxy for the platform.
+another terminal. This will locally execute the job that you specified, using
+your test server as a proxy for the platform.
 
 After the Docker image exits, press `Ctrl-C` in the terminal session running
 the server. This will generate a report summarizing the function of your
