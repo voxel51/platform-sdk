@@ -45,10 +45,10 @@ Voxel51 Platform local analytic testing server
 Example usage
 
   bash run.bash \
-  --analytic-image <image-name> \
-  --analytic-json <analytic-json> \
-  --inputs <name>=<path> \
-  --compute-type gpu
+    --analytic-image <image-name> \
+    --analytic-json <analytic-json> \
+    --inputs <name>=<path> \
+    --compute-type gpu
 
 Options
 
