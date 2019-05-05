@@ -103,14 +103,19 @@ The following code snippet publishes the analytic to the platform using the
 Python client library:
 
 ```py
-from voxe51.api import API
+from voxe51.users.api import API
 
 analytic_json_path = "./analytic.json"
 analytic_image_path = "./platform-demo.tar.gz"
 
 api = API()
-api.upload_analytic(analytic_json_path)
-api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
+
+# Upload analytic JSON
+analytic = api.upload_analytic(analytic_json_path)
+analytic_id = analytic["id"]
+
+# Upload image
+api.upload_analytic_image(analytic_id, analytic_image_path, "cpu")
 ```
 
 You can also upload analytics by logging into your
@@ -124,8 +129,8 @@ Console to verify), you can run a test platform job on the `data/test.mp4`
 video by executing the following code with the Python client library:
 
 ```py
-from voxel51.api import API
-from voxel51.jobs import JobRequest
+from voxel51.users.api import API
+from voxel51.users.jobs import JobRequest
 
 api = API()
 
@@ -136,7 +141,7 @@ data_id = data["id"]
 # Upload and start job
 job_request = JobRequest("<your-username>/platform-demo")
 job_request.set_input("video", data_id=data_id)
-job = api.upload_job_request(job_request, "sdk-test", auto_start=True)
+job = api.upload_job_request(job_request, "platform-demo", auto_start=True)
 job_id = job["id"]
 
 # Wait until job completes, then download output
