@@ -1,4 +1,4 @@
-# Local Analytic Testing Server
+# Local Testing Server
 
 This package provides a local testing server that you can use to test your
 analytic Docker image locally on your machine to verify that it works properly
@@ -40,7 +40,7 @@ The `run.bash` script runs the local testing server. The script is used as
 follows:
 
 ```
-  Voxel51 Platform local analytic testing server
+Voxel51 Platform local analytic testing server
 
 Example usage
 
@@ -52,16 +52,21 @@ Example usage
 
 Options
 
-  --analytic-image <image-name>     The name of the analytic Docker image to run. This flag is required.
-  --analytic-json <analytic-json>   The path to the analytic JSON file to use. This flag is required.
-  -i, --inputs <name>=<path>        Name=path pair(s) specifying the inputs to use. Can be repeated multiple
-                                    times if necessary. At least one input is required.
-  -p, --parameters <name>=<value>   Name=value pair(s) specifying parameter settings to use. `value` must be JSON
-                                    parsable. Can be repeated multiple times if  necessary.
-  --compute-type <cpu|gpu>          The compute type to use. Your Docker image must support this compute type. If
-                                    GPU execution is requested, `--runtime=nvidia` is added to the `docker run`
-                                    command; it is assumed that your machine and Docker installation are
-                                    configured to support this. The default is `cpu`.
+  --analytic-image <image-name>     The name of the analytic Docker image to run. This flag is
+                                    required.
+  --analytic-json <analytic-json>   The path to the analytic JSON file to use. This flag is
+                                    required.
+  -i, --inputs <name>=<path>        Name=path pair(s) specifying the inputs to use. Can be
+                                    repeated multiple times if necessary. At least one input is
+                                    required.
+  -p, --parameters <name>=<value>   Name=value pair(s) specifying parameter settings to use.
+                                    `value` must be JSON parsable. Can be repeated multiple times
+                                    if necessary.
+  --compute-type <cpu|gpu>          The compute type to use. Your Docker image must support this
+                                    compute type. If GPU execution is requested, `--runtime=nvidia`
+                                    is added to the `docker run` command; it is assumed that your
+                                    machine and Docker installation are configured to support this.
+                                    The default is `cpu`.
   -h, --help                        Displays this usage guide.
 ```
 
@@ -73,14 +78,14 @@ summarizes the function of your analytic and highlights any issues that were
 identified. After your analytic image passes local tests, it is ready for
 deployment to the Voxel51 Platform!
 
-> Note that you must restart the server for each test you run.
+Note that you must restart the server for each test you run.
 
 See the [examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
 for a pre-defined test analytic that you can build and deploy to the platform
 to get comfortable with the workflow.
 
 
-### Customizing the server
+## Customization
 
 You can configure the server by editing the `server/config.js` file and setting
 the constants there as desired. For example, you can customize the local

@@ -10,3 +10,5 @@ __pycache__
 !/docs/source/index.rst
 !/docs/source/README.rst
 !/docs/source/QUICKSTART.rst
+!/docs/source/EXAMPLES.rst
+!/docs/source/TESTS.rst

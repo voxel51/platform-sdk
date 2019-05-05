@@ -6,4 +6,6 @@ Voxel51 Vision Services Platform SDK
 
    README
    QUICKSTART
+   EXAMPLES
+   TESTS
    voxel51
