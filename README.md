@@ -12,15 +12,39 @@ Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel5
 To install the library, first clone it:
 
 ```shell
+# Clone the repository
 git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
+
+# Run the install script
+bash install.bash
+
+cd ..
 ```
 
-and then run the install script:
+Next, if you have not already, go to
+[https://console.voxel51.com](https://console.voxel51.com) and create a
+Platform Account.
+
+If you would like to programmatically upload your analytics and test them via
+the Platform API, you also need to install the
+[Python client library](https://github.com/voxel51/api-py):
 
 ```shell
-bash install.bash
+# Clone the repository
+git clone https://github.com/voxel51/api-py
+cd api-py
+
+# Install the library
+pip install -r requirements.txt
+pip install -e .
+
+cd ..
 ```
+
+After installing the client library, follow
+[these instructions](https://voxel51.com/docs/api/#api-documentation) to
+download and activiate an API token to enable use of the client library.
 
 
 ## Quickstart
@@ -28,6 +52,9 @@ bash install.bash
 See the [Quickstart Guide](QUICKSTART.md) for step-by-step instructions on
 using this SDK to wrap your custom analytic for deployment to the Voxel51
 Platform.
+
+See the [Example Analytic](EXAMPLES) directory for an end-to-end
+example of building and deploying a test analytic to the platform.
 
 
 ## Overview
@@ -65,7 +92,7 @@ information about the Platform API, refer to the
 [API Documentation](https://voxel51.com/docs/api).
 
 
-## Analytic Interface
+## Analytic interface
 
 All analytics deployed to the platform must be implemented as Docker containers
 that support the platform's interface as described below.
@@ -76,13 +103,12 @@ environment variables:
 - `TASK_DESCRIPTION` : the URL from which to download a JSON file that
 describes the task to be performed
 
+- `JOB_ID` : the ID of the job being executed by this task
+
 - `API_TOKEN` : the API token that the process can use to communicate with the
 Platform API
 
-- `ENV` : specifies which deployment environment the task is being run in. The
-possible values are enumerated by the
-:class:`voxel51.platform.config.DeploymentEnvironment` enum. This value
-determines which API endpoint the process should communicate with
+- `API_BASE_URL`: the base URL of the Platform API that the SDK will use
 
 The following JSON file shows an example of a task specification provided to
 the `vehicle-sense` analytic:
@@ -97,9 +123,7 @@ the `vehicle-sense` analytic:
             "signed-url": "https://storage.googleapis.com/XXXX"
         }
     },
-    "parameters": {
-        "size": [-1, 720]
-    },
+    "parameters": {},
     "output": {
         "signed-url": "https://storage.googleapis.com/XXXX"
     },
@@ -115,20 +139,21 @@ the `vehicle-sense` analytic:
 In the above JSON, the `analytic` key specifies the name of the analytic being
 run, and the `version` key specifies the particular version of the analytic.
 The `job_id` specifies the ID of the platform job being executed, which is used
-by the SDK when communicating the status of the task to the platform. The
-`inputs` object specifies where the process should download its input(s), and
-the `parameters` object specifies any parameters that were set. Finally the
-`output`, `status`, and `logfile` objects specify where to upload the task
-outputs, status file, and logfile, respectively.
+by the SDK when communicating the status of the task to the platform. The job
+ID is also provided via environment variable, which is done as a safety measure
+to support failure reporting in cases when the task JSON cannot be downloaded
+or parsed. The `inputs` object specifies where the process should download its
+input(s), and the `parameters` object specifies any parameters that were set.
+Finally the `output`, `status`, and `logfile` objects specify where to upload
+the task outputs, status file, and logfile, respectively.
 
-The Platform SDK provides a :class:`voxel51.platform.task.TaskConfig` class
-that conveniently encapsulates reading and parsing the above specification. In
+The Platform SDK provides a `voxel51.platform.task.TaskConfig` class that
+conveniently encapsulates reading and parsing the above specification. In
 particular, each of the remote file locations are encapsulated by the
-:class:`voxel51.platform.utils.RemotePathConfig` class, which abstracts the
-nature and location of the remote files from your analytic. Thus _no changes_
-to your code are required for your analytic to support reading/writing files
-from different remote storage providers (Google Cloud, AWS Cloud, private
-datacenters, etc.)
+`voxel51.platform.utils.RemotePathConfig` class, which abstracts the nature and
+location of the remote files from your analytic. Thus _no changes_ to your code
+are required for your analytic to support reading/writing files from different
+remote storage providers (Google Cloud, AWS Cloud, private datacenters, etc.)
 
 As a task is being executed, the Platform SDK provides a convenient interface
 for reporting the status of the task to the platform. The following JSON file
@@ -172,7 +197,7 @@ See the [Quickstart Guide](QUICKSTART.md) for more details about the interface
 provided by the Platform SDK.
 
 
-## Analytic Deployment
+## Analytic deployment
 
 You can deploy new custom analytics or new versions of your existing analytics
 at any time via the [API](https://voxel51.com/docs/api) or the
@@ -199,17 +224,19 @@ its client libraries. For example, the following code snippet shows how to
 publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
 
 ```py
-from voxe51.api import API
+from voxel51.users.api import API
 
-# Local path to the analytic JSON file
-upload_analytic_path = "/path/to/analytic.json"
-
-# Local path to a tar.gz of your GPU-enabled image
-upload_image_tar_path = "/path/to/image.tar.gz"
+analytic_json_path = "/path/to/analytic.json"
+analytic_image_path = "/path/to/image.tar.gz"
 
 api = API()
-api.upload_analytic(upload_analytic_path)
-api.upload_analytic_image(analytic_id, upload_image_tar_path, "gpu")
+
+# Upload analytic JSON
+analytic = api.upload_analytic(analytic_json_path)
+analytic_id = analytic["id"]
+
+# Upload image
+api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)

@@ -1,0 +1,29 @@
+{
+    "info": {
+        "version": "0.1",
+        "name": "platform-demo",
+        "supports_cpu": true,
+        "supports_gpu": false,
+        "description": "A demo analytic for the Voxel51 Plaform"
+    },
+    "inputs": [
+        {
+            "name": "video",
+            "type": "types.Video",
+            "description": "The video to annotate",
+            "required": true
+        }
+    ],
+    "parameters": [],
+    "outputs": [
+        {
+            "name": "labels",
+            "type": "types.VideoLabels",
+            "description": "A randomly generated VideoLabels file",
+            "filename": "labels.json",
+            "post_as_data": false,
+            "schema": null
+        }
+    ],
+    "zip_outputs": false
+}
