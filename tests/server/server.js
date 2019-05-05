@@ -15,10 +15,9 @@ const http = require('http');
 const url = require('url');
 const R = require('ramda');
 
-const server = (function genServer() {
-  const config = require('./config.js');
-  const BASE_DIR = __dirname;
+const config = require('./config.js');
 
+const server = (function makeServer() {
   var TASK = {};
 
   var eventList = {
@@ -84,7 +83,7 @@ const server = (function genServer() {
     },
   ];
 
-  return Object.freeze({spinup, markEvent});
+  return Object.freeze({spinup, recordEvent});
 
   function spinup(task) {
     return new Promise(function(resolve, reject) {
@@ -92,8 +91,9 @@ const server = (function genServer() {
       const server = http.createServer(async (req, res) => {
         const resHandler = await parsePathAndGetHandler(req, res)
         if (!resHandler) {
-          debug('No response handler found! Occured for path:',
-            req.url, req.method);
+          debug(
+            'No response handler found! Occured for path:', req.url,
+            req.method);
           res.writeHead(404, {'content-type': 'application/json'});
           res.end(JSON.stringify({
             code: 404,
@@ -105,11 +105,10 @@ const server = (function genServer() {
         return await resHandler(req, res);
       });
       const socket = server.listen(config.PORT, 'localhost', () => {
-        console.log(`Server is now listening on port ${config.PORT}.`);
+        console.log(`Server is listening on port ${config.PORT}`);
       });
       socket.on('close', async () => {
-        console.log('Server is closing.\n');
-        await generateOutputReport();
+        await generateTestReport();
       });
       return resolve(socket);
     });
@@ -118,8 +117,8 @@ const server = (function genServer() {
   function parsePathAndGetHandler(req) {
     return new Promise(function(resolve, reject) {
       const u = url.parse(req.url, true);
-      debug('the url info', u);
-      debug('the http method', req.method);
+      debug('The url info', u);
+      debug('The http method', req.method);
       for (const route of ROUTES) {
         if (route.regex.test(u.path)) {
           const safeMethod = req.method.toUpperCase();
@@ -132,11 +131,8 @@ const server = (function genServer() {
     });
   }
 
-  function markEvent(evtName, value) {
-    return new Promise(function(resolve, reject) {
-      eventList[evtName] = value;
-      return resolve();
-    });
+  function recordEvent(eventName, value) {
+    eventList[eventName] = value;
   }
 
   function resHandler(contFn, req, res) {
@@ -165,7 +161,7 @@ const server = (function genServer() {
         return resolve();
       } catch (err) {
         debug('Error caught during parsing/controller functions.');
-        console.log('\n\nERROR\n\n', err);
+        console.error(err);
         res.writeHead(err.code, {'content-type': 'application/json'});
         res.write(err);
         res.end();
@@ -175,7 +171,7 @@ const server = (function genServer() {
   }
 
   async function updateJobState(req, res) {
-    debug('update job state handler reached.');
+    debug('Updating job state.');
     const body = await readRequestBody(req);
     debug('The parsed request body is:', body);
     if (!body.state ||
@@ -188,19 +184,19 @@ const server = (function genServer() {
       };
     }
     if (body.state === 'RUNNING') {
-      await markEvent('running', true);
+      recordEvent('running', true);
     } else if (body.state === 'COMPLETE') {
-      await markEvent('complete', true);
+      recordEvent('complete', true);
     } else {
-      await markEvent('failed', true);
+      recordEvent('failed', true);
       if (!body.failure_type ||
         typeof body.failure_type !== 'string') {
         return {
           code: 400,
-          body: {code: 400, message: 'Failure type should be provided.'},
+          body: {code: 400, message: '`failure_type` must be provided.'},
         };
       }
-      await markEvent('failureType', body.failure_type);
+      recordEvent('failureType', body.failure_type);
     }
     return {
       code: 200,
@@ -209,8 +205,8 @@ const server = (function genServer() {
   }
 
   async function reportJobMetadata(req, res) {
-    debug('report job metadata handler reached.');
-    await markEvent('reportMetadata', true);
+    debug('Reporting job metadata.');
+    recordEvent('reportMetadata', true);
     const body = await readRequestBody(req);
     debug('The parsed request body is:', body);
     const fields = ['frame_count', 'size_bytes', 'duration_seconds'];
@@ -230,8 +226,8 @@ const server = (function genServer() {
   }
 
   async function getTaskJSON(req, res) {
-    debug('get task json handler reached.');
-    await markEvent('getTaskJSON', true);
+    debug('Getting task JSON.');
+    recordEvent('getTaskJSON', true);
     const u = await checkQuery(req, res, 'task');
     if (u.code && u.code === 404) {
       return u;
@@ -241,7 +237,7 @@ const server = (function genServer() {
   }
 
   async function getInputFile(req, res) {
-    debug('get input file handler reached.');
+    debug('Getting input file.');
     const u = await checkQuery(req, res, 'inputs');
     u.query.path = u.query['inputs'];
     if (req.method === 'HEAD') {
@@ -254,7 +250,7 @@ const server = (function genServer() {
         body: {},
       };
     }
-    await markEvent('getInputFile', true);
+    recordEvent('getInputFile', true);
     if (u.code && u.code === 404) {
       return u;
     }
@@ -262,8 +258,8 @@ const server = (function genServer() {
   }
 
   async function writeOutput(req, res) {
-    debug('write output handler reached.');
-    await markEvent('writeOutput', true);
+    debug('Writing task output.');
+    recordEvent('writeOutput', true);
     const u = await checkQuery(req, res, 'output');
     if (u.code && u.code === 404) {
       return u;
@@ -273,9 +269,9 @@ const server = (function genServer() {
   }
 
   async function writeLogfile(req, res) {
-    debug('write log file handler reached.');
-    await markEvent('writeLogfile', true);
-    await markEvent('numLogfileWrites', eventList['numLogfileWrites'] + 1);
+    debug('Writing logfile.');
+    recordEvent('writeLogfile', true);
+    recordEvent('numLogfileWrites', eventList['numLogfileWrites'] + 1);
     const u = await checkQuery(req, res, 'logfile');
     if (u.code && u.code === 404) {
       return u;
@@ -285,9 +281,9 @@ const server = (function genServer() {
   }
 
   async function writeStatus(req, res) {
-    debug('write status handler reached.');
-    await markEvent('numStatusWrites', eventList.numStatusWrites + 1);
-    await markEvent('writeStatus', true);
+    debug('Writing task status.');
+    recordEvent('numStatusWrites', eventList.numStatusWrites + 1);
+    recordEvent('writeStatus', true);
     const u = await checkQuery(req, res, 'status');
     if (u.code && u.code === 404) {
       return u;
@@ -315,7 +311,8 @@ const server = (function genServer() {
         debug('Raw body data', body);
         if (req.headers['content-type'] === 'application/json') {
           return resolve(JSON.parse(body));
-        } else { // assume application/x-www-form-urlencoded
+        } else {
+          // Assume application/x-www-form-urlencoded
           return parseUrlEncodedBody(body)
             .then(resolve);
         }
@@ -333,7 +330,7 @@ const server = (function genServer() {
       if (!u.query[field]) {
         return resolve({
           code: 404,
-          mesage: 'Not found. Invalid signed url format.',
+          mesage: 'Not found. Invalid signed URL format.',
         });
       }
       return resolve(u);
@@ -397,125 +394,126 @@ const server = (function genServer() {
     });
   }
 
-  function generateOutputReport() {
-    var report = '';
-    var expectedCheckPasses = 8;
-    var checksPassed = 0;
+  function generateTestReport() {
+    var reportStr = '';
+    var expectedTestPasses = 0;
+    var testsPassed = 0;
+
     return new Promise(async function(resolve, reject) {
-      log('\n----- Test report -----\n');
+      log('**************** Test report ****************');
+      log(Date(Date.now()).toLocaleString());
+      log('');
 
-      reportAssertion(
-        'Check for task JSON retrieval.',
-        () => eventList.getTaskJSON,
-        'Task JSON not retrieved.',
-        'Use SDK function voxt.TaskManager.from_url() to retrieve the task ' +
-        'JSON.');
+      reportTestResult(
+        'Checking that task JSON was downloaded...',
+        eventList.getTaskJSON,
+        'Task JSON was not downloaded',
+        'Build a task manager via `voxt.TaskManager.from_url()`');
 
-      reportAssertion(
-        'Check for posting RUNNING state.',
-        () => eventList.running,
-        'RUNNING state not posted.',
-        'Use SDK function task_manager.start() to post the state. Must be ' +
-        'done PRIOR to running custom analytic logic!');
+      reportTestResult(
+        'Checking that RUNNING state was posted...',
+        eventList.running,
+        'RUNNING state was not posted',
+        'Use `TaskManager.start()` to mark the task as running.');
 
-      reportAssertion(
-        'Check for input file retrieval.',
-        () => eventList.getInputFile,
-        'Input not retrieved.',
-        'Use SDK function task_manager.download_inputs() to retrieve input ' +
-        'file(s).');
+      reportTestResult(
+        'Checking that input files were downloaded...',
+        eventList.getInputFile,
+        'Inputs were not downloaded',
+        'Use `TaskManager.download_inputs()` to download inputs');
 
-      reportAssertion(
-        'Check for job metadata report.',
-        () => eventList.reportMetadata,
-        'Job metadata not reported.',
-        'Use SDK function task_manger.post_job_metadata() to report job ' +
-        'metadata. Failure to report job metadata violates terms of service ' +
-        'agreement.');
+      reportTestResult(
+        'Checking that job metadata was reported...',
+        eventList.reportMetadata,
+        'Job metadata was not reported',
+        'Use `TaskManager.post_job_metadata()` to report job metadata');
 
-      reportAssertion(
-        'Check for write of status JSON file.',
-        () => eventList.writeStatus && eventList.numStatusWrites > 0,
-        'Status file not written.',
-        'Use SDK function task_manager.publish_status() to write status ' +
-        'JSON file.');
+      reportTestResult(
+        'Checking that task status file was published at least once...',
+        eventList.writeStatus && eventList.numStatusWrites > 0,
+        'Task status file was not published',
+        'Use `TaskManager.publish_status()` to publish task status');
 
-      reportAssertion(
-        'Check for write of logfile.',
-        () => eventList.writeLogfile && eventList.numLogfileWrites > 0,
-        'Logfile not written.',
-        'Use SDK function task_manager.complete() or ' +
-        'task_manager.fail_gracefully() to write the logfile.');
+      reportTestResult(
+        'Checking that logfile was posted...',
+        eventList.writeLogfile && eventList.numLogfileWrites > 0,
+        'Logfile was not posted',
+        'Use `TaskManager.complete()` or `TaskManager.fail_gracefully()`' +
+          'to finalize the task');
 
-      reportAssertion(
-        'Check for only one of COMPLETE or FAILED state updates.',
-        () => !(eventList.complete && eventList.failed),
-        'Both COMPLETE and FAILED states written.',
-        'Only one of COMPLETE or FAILED should be written. This ' +
-        'suggests either an analytic error or invalid use of the SDK.');
+      if (eventList.complete || eventList.failed) {
+        reportTestResult(
+          'Checking that COMPLETE and FAILED were not both reported...',
+          !(eventList.complete && eventList.failed),
+          'Both COMPLETE and FAILED states were reported',
+          'Only one of COMPLETE or FAILED should be posted');
+      }
 
       if (eventList.failed) {
-        expectedCheckPasses += 1;
-        reportAssertion(
-          'Check that if failed, failure type provided.',
-          () => (
-            eventList.failureType !== null &&
+        reportTestResult(
+          'Checking that failure type is provided for failed jobs...',
+          (eventList.failureType !== null &&
             typeof eventList.failureType === 'string'),
-          'Valid failure type not provided.',
-          'Use SDK function task_manager.fail_gracefully() to write failure ' +
-          'state and use one of voxt.TaskFailureType ENUM as the failure ' +
-          'type.');
+          'Failure type was not provided',
+          'Use `TaskManager.fail_gracefully()` to report failure and use ' +
+            '`TaskFailureType` to specify failure type');
       }
 
-      reportAssertion('Check for output write state.',
-        () => eventList.writeOutput,
-        'Output file not written.',
-        'Use SDK function task.upload_output() to write the output file.');
+      // @todo analytics do not necessarily need to post an output; they may
+      // only post outputs as data
+      reportTestResult(
+        'Checking that output was uploaded...',
+        eventList.writeOutput,
+        'No output files were posted',
+        'Use `TaskManager.upload_output()` to upload task output(s)');
 
-      log('Number of checks passed:');
+      let success = testsPassed === expectedTestPasses;
       log(
-        `${checksPassed} / ${expectedCheckPasses} checks = ` +
-        `${100 * checksPassed / expectedCheckPasses}%\n`
-      );
+        `${testsPassed}/${expectedTestPasses} tests passed (` +
+        `${100 * testsPassed / expectedTestPasses}%)`, !success, true);
+      log('*********************************************');
 
-      if (checksPassed === expectedCheckPasses) {
-        log('All checks passed!');
-      }
+      // Write test report
+      fs.writeFileSync(config.TEST_REPORT_PATH, reportStr);
+      console.log(`\nTest report written to ${config.TEST_REPORT_PATH}\n`);
 
-      log('\n----- End of report -----\n');
+      let cleanScript = path.join(__dirname, '../clean.bash');
+      console.log(`To cleanup, run:\n\nbash ${cleanScript}\n`);
 
-      await writeReport();
       return resolve();
     });
 
-    function reportAssertion(checkMessage, pred, errMessage, instructionCall) {
-      try {
-        log(checkMessage);
-        assert.ok(pred(), errMessage);
-        log('\x1b[32m[\u2713] Check passed!\x1b[39m\n');
-        checksPassed += 1;
-      } catch (error) {
-        log('\x1b[31m[x] Check failed.\x1b[39m\n', true);
-        log(instructionCall, true);
+    function reportTestResult(testMsg, success, errorMsg, helpMsg) {
+      log(testMsg);
+      expectedTestPasses += 1;
+
+      if (success) {
+        log('[x] Test passed', false, true);
+        testsPassed += 1;
+      } else {
+        log(errorMsg, true);
+        log('[ ] Test failed', true, true);
+        log('Tip: ' + helpMsg);
       }
+      log('');
     }
 
-    function log(msg, isError=false) {
-      report += msg;
+    function log(msg, isError=false, color=false) {
+      // Log to report
+      reportStr += msg + '\n';
+
+      // Log to console
       if (isError) {
+        if (color) {
+          msg = '\x1b[31m' + msg + '\x1b[39m';
+        }
         console.error(msg);
       } else {
+        if (color) {
+          msg = '\x1b[32m' + msg + '\x1b[39m';
+        }
         console.log(msg);
       }
-    }
-
-    function writeReport() {
-      return new Promise(function(resolve, reject) {
-        fs.writeFile(config.TEST_REPORT_PATH, report, (err) => {
-          if (err) return reject(err);
-          return resolve();
-        });
-      });
     }
   }
 }());
