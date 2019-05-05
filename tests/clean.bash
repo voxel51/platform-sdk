@@ -10,4 +10,4 @@
 # Brian Moore, brian@voxel51.com
 #
 
-node server/cleanup.js
+node "$(dirname "$0")/server/cleanup.js" "$@"

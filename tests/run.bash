@@ -1,5 +1,5 @@
 #!/bin/bash
-# Local test server runner script.
+# Local testing server runner script.
 #
 # To see usage:
 #   bash run.bash --help
@@ -10,4 +10,4 @@
 # Brian Moore, brian@voxel51.com
 #
 
-node server/index.js "$@"
+node "$(dirname "$0")/server/index.js" "$@"
