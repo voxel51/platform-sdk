@@ -42,9 +42,9 @@ pip install -e .
 cd ..
 ```
 
-After installing the client library, follow the instructions at
-[https://voxel51.com/docs/api/#api-documentation](https://voxel51.com/docs/api/#api-documentation)
-to download and activiate an API token to enable use of the client library.
+After installing the client library, follow
+[these instructions](https://voxel51.com/docs/api/#api-documentation) to
+download and activiate an API token to enable use of the client library.
 
 
 ## Quickstart

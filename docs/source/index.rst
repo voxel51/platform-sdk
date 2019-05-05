@@ -7,4 +7,5 @@ Voxel51 Platform SDK
    README
    QUICKSTART
    EXAMPLES
+   TESTS
    voxel51

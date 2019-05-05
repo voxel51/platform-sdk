@@ -396,8 +396,10 @@ You can build your image from the above `Dockerfile` by running:
 ```shell
 # Clone platform-sdk
 git clone https://github.com/voxel51/platform-sdk
+cd platform-sdk
 git submodule init
 git submodule update
+cd ..
 
 #
 # Your custom setup here!
