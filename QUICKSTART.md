@@ -286,6 +286,7 @@ LOGFILE_PATH=/var/log/image.log
 # If necessary, replace `python main.py` here with the appropriate invocation
 # for your analytic.
 #
+set -o pipefail
 python main.py 2>&1 | tee "${LOGFILE_PATH}"
 
 # Gracefully handle uncaught failures in analytic

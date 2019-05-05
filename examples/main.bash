@@ -16,6 +16,7 @@ LOGFILE_PATH=/var/log/image.log
 
 # Run analytic
 # Pipes stdout/stderr to disk so that we can post it manually in case of errors
+set -o pipefail
 python main.py 2>&1 | tee "${LOGFILE_PATH}"
 
 # Gracefully handle uncaught failures in analytic
