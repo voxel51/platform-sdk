@@ -69,7 +69,18 @@ images locally to ensure that they are functioning properly. The
 [tests folder](https://github.com/voxel51/platform-sdk/tree/develop/tests)
 defines a local testing server that you can use to perform such tests.
 
-Run the following command to spawn a test server to run a job on the
+If you have not already, install the test server by running:
+
+```shell
+cd ../tests
+npm install
+cd ../examples
+```
+
+If you do not have `npm` installed, follow the complete install instructions
+in the [tests README](TESTS).
+
+Then, run the following command to spawn a test server to run a job on the
 `platform-demo` image locally:
 
 ```shell
