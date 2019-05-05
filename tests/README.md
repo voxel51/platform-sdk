@@ -1,10 +1,10 @@
 # Local Analytic Testing Server
 
-This directory provides a local testing server that you can use to test your
+This package provides a local testing server that you can use to test your
 analytic Docker image locally on your machine to verify that it works properly
 before deploying it to the Voxel51 Platform.
 
-The test suite consists of a simple HTTP server that will mock the expected
+The tool consists of a simple HTTP server that will mock the expected
 behavior of the Platform API when your analytic Docker communicates with it.
 When you launch the server, it provides a `docker run` command that you can
 copy and paste into another terminal to run your Docker image locally.
@@ -36,11 +36,11 @@ npm install
 
 ## Quickstart
 
-The `run.bash` script runs the local test server. The script is used as
+The `run.bash` script runs the local testing server. The script is used as
 follows:
 
 ```
-  Voxel51 Platform local analytic test server
+  Voxel51 Platform local analytic testing server
 
 Example usage
 
@@ -68,7 +68,7 @@ Options
 Running the `run.bash` script will output a `docker run` command that you must
 copy and paste into another terminal window in order to run your analytic.
 Once the Docker image exits (either successfully or unsuccessfully), kill the
-test server by entering `Ctrl-C`. A test report will then be generated that
+server by entering `Ctrl-C`. A test report will then be generated that
 summarizes the function of your analytic and highlights any issues that were
 identified. After your analytic image passes local tests, it is ready for
 deployment to the Voxel51 Platform!
