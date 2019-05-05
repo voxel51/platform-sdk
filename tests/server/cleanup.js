@@ -12,9 +12,9 @@ const { exec } = require('child_process');
 
 const config = require('./config.js');
 
-(function main() {
-  console.log('Cleaning up local storage');
-  exec(`rm -r ${config.STORAGE_BASE_DIR}`, (err, stdout, stderr) => {
+(function cleanup() {
+  console.log(`Deleting "${config.STORAGE_BASE_DIR}" if necessary`);
+  exec(`rm -rf ${config.STORAGE_BASE_DIR}`, (err, stdout, stderr) => {
     if (err) {
         console.error(err);
     }
