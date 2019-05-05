@@ -22,6 +22,10 @@ and then run the install script:
 bash install.bash
 ```
 
+After installing the client library, follow
+[these instructions](https://voxel51.com/docs/api/#api-documentation) to
+download and activiate an API token to enable use of the client library.
+
 
 ## Quickstart
 
