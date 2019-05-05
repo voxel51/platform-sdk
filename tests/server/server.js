@@ -442,13 +442,11 @@ const server = (function makeServer() {
         'Use `TaskManager.complete()` or `TaskManager.fail_gracefully()`' +
           'to finalize the task');
 
-      if (eventList.complete || eventList.failed) {
-        reportTestResult(
-          'Checking that COMPLETE and FAILED were not both reported...',
-          !(eventList.complete && eventList.failed),
-          'Both COMPLETE and FAILED states were reported',
-          'Only one of COMPLETE or FAILED should be posted');
-      }
+      reportTestResult(
+        'Checking that COMPLETE state was posted...',
+        eventList.complete,
+        'COMPLETE state was not posted',
+        'Use `TaskManager.complete()` to complete a successful task');
 
       if (eventList.failed) {
         reportTestResult(
