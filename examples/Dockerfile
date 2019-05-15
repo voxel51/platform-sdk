@@ -3,9 +3,11 @@ FROM ubuntu:16.04
 #
 # Install `platform-sdk` and its dependencies
 #
-# Notes:
-#   - ppa:deadsnakes/ppa is used in order to install Python 3.6 on Ubuntu 16.04
-#   - bootstrap.pypa.io/get-pip.py is used to install pip on Python 3.6
+# `ppa:deadsnakes/ppa` is used in order to install Python 3.6 on Ubuntu 16.04
+# https://askubuntu.com/questions/865554/how-do-i-install-python-3-6-using-apt-get
+#
+# `https://bootstrap.pypa.io/get-pip.py` is used to install pip on Python 3.6
+# https://askubuntu.com/questions/889535/how-to-install-pip-for-python-3-6-on-ubuntu-16-10
 #
 COPY platform-sdk/ /engine/platform-sdk/
 RUN apt-get update \
