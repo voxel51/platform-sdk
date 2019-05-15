@@ -9,8 +9,7 @@ FROM ubuntu:16.04
 #
 COPY platform-sdk/ /engine/platform-sdk/
 RUN apt-get update \
-    && apt-get -y --no-install-recommends install \
-        software-properties-common \
+    && apt-get -y --no-install-recommends install software-properties-common \
     && add-apt-repository -y ppa:deadsnakes/ppa \
     && apt-get update \
     && apt-get -y --no-install-recommends install \
