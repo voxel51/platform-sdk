@@ -72,11 +72,12 @@ Options
 
 Running the `run.bash` script will output a `docker run` command that you must
 copy and paste into another terminal window in order to run your analytic.
-Once the Docker image exits (either successfully or unsuccessfully), kill the
-server by entering `Ctrl-C`. A test report will then be generated that
-summarizes the function of your analytic and highlights any issues that were
-identified. After your analytic image passes local tests, it is ready for
-deployment to the Voxel51 Platform!
+When you run the image, an `out/` directory will be populated with the various
+files read and written by your analytic. Once the Docker image exits (either
+successfully or unsuccessfully), kill the server by entering `Ctrl-C`. A test
+report will then be generated that summarizes the function of your analytic and
+highlights any issues that were identified. After your analytic image passes
+local tests, it is ready for deployment to the Voxel51 Platform!
 
 Note that you must restart the server for each test you run.
 
@@ -94,14 +95,12 @@ storage directory and/or the path to which test results files are written.
 
 ## Cleanup
 
-To cleanup any generated test files, run:
+To cleanup any generated test files, run the `clean.bash` script. Note that
+this script must be run from the same working directory from which you ran
+the `run.bash` script so that any relative paths in the `server/config.js`
+will be interpreted correctly.
 
-```
-bash clean.bash
-```
-
-Note that you must manually cleanup any Docker images that you build on your
-machine.
+You must manually cleanup any Docker images that you build on your machine.
 
 
 ## Copyright
