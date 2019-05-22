@@ -376,7 +376,13 @@ RUN apt-get update \
 # Declare environment variables that the platform will use to communicate with
 # the image at runtime
 #
-ENV TASK_DESCRIPTION=null JOB_ID=null API_TOKEN=null API_BASE_URL=null OS=null LOGFILE_SIGNED_URL=null
+ENV \
+    TASK_DESCRIPTION=null \
+    JOB_ID=null \
+    API_TOKEN=null \
+    API_BASE_URL=null \
+    OS=null \
+    LOGFILE_SIGNED_URL=null
 
 # Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
