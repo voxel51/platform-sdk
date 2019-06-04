@@ -35,8 +35,8 @@ echo "Initializing submodules"
 git submodule init
 git submodule update
 
-# Install ETA and its dependencies
-echo "Installing ETA"
+# Install ETA lite
+echo "Installing ETA lite"
 cd eta
-bash install.bash
+bash install.bash -l
 cp config-example.json config.json
