@@ -53,7 +53,7 @@ See the [Quickstart Guide](QUICKSTART.md) for step-by-step instructions on
 using this SDK to wrap your custom analytic for deployment to the Voxel51
 Platform.
 
-See the [Example Analytic](EXAMPLES) directory for an end-to-end
+See the [Example Analytic](examples) directory for an end-to-end
 example of building and deploying a test analytic to the platform.
 
 
