@@ -97,8 +97,10 @@ const server = (function makeServer() {
             req.method);
           res.writeHead(404, {'content-type': 'application/json'});
           res.end(JSON.stringify({
-            code: 404,
-            message: 'Not Found',
+            error: {
+              code: 404,
+              message: 'Not Found',
+            },
           }));
           return;
         }
@@ -181,7 +183,12 @@ const server = (function makeServer() {
         body.state !== 'RUNNING')) {
       return {
         code: 400,
-        body: {code: 400, message: 'Invalid state provided.'},
+        body: {
+          error: {
+            code: 400,
+            message: 'Invalid state provided.',
+          },
+        },
       };
     }
     if (body.state === 'RUNNING') {
@@ -194,7 +201,12 @@ const server = (function makeServer() {
         typeof body.failure_type !== 'string') {
         return {
           code: 400,
-          body: {code: 400, message: '`failure_type` must be provided.'},
+          body: {
+            error: {
+              code: 400,
+              message: '`failure_type` must be provided.',
+            },
+          },
         };
       }
       recordEvent('failureType', body.failure_type);
@@ -215,8 +227,10 @@ const server = (function makeServer() {
       return {
         code: 400,
         body: {
-          code: 400,
-          message: 'All three job metadata fields should be valid numbers.'
+          error: {
+            code: 400,
+            message: 'All three job metadata fields should be valid numbers.',
+          },
         },
       };
     }
