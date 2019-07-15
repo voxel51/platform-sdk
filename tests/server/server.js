@@ -15,6 +15,7 @@ const path = require('path');
 const http = require('http');
 const url = require('url');
 const R = require('ramda');
+const uuid4 = require('uuid/v4');
 
 const config = require('./config.js');
 
@@ -51,6 +52,12 @@ const server = (function makeServer() {
       regex: new RegExp('\\/v1\\/jobs\\/.*\\/metadata'),
       methods: ['POST'],
       handler: reportJobMetadata,
+    },
+    {
+      name: 'job output data',
+      regex: new RegExp('\\/v1\\/jobs\\/.*\\/data'),
+      methods: ['POST'],
+      handler: uploadJobData,
     },
     {
       name: 'get task json',
@@ -237,6 +244,19 @@ const server = (function makeServer() {
     return {
       code: 204,
       body: {},
+    };
+  }
+
+  async function uploadJobData(req, res) {
+    debug('Uploading job data.');
+    recordEvent('uploadData', true);
+    return {
+      code: 200,
+      body: {
+        data: {
+          data_id: uuid4(),
+        },
+      },
     };
   }
 
@@ -476,9 +496,10 @@ const server = (function makeServer() {
       // only post outputs as data
       reportTestResult(
         'Checking that output was uploaded...',
-        eventList.writeOutput,
+        eventList.writeOutput || eventList.uploadData,
         'No output files were posted',
-        'Use `TaskManager.upload_output()` to upload task output(s)');
+        'Use `TaskManager.upload_output()` or ' +
+        '`TaskManager.upload_output_as_data()` to upload task output(s)');
 
       let success = testsPassed === expectedTestPasses;
       log(
