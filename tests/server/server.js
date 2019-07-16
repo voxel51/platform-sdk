@@ -248,13 +248,19 @@ const server = (function makeServer() {
   }
 
   async function uploadJobData(req, res) {
-    debug('Uploading job data.');
+    debug('Uploading job output as data.');
     recordEvent('uploadData', true);
+    const data_id = uuid4();
+    createAndPipeWriteStream({
+      query: {
+        path: 'out/data-' + data_id,
+      },
+    }, req, res);
     return {
       code: 200,
       body: {
         data: {
-          data_id: uuid4(),
+          data_id,
         },
       },
     };
