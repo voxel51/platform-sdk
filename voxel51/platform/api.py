@@ -61,8 +61,7 @@ class API(object):
         '''
         self.token = token
         self.keep_alive = keep_alive
-        self.base_url = voxu.handle_macos_localhost(
-            os.environ[voxc.API_BASE_URL_ENV_VAR])
+        self.base_url = os.environ[voxc.API_BASE_URL_ENV_VAR]
 
         self._header = self.token.get_header()
         self._requests = requests.Session() if keep_alive else requests
