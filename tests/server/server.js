@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const url = require('url');
+const Busboy = require('busboy');
 const R = require('ramda');
 const uuid4 = require('uuid/v4');
 
@@ -251,11 +252,7 @@ const server = (function makeServer() {
     debug('Uploading job output as data.');
     recordEvent('uploadData', true);
     const data_id = uuid4();
-    createAndPipeWriteStream({
-      query: {
-        path: 'out/data-' + data_id,
-      },
-    }, req, res);
+    saveMultipartUpload(req, 'out');
     return {
       code: 200,
       body: {
@@ -418,6 +415,17 @@ const server = (function makeServer() {
       });
       req.pipe(ws);
     });
+  }
+
+  function saveMultipartUpload(req, outDir) {
+    var busboy = new Busboy({
+      headers: req.headers,
+    });
+    busboy.on('file', function(field, file, filename) {
+      const filePath = path.join(outDir, filename);
+      file.pipe(fs.createWriteStream(filePath));
+    });
+    return req.pipe(busboy);
   }
 
   function parseUrlEncodedBody(raw) {

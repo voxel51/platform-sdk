@@ -8,6 +8,7 @@
   "license": "BSD-4-Clause",
   "private": true,
   "dependencies": {
+    "busboy": "^0.3.1",
     "command-line-args": "^5.1.1",
     "command-line-usage": "^5.0.5",
     "joi": "^14.3.1",
