@@ -14,7 +14,9 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const url = require('url');
+const Busboy = require('busboy');
 const R = require('ramda');
+const uuid4 = require('uuid/v4');
 
 const config = require('./config.js');
 
@@ -51,6 +53,12 @@ const server = (function makeServer() {
       regex: new RegExp('\\/v1\\/jobs\\/.*\\/metadata'),
       methods: ['POST'],
       handler: reportJobMetadata,
+    },
+    {
+      name: 'job output data',
+      regex: new RegExp('\\/v1\\/jobs\\/.*\\/data'),
+      methods: ['POST'],
+      handler: uploadJobData,
     },
     {
       name: 'get task json',
@@ -97,8 +105,10 @@ const server = (function makeServer() {
             req.method);
           res.writeHead(404, {'content-type': 'application/json'});
           res.end(JSON.stringify({
-            code: 404,
-            message: 'Not Found',
+            error: {
+              code: 404,
+              message: 'Not Found',
+            },
           }));
           return;
         }
@@ -181,7 +191,12 @@ const server = (function makeServer() {
         body.state !== 'RUNNING')) {
       return {
         code: 400,
-        body: {code: 400, message: 'Invalid state provided.'},
+        body: {
+          error: {
+            code: 400,
+            message: 'Invalid state provided.',
+          },
+        },
       };
     }
     if (body.state === 'RUNNING') {
@@ -194,7 +209,12 @@ const server = (function makeServer() {
         typeof body.failure_type !== 'string') {
         return {
           code: 400,
-          body: {code: 400, message: '`failure_type` must be provided.'},
+          body: {
+            error: {
+              code: 400,
+              message: '`failure_type` must be provided.',
+            },
+          },
         };
       }
       recordEvent('failureType', body.failure_type);
@@ -215,14 +235,31 @@ const server = (function makeServer() {
       return {
         code: 400,
         body: {
-          code: 400,
-          message: 'All three job metadata fields should be valid numbers.'
+          error: {
+            code: 400,
+            message: 'All three job metadata fields should be valid numbers.',
+          },
         },
       };
     }
     return {
       code: 204,
       body: {},
+    };
+  }
+
+  async function uploadJobData(req, res) {
+    debug('Uploading job output as data.');
+    recordEvent('uploadData', true);
+    const data_id = uuid4();
+    saveMultipartUpload(req, 'out');
+    return {
+      code: 200,
+      body: {
+        data: {
+          data_id,
+        },
+      },
     };
   }
 
@@ -380,6 +417,17 @@ const server = (function makeServer() {
     });
   }
 
+  function saveMultipartUpload(req, outDir) {
+    var busboy = new Busboy({
+      headers: req.headers,
+    });
+    busboy.on('file', function(field, file, filename) {
+      const filePath = path.join(outDir, filename);
+      file.pipe(fs.createWriteStream(filePath));
+    });
+    return req.pipe(busboy);
+  }
+
   function parseUrlEncodedBody(raw) {
     return new Promise(function(resolve, reject) {
       var bodyShell = {};
@@ -462,9 +510,10 @@ const server = (function makeServer() {
       // only post outputs as data
       reportTestResult(
         'Checking that output was uploaded...',
-        eventList.writeOutput,
+        eventList.writeOutput || eventList.uploadData,
         'No output files were posted',
-        'Use `TaskManager.upload_output()` to upload task output(s)');
+        'Use `TaskManager.upload_output()` or ' +
+        '`TaskManager.upload_output_as_data()` to upload task output(s)');
 
       let success = testsPassed === expectedTestPasses;
       log(
