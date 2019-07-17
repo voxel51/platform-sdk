@@ -10,4 +10,4 @@
 # Brian Moore, brian@voxel51.com
 #
 
-node "$(dirname "$0")/server/index.js" "$@"
+npm start -- "$@"
