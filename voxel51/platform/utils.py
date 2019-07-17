@@ -139,8 +139,8 @@ def upload_bytes(bytes_str, path_config, content_type=None):
         content_type (str, optional): a string specifying the content type of
             the file being uploaded
     '''
-    _get_http_client().upload_bytes(bytes_str, path_config.signed_url,
-        content_type=content_type)
+    _get_http_client().upload_bytes(
+        bytes_str, path_config.signed_url, content_type=content_type)
 
 
 def load_json(str_or_bytes):
