@@ -222,9 +222,20 @@ const JOB_ID = uuid4();
   }
 
   function generateSignedURL(filepath, type) {
-    let localPath = path.join(config.STORAGE_BASE_DIR, filepath);
+    const localPath = path.join(config.STORAGE_BASE_DIR, filepath);
     return Promise.resolve(
-      `${config.API_BASE_URL}/local/file?${type}=${localPath}`);
+      modifyURLForDocker(
+        `${config.API_BASE_URL}/local/file?${type}=${localPath}`
+      )
+    );
+  }
+
+  function modifyURLForDocker(url) {
+    // if MacOS and local
+    if (process.platform === 'darwin') {
+      return url.replace(/127\.0\.0\.1/g, 'docker.for.mac.localhost');
+    }
+    return url;
   }
 
   function generateDockerCommand(taskURL, logfileURL) {
@@ -238,11 +249,10 @@ const JOB_ID = uuid4();
         `-e TASK_DESCRIPTION="${taskURL}" ` +
         `-e API_TOKEN="xxxxxxxxxxxxxxxx" ` +
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
-        `-e API_BASE_URL="${config.API_BASE_URL}" ` +
+        `-e API_BASE_URL="${modifyURLForDocker(config.API_BASE_URL)}" ` +
         `--network="host" ${DOCKER_IMAGE_NAME}; ` +
         `echo -e "\\nDocker has exited. Kill the server (Ctrl-C) to ` +
         `retrieve your test results\\n"`;
-
       return resolve(cmd);
     });
   }
