@@ -48,7 +48,6 @@ ENV \
     JOB_ID=null \
     API_TOKEN=null \
     API_BASE_URL=null \
-    OS=null \
     LOGFILE_SIGNED_URL=null
 
 # Expose port so image can read/write from external storage at runtime

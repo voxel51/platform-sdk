@@ -237,7 +237,6 @@ const JOB_ID = uuid4();
       cmd += `--name ${JOB_ID} ` +
         `-e TASK_DESCRIPTION="${taskURL}" ` +
         `-e API_TOKEN="xxxxxxxxxxxxxxxx" ` +
-        `-e OS="${process.platform}" ` +
         `-e LOGFILE_SIGNED_URL="${logfileURL}" ` +
         `-e API_BASE_URL="${config.API_BASE_URL}" ` +
         `--network="host" ${DOCKER_IMAGE_NAME}; ` +
