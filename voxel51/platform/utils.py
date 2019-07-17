@@ -24,17 +24,10 @@ import os
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 
-try:
-    import urllib.parse as urlparse  # Python 3
-except ImportError:
-    import urlparse  # Python 2
-
 from eta.core.config import Config
 import eta.core.image as etai
 import eta.core.storage as etas
 import eta.core.video as etav
-
-import voxel51.platform.config as voxc
 
 
 _HTTP_CLIENT = None
