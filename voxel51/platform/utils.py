@@ -99,7 +99,7 @@ def download(path_config, output_dir):
     Returns:
         the local path to the downloaded file
     '''
-    filename = etas.HTTPStorageClient.get_filename(url)
+    filename = etas.HTTPStorageClient.get_filename(path_config.signed_url)
     local_path = os.path.join(output_dir, filename)
     _get_http_client().download(path_config.signed_url, local_path)
     return local_path
