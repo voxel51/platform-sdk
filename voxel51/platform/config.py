@@ -40,9 +40,3 @@ API_TOKEN_ENV_VAR = "API_TOKEN"
 # The environment variable that holds the base URL of the API
 #
 API_BASE_URL_ENV_VAR = "API_BASE_URL"
-
-#
-# The environment variable that will hold the platform on which the Platform
-# API is running
-#
-OS_ENV_VAR = "OS"

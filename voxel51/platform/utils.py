@@ -24,17 +24,10 @@ import os
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 
-try:
-    import urllib.parse as urlparse  # Python 3
-except ImportError:
-    import urlparse  # Python 2
-
 from eta.core.config import Config
 import eta.core.image as etai
 import eta.core.storage as etas
 import eta.core.video as etav
-
-import voxel51.platform.config as voxc
 
 
 _HTTP_CLIENT = None
@@ -69,40 +62,6 @@ class RemotePathConfig(Config):
             a RemotePathConfig instance describing the given signed URL
         '''
         return cls({"signed-url": signed_url})
-
-
-def is_macos():
-    '''Determines whether the current platform is Mac.
-
-    Returns:
-        True/False if the current operating system is macOS
-    '''
-    return os.environ.get(voxc.OS_ENV_VAR, "").lower() == "darwin"
-
-
-def handle_macos_localhost(url):
-    '''Converts ``localhost`` or ``127.0.0.X`` to ``docker.for.mac.localhost``
-    in the given URL, if necessary, when running on macOS. This is required for
-    Docker containers running on macOS.
-
-    Args:
-        url (str): a URL
-
-    Returns:
-        a URL with ``localhost`` or ``127.0.0.X`` replaced with
-        ``docker.for.mac.localhost``, if necessary, when running on macOS
-    '''
-    if not is_macos():
-        return url
-
-    chunks = list(urlparse.urlsplit(url))
-    netloc = chunks[1].split(":", 1)
-    hostname = netloc[0]
-    if hostname == "localhost" or hostname.startswith("127.0.0."):
-        netloc[0] = "docker.for.mac.localhost"
-        chunks[1] = ":".join(netloc)
-        url = urlparse.urlunsplit(chunks)
-    return url
 
 
 def get_metadata_for_video(video_path):
@@ -140,10 +99,9 @@ def download(path_config, output_dir):
     Returns:
         the local path to the downloaded file
     '''
-    url = handle_macos_localhost(path_config.signed_url)
-    filename = etas.HTTPStorageClient.get_filename(url)
+    filename = etas.HTTPStorageClient.get_filename(path_config.signed_url)
     local_path = os.path.join(output_dir, filename)
-    _get_http_client().download(url, local_path)
+    _get_http_client().download(path_config.signed_url, local_path)
     return local_path
 
 
@@ -157,8 +115,7 @@ def download_bytes(path_config):
     Returns:
         the bytes of the downloaded file
     '''
-    url = handle_macos_localhost(path_config.signed_url)
-    return _get_http_client().download_bytes(url)
+    return _get_http_client().download_bytes(path_config.signed_url)
 
 
 def upload(local_path, path_config):
@@ -169,8 +126,7 @@ def upload(local_path, path_config):
         path_config (RemotePathConfig): a RemotePathConfig describing where to
             upload the file
     '''
-    url = handle_macos_localhost(path_config.signed_url)
-    _get_http_client().upload(local_path, url)
+    _get_http_client().upload(local_path, path_config.signed_url)
 
 
 def upload_bytes(bytes_str, path_config, content_type=None):
@@ -183,8 +139,8 @@ def upload_bytes(bytes_str, path_config, content_type=None):
         content_type (str, optional): a string specifying the content type of
             the file being uploaded
     '''
-    url = handle_macos_localhost(path_config.signed_url)
-    _get_http_client().upload_bytes(bytes_str, url, content_type=content_type)
+    _get_http_client().upload_bytes(
+        bytes_str, path_config.signed_url, content_type=content_type)
 
 
 def load_json(str_or_bytes):
