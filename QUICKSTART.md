@@ -390,9 +390,7 @@ EXPOSE 8000
 # Setup entrypoint
 COPY main.bash /engine/main.bash
 COPY main.py /engine/main.py
-RUN mkdir -p /var/log \
-    && chmod +x /engine/main.bash \
-    && chmod +x /engine/main.py
+RUN mkdir -p /var/log
 WORKDIR /engine
 ENTRYPOINT ["bash", "main.bash"]
 ```
