@@ -336,6 +336,7 @@ FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
 # version in your image:
 #   - CUDA 8: tensorflow-gpu==1.4.0
 #   - CUDA 9: tensorflow-gpu==1.12.0
+#   - CUDA 10: tensorflow-gpu==1.14.0
 #
 # The following installs Python 3.6 with TensorFlow 1.12.0 to suit the base
 # NVIDIA image chosen above.
