@@ -74,7 +74,6 @@ If you have not already, install the test server by running:
 ```shell
 cd ../tests
 npm install
-cd ../examples
 ```
 
 If you do not have `npm` installed, follow the complete install instructions
@@ -85,10 +84,10 @@ Then, run the following command to spawn a test server to run a job on the
 
 ```shell
 # Launch test server
-bash ../tests/run.bash \
+bash run.bash \
     --analytic-image platform-demo \
-    --analytic-json ./analytic.json \
-    --inputs video=data/test.mp4 \
+    --analytic-json ../examples/analytic.json \
+    --inputs video=../data/test.mp4 \
     --compute-type cpu
 ```
 
