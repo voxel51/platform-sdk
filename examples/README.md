@@ -42,7 +42,7 @@ and an API token.
 
 ## Building the image
 
-To build the demo analytic, simply run the commands below from this directory.
+To build the demo analytic, simply run the commands below **from this directory**.
 The code will clone a fresh copy of the Platform SDK, build the Docker image,
 and then cleanup the generated files.
 
