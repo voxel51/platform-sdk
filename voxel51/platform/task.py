@@ -23,11 +23,6 @@ import logging
 import os
 import sys
 
-try:
-    import urllib.parse as urlparse  # Python 3
-except ImportError:
-    import urlparse  # Python 2
-
 from eta.core.config import Config
 import eta.core.log as etal
 from eta.core.serial import Serializable
@@ -862,14 +857,10 @@ def fail_gracefully(
         logger.error("Failed to upload logfile")
 
 
-def fail_epically(task_config_url):
+def fail_epically():
     '''Handles an epic failure of a task that occurs before the
     :class:`TaskConfig` was succesfully downloaded. The platform is notified
     of the failure as fully as possible.
-
-    Args:
-        task_config_url (str): the URL from which the :class:`TaskConfig` was
-            to be downloaded
     '''
     #
     # Log exception, even though we'll be unable to upload the logfile
