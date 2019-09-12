@@ -306,7 +306,7 @@ class TaskStatus(Serializable):
     Attributes:
         analytic (str): name of the analytic
         version (str): version of the analytic
-        state (TaskState): current state of the task
+        state (TaskState): state of the task
         start_time (str): time the task was started, or None if not started
         complete_time (str): time the task was completed, or None if not
             completed
@@ -321,24 +321,68 @@ class TaskStatus(Serializable):
             data to their associated data IDs
     '''
 
-    def __init__(self, task_config):
+    def __init__(
+            self,
+            analytic=None,
+            version=None,
+            state=TaskState.SCHEDULED,
+            start_time=None,
+            complete_time=None,
+            fail_time=None,
+            failure_type=TaskFailureType.NONE,
+            messages=None,
+            inputs=None,
+            posted_data=None
+        ):
         '''Creates a TaskStatus instance.
 
         Args:
-            task_config (TaskConfig): a TaskConfig instace describing the task
+            analytic (str): the name of the analytic
+            version (str, optional): the version of the analytic
+            state (TaskState, optional): the state of the task
+            start_time (str, optional): the time the task was started, if
+                applicable
+            complete_time (str, optional): the time the task was completed, if
+                applicable
+            fail_time (str, optional): the time the task failed, if applicable
+            failure_type (TaskFailureType, optional): the
+                :class:`TaskFailureType` of the task, if applicable
+            messages (list, optional): list of :class:`TaskStatusMessage`
+                instances for the task, if any
+            inputs (dict, optional): a dictionary containing metadata about the
+                inputs to the task, if any
+            posted_data (dict, optional): a dictionary mapping names of
+                outputs, if any, posted as data to their associated data IDs
         '''
-        self.analytic = task_config.analytic
-        self.version = task_config.version
-        self.state = TaskState.SCHEDULED
-        self.start_time = None
-        self.complete_time = None
-        self.fail_time = None
-        self.failure_type = TaskFailureType.NONE
-        self.messages = []
-        self.inputs = {}
-        self.posted_data = {}
-        self._publish_callback = make_publish_callback(
+        self.analytic = analytic or ""
+        self.version = version
+        self.state = state
+        self.start_time = start_time
+        self.complete_time = complete_time
+        self.fail_time = fail_time
+        self.failure_type = failure_type
+        self.messages = messages or []
+        self.inputs = inputs or {}
+        self.posted_data = posted_data or {}
+        self._publish_callback = None
+
+    @classmethod
+    def build_for(cls, task_config):
+        '''Builds a TaskStatus for recording the status of the task specified
+        by the given TaskConfig.
+
+        Args:
+            task_config (TaskConfig): a TaskConfig describing the task
+
+        Returns:
+            a TaskStatus instance
+        '''
+        task_status = cls(
+            analytic=task_config.analytic, version=task_config.version)
+        publish_callback = make_publish_callback(
             task_config.job_id, task_config.status)
+        task_status.set_publish_callback(publish_callback)
+        return task_status
 
     def record_input_metadata(self, name, metadata):
         '''Records metadata about the given input.
@@ -404,17 +448,54 @@ class TaskStatus(Serializable):
         self.messages.append(message)
         return message.time
 
+    def set_publish_callback(self, publish_callback):
+        '''Sets the callback to use when `publish()` is called.
+
+        Args:
+            publish_callback: a function that accepts a :class:`TaskStatus`
+                object and performs some desired action with it
+        '''
+        self._publish_callback = publish_callback
+
     def publish(self):
         '''Publishes the task status using
         :func:`TaskStatus._publish_callback``.
         '''
-        self._publish_callback(self)
+        if self._publish_callback:
+            self._publish_callback(self)
 
     def attributes(self):
         '''Returns a list of class attributes to be serialized.'''
         return [
             "analytic", "version", "state", "start_time", "complete_time",
             "fail_time", "failure_type", "messages", "inputs", "posted_data"]
+
+    @classmethod
+    def from_dict(cls, d):
+        '''Constructs a :class:`TaskStatus` instance from a JSON dictionary.
+
+        Args:
+            d (dict): a JSON dictionary
+
+        Returns:
+            a TaskStatus instance
+        '''
+        analytic = d["analytic"]
+        version = d["version"]
+        state = d["state"]
+        start_time = d["start_time"]
+        complete_time = d["complete_time"]
+        fail_time = d["fail_time"]
+        failure_type = d["failure_type"]
+        messages = [TaskStatusMessage.from_dict(md) for md in d["messages"]]
+        # Note that we are not parsing Serializable objects here, if any
+        inputs = d["inputs"]
+        posted_data = d["posted_data"]
+        return cls(
+            analytic=analytic, version=version, state=state,
+            start_time=start_time, complete_time=complete_time,
+            fail_time=fail_time, failure_type=failure_type, messages=messages,
+            inputs=inputs, posted_data=posted_data)
 
 
 class TaskStatusMessage(Serializable):
@@ -491,7 +572,7 @@ def make_task_status(task_config):
     Returns:
         a :class:`TaskStatus` instance for tracking the progress of the task
     '''
-    task_status = TaskStatus(task_config)
+    task_status = TaskStatus.build_for(task_config)
     logger.info("TaskStatus instance created")
     return task_status
 
