@@ -74,7 +74,7 @@ script to execute your Docker image on the directory of frames you downloaded
 above:
 
 ```shell
-bash test/test-image.bash image-to-video-demo data/people/
+bash test-image.bash image-to-video-demo data/people/
 ```
 
 If the script executed correctly, it will write a `labels.json` file in your
