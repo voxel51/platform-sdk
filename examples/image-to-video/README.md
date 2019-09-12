@@ -77,8 +77,8 @@ above:
 bash test-image.bash image-to-video-demo data/people/
 ```
 
-If the script executed correctly, it will write a `labels.json` file in your
-working directory, and you are ready to deploy to the Voxel51 Platform!
+If the script executed correctly, it will write an `out/labels.json` file in
+your working directory, and you are ready to deploy to the Voxel51 Platform!
 
 
 ## Deploying to the platform

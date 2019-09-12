@@ -3,8 +3,8 @@
 # of your choice.
 #
 # The frames directory that you provide must be relative to your working
-# directory. The output labels are written to a `labels.json` file in your
-# working directory.
+# directory. The output labels are written to `out/labels.json` in your working
+# directory.
 #
 # Usage:
 #   bash test-image.bash IMAGE_NAME FRAMES_DIR
@@ -16,7 +16,7 @@
 #
 
 FRAMES_DIR="$(pwd)/$2"
-LABELS_DIR="$(pwd)"
+LABELS_DIR="$(pwd)/out"
 
 docker run --rm \
     -v "${FRAMES_DIR}":/engine/frames/ \
