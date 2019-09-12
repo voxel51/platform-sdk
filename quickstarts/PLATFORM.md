@@ -5,7 +5,7 @@ This guide provides a detailed description of using the
 analytic for deployment to the Voxel51 Platform in a Docker image.
 
 See the
-[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+[Platform Examples Folder](https://github.com/voxel51/platform-sdk/tree/develop/examples/platform)
 for a pre-defined test analytic that you can build and deploy to the platform
 to get comfortable with the workflow.
 
