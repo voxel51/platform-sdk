@@ -589,13 +589,17 @@ def start_task(task_status):
     task_status.publish()
 
 
-def pause_task(task_status, status_path):
-    '''Pauses the task and writes the :class:`TaskStatus` to local disk.
+def pause_task(task_config, task_status, config_path, status_path):
+    '''Pauses the task by writing the the :class:`TaskConfig` and
+    :class:`TaskStatus` to local disk.
 
     Args:
+        task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
-        status_path (str): path to write the status
+        config_path (str): path to write the TaskConfig
+        status_path (str): path to write the TaskStatus
     '''
+    task_config.write_json(config_path)
     task_status.write_jason(status_path)
 
 
