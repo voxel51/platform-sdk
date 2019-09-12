@@ -153,7 +153,44 @@ class TaskManager(object):
             or paths (data parameters)
         '''
         return parse_parameters(
-            data_params_dir, self.task_config, self.task_status)
+            self.task_config, self.task_status,
+            data_params_dir=data_params_dir)
+
+    def get_path_for_input(self, name, inputs_dir):
+        '''Gets the filepath for the task input with the given name.
+
+        Note that this function does not check if the input actually exists at
+        the returned location.
+
+        Args:
+            name (str): the name of the input
+            inputs_dir (str): the directory for the inputs
+
+        Returns:
+            the local filepath to the input
+        '''
+        path_config = self.task_config.inputs[name]
+        return voxu.get_download_path(path_config, inputs_dir)
+
+    def get_path_for_data_parameter(self, name, data_params_dir):
+        '''Gets the filepath for the data parameter with the given name.
+
+        Note that this function does not check if the parameter actually exists
+        at the returned location.
+
+        Args:
+            name (str): the name of the data parameter
+            data_params_dir (str): the directory for the data parameters
+
+        Returns:
+            the local filepath to the data parameter
+        '''
+        val = self.task_config.parameters[name]
+        if not voxu.RemotePathConfig.is_path_config_dict(val):
+            raise ValueError("Parameter '%s' is not a data parameter" % name)
+
+        path_config = voxu.RemotePathConfig(val)
+        return voxu.get_download_path(path_config, data_params_dir)
 
     def record_input_metadata(
             self, name, image_path=None, video_path=None, metadata=None):
