@@ -131,7 +131,7 @@ def main():
         # the platform. This command logs the failure and notifies the platform
         # as fully as possible.
         #
-        voxt.fail_epically(task_config_url)
+        voxt.fail_epically()
         return
 
     try:
