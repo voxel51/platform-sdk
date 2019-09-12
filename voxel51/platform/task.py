@@ -683,15 +683,18 @@ def download_inputs(inputs_dir, task_config, task_status):
     return input_paths
 
 
-def parse_parameters(data_params_dir, task_config, task_status):
-    '''Parses the task parameters. Any data parameters are downloaded to the
-    specified directory.
+def parse_parameters(task_config, task_status, data_params_dir=None):
+    '''Parses the task parameters.
+
+    Any data parameters are downloaded to the specified `data_params_dir`,
+    if provided.
 
     Args:
-        data_params_dir (str): the directory to which to download data
-            parameters, if any. Can be None if no data parameters are expected
         task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
+        data_params_dir (str, optional): the directory to which to download
+            data parameters, if any. Can be None if no data parameters are
+            expected, or if they should be skipped if encountered
 
     Returns:
         a dictionary mapping parameter names to values (builtin parameters) or
@@ -700,6 +703,11 @@ def parse_parameters(data_params_dir, task_config, task_status):
     parameters = {}
     for name, val in iteritems(task_config.parameters):
         if voxu.RemotePathConfig.is_path_config_dict(val):
+            if data_params_dir is None:
+                logger.info("Skipping data parameter '%s'", name)
+                task_status.add_message("Skipping data parameter '%s'" % name)
+                continue
+
             path_config = voxu.RemotePathConfig(val)
             local_path = voxu.download(path_config, data_params_dir)
             parameters[name] = local_path
