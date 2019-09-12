@@ -32,6 +32,7 @@ the algorithm and its dependencies
 Download a directory of frames to work with:
 
 ```shell
+mkdir -p data
 wget -O data/people.tar.gz 'https://drive.google.com/uc?export=download&id=1zi7oCKjmZ0ectl4xgn7r3V4DiUKrgZuk'
 wget -O data/people.mp4 'https://drive.google.com/uc?export=download&id=1daYF-MZkdJs3BKjcAQMRBFxkndovfkiw'
 tar -xf data/people.tar.gz -C data/
