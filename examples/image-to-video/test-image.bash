@@ -16,9 +16,9 @@
 #
 
 FRAMES_DIR="$(pwd)/$2"
-LABELS_PATH="$(pwd)/labels.json"
+LABELS_DIR="$(pwd)"
 
 docker run --rm \
     -v "${FRAMES_DIR}":/engine/frames/ \
-    -v "${LABELS_PATH}":/engine/frame-labels.json \
+    -v "${LABELS_DIR}":/engine/labels/ \
     "$1"
