@@ -88,6 +88,21 @@ def get_metadata_for_image(image_path):
     return etai.ImageMetadata.build_for(image_path)
 
 
+def get_download_path(path_config, output_dir):
+    '''Gets the local path for the given download.
+
+    Args:
+        path_config (RemotePathConfig): a RemotePathConfig describing the file
+            to download
+        output_dir (str): the directory to download the file to
+
+    Returns:
+        the local path for the download
+    '''
+    filename = etas.HTTPStorageClient.get_filename(path_config.signed_url)
+    return os.path.join(output_dir, filename)
+
+
 def download(path_config, output_dir):
     '''Downloads the specified file to the given directory.
 
@@ -99,8 +114,7 @@ def download(path_config, output_dir):
     Returns:
         the local path to the downloaded file
     '''
-    filename = etas.HTTPStorageClient.get_filename(path_config.signed_url)
-    local_path = os.path.join(output_dir, filename)
+    local_path = get_download_path(path_config, output_dir)
     _get_http_client().download(path_config.signed_url, local_path)
     return local_path
 
