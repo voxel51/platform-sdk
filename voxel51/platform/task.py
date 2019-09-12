@@ -116,6 +116,20 @@ class TaskManager(object):
         '''
         start_task(self.task_status)
 
+    def pause(self, config_path, status_path):
+        '''Pauses the task by writing the :class:`TaskConfig` and current
+        :class:`TaskStatus` to disk locally.
+
+        To resume a task and retrieve the associated :class:`TaskManger`, use
+        :func:`resume_task`.
+
+        Args:
+            config_path (str): local path to write the TaskConfig
+            status_path (str): local path to write the TaskStatus
+        '''
+        pause_task(
+            self.task_config, self.task_status, config_path, status_path)
+
     def download_inputs(self, inputs_dir):
         '''Downloads the task inputs.
 
@@ -455,6 +469,39 @@ def start_task(task_status):
     logger.info("Task started")
     task_status.start()
     task_status.publish()
+
+
+def pause_task(task_status, status_path):
+    '''Pauses the task and writes the :class:`TaskStatus` to local disk.
+
+    Args:
+        task_status (TaskStatus): the TaskStatus for the task
+        status_path (str): path to write the status
+    '''
+    task_status.write_jason(status_path)
+
+
+def resume_task(config_path, status_path, task_status_cls=TaskStatus):
+    '''Resumes the task specified by the given :class:`TaskConfig` and
+    :class:`TaskStatus` by reading them from disk.
+
+    Args:
+        config_path (str): the path from which to load the TaskConfig
+        status_path (str): the path from which to read the TaskStatus
+        task_status_cls (type, optional): an optional TaskStatus subclass type
+            to use to load the TaskStatus
+
+    Returns:
+        a TaskManager instance
+    '''
+    task_config = TaskConfig.from_json(config_path)
+    task_status = task_status_cls.from_json(status_path)
+
+    publish_callback = make_publish_callback(
+        task_config.job_id, task_config.status)
+    task_status.set_publish_callback(publish_callback)
+
+    return TaskManager(task_config, task_status=task_status)
 
 
 def make_publish_callback(job_id, status_path_config):
