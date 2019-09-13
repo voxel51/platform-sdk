@@ -32,14 +32,15 @@ The following code provides an annotated example of a generic Python executable
 As mentioned below, this entrypoint can be re-written in any language if
 desired, as long as it performs the following actions:
 
-1. Read the input images from the ``/engine/frames`` directory, which is
-    populated in the format ``/engine/frames/%06d.jpg``, where ``%06d`` denotes
-    the frame number of the image (e.g., `000010` for frame 10). Note that
-    not all frames will be present in this directory.
+1. Read the input images from the ``/shared/user/inputs/frames`` directory,
+which is populated with images in te format ``%06d.<ext>``, where ``%06d``
+denotes the frame number of the image (e.g., `000010` for frame 10), and
+`<ext>` is any valid image format. Note that not all frames will be present in
+this directory.
 
-2. Write the predictions to ``/engine/frame-labels.json`` in the JSON format
-    defined by ``eta.core.video.VideoLabels``. See
-    https://voxel51.com/docs/api/#types-videolabels for more information.
+2. Write the predictions to ``/shared/user/outputs/labels.json`` in the JSON
+format defined by ``eta.core.video.VideoLabels``. See
+https://voxel51.com/docs/api/#types-videolabels for more information.
 
 3. Any desired logging messages are appended to ``/var/log/image.log``.
 
@@ -54,14 +55,14 @@ Template entrypoint for an Image-To-Video Docker image on the Voxel51 Platform.
 This entrypoint can be re-written in any language if desired, as long as it
 performs the following actions:
 
-1. Read the input images from the ``/engine/frames`` directory, which is
-    populated in the format ``/engine/frames/%06d.<ext>``, where ``%06d``
+1. Read the input images from the ``/shared/user/inputs/frames`` directory,
+    which is populated in the format ``%06d.<ext>``, where ``%06d``
     denotes the frame number of the image (e.g., `000010` for frame 10), and
     `<ext>` is any valid image format. Note that there may be frame numbers
     missing from this directory.
 
-2. Write the predictions to ``/engine/frame-labels.json`` in the JSON format
-    defined by ``eta.core.video.VideoLabels``. See
+2. Write the predictions to ``/shared/user/outputs/labels.json`` in the JSON
+    format defined by ``eta.core.video.VideoLabels``. See
     https://voxel51.com/docs/api/#types-videolabels for more information.
 
 3. Any desired logging messages are appended to ``/var/log/image.log``.
