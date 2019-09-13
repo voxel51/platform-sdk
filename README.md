@@ -206,8 +206,8 @@ reported automatically via the Platform SDK:
 }
 ```
 
-See the [Quickstart Guide](QUICKSTART.md) for more details about the interface
-provided by the Platform SDK.
+See the [Platform Quickstart Guide](quickstarts/PLATFORM.md) for more details
+about the interface provided by the Platform SDK.
 
 
 ## Analytic deployment
