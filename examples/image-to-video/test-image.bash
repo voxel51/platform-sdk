@@ -16,9 +16,9 @@
 #
 
 FRAMES_DIR="$(pwd)/$2"
-LABELS_DIR="$(pwd)/out"
+OUTPUT_DIR="$(pwd)/out"
 
 docker run --rm \
-    -v "${FRAMES_DIR}":/engine/frames/ \
-    -v "${LABELS_DIR}":/engine/labels/ \
+    -v "${FRAMES_DIR}":/shared/user/inputs/frames/ \
+    -v "${OUTPUT_DIR}":/shared/user/outputs/ \
     "$1"

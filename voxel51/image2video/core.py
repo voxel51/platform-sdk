@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 
 # Local paths; don't change these!
 TASK_LOGFILE_PATH = "/var/log/image.log"
-IMAGE_TO_VIDEO_FRAMES_DIR = "/engine/frames"
-IMAGE_TO_VIDEO_LABELS_PATH = "/engine/labels/labels.json"
+IMAGE_TO_VIDEO_FRAMES_DIR = "/shared/user/inputs/frames"
+IMAGE_TO_VIDEO_LABELS_PATH = "/shared/user/outputs/labels.json"
 
 
 class Predictions(object):
