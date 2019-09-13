@@ -1,4 +1,4 @@
-# Example Analytic
+# Example Platform Analytic
 
 This guide provides a end-to-end example of building and deploying an analytic
 to the Voxel51 Platform.

@@ -1,7 +1,7 @@
-# Example Image-To-Video Container
+# Example Image-To-Video Model
 
 This guide provides a end-to-end example of building and deploying an
-Image-To-Video container to the Voxel51 Platform.
+image-based model to the Voxel51 Platform using the Image-To-Video tool.
 
 
 ## Overview
