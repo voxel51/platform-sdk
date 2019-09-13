@@ -24,7 +24,7 @@ import os
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 
-from eta.core.config import Config
+from eta.core.config import Config, ConfigError
 import eta.core.image as etai
 import eta.core.storage as etas
 import eta.core.video as etav
@@ -37,7 +37,12 @@ class RemotePathConfig(Config):
     '''Class that describes the location of a remote file.'''
 
     def __init__(self, d):
-        self.signed_url = self.parse_string(d, "signed-url")
+        # We allow either `signed-url` or `signed_url`
+        signed_url1 = self.parse_string(d, "signed-url", default=None)
+        signed_url2 = self.parse_string(d, "signed_url", default=None)
+        if signed_url1 is None and signed_url2 is None:
+            raise ConfigError("Expected key `signed_url` or `signed-url`")
+        self.signed_url = signed_url1 or signed_url2
 
     def __str__(self):
         return self.signed_url
