@@ -51,21 +51,21 @@ download and activiate an API token to enable use of the client library.
 
 ### Platform Analytics
 
-See the [Platform Quickstart Guide](quickstarts/PLATFORM.md) for step-by-step
+See the [Platform Quickstart Guide](PLATFORM_QUICKSTART) for step-by-step
 instructions on using this SDK to wrap your custom analytic for deployment to
 the Voxel51 Platform.
 
-Also, see the [Platform Examples](examples/platform) directory for an
+Also, see the [Platform Examples](PLATFORM_EXAMPLES) directory for an
 end-to-end example of building and deploying a test analytic to the platform.
 
 ### Image-To-Video Analytics
 
-See the [Image-To-Video Quickstart Guide](quickstarts/IMAGE_TO_VIDEO.md) for
+See the [Image-To-Video Quickstart Guide](IMAGE_TO_VIDEO_QUICKSTART) for
 step-by-step instructions on using the Image-To-Video tool in this SDK to wrap
 your custom image-based model for deployment to the Voxel51 Platform to process
 videos.
 
-Also, see the [Image-To-Video Examples](examples/image-to-video) directory for
+Also, see the [Image-To-Video Examples](IMAGE_TO_VIDEO_EXAMPLES) directory for
 an end-to-end example of building and deploying an image model to the platform
 using the Image-To-Video Tool.
 
