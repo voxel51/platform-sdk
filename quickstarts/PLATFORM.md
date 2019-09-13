@@ -1,4 +1,4 @@
-# Voxel51 Platform Quickstart
+# Platform Quickstart
 
 This guide provides a detailed description of using the
 [Platform SDK](https://github.com/voxel51/platform-sdk) to wrap your custom
