@@ -1,0 +1,2 @@
+
+.. mdinclude:: ../../quickstarts/PLATFORM.md

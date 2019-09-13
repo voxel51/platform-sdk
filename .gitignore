@@ -9,6 +9,8 @@ __pycache__
 /docs/source/*.rst
 !/docs/source/index.rst
 !/docs/source/README.rst
-!/docs/source/QUICKSTART.rst
-!/docs/source/EXAMPLES.rst
+!/docs/source/IMAGE_TO_VIDEO_EXAMPLES.rst
+!/docs/source/IMAGE_TO_VIDEO_QUICKSTART.rst
+!/docs/source/PLATFORM_EXAMPLES.rst
+!/docs/source/PLATFORM_QUICKSTART.rst
 !/docs/source/TESTS.rst
