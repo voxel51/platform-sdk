@@ -594,8 +594,6 @@ def pause_task(task_config, task_status, config_path, status_path):
         config_path (str): path to write the TaskConfig
         status_path (str): path to write the TaskStatus
     '''
-    print(task_config)
-    print(status_status)
     task_config.write_json(config_path)
     task_status.write_json(status_path)
 
