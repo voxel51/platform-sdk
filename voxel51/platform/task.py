@@ -516,6 +516,19 @@ class TaskStatusMessage(Serializable):
         '''Returns a list of class attributes to be serialized.'''
         return ["message", "time"]
 
+    @classmethod
+    def from_dict(cls, d):
+        '''Constructs a :class:`TaskStatusMessage` instance from a JSON
+        dictionary.
+
+        Args:
+            d (dict): a JSON dictionary
+
+        Returns:
+            a TaskStatusMessage instance
+        '''
+        return cls(d["message"], time=d.get("time", None))
+
 
 def setup_logging(logfile_path, rotate=True):
     '''Configures system-wide logging so that all logging recorded via the
