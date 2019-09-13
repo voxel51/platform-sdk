@@ -595,7 +595,7 @@ def pause_task(task_config, task_status, config_path, status_path):
         status_path (str): path to write the TaskStatus
     '''
     task_config.write_json(config_path)
-    task_status.write_jason(status_path)
+    task_status.write_json(status_path)
 
 
 def resume_task(config_path, status_path, task_status_cls=TaskStatus):
