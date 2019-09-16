@@ -285,16 +285,18 @@ rm -rf platform-sdk
 
 After you have built the Docker image for your custom image-based analytic,
 you can test it locally on a directory of frames of your choice by running
-the following script:
+the `test-image.bash` script in the
+[examples/image-to-video](https://github.com/voxel51/platform-sdk/tree/develop/examples/image-to-video)
+directory:
 
 ```shell
-bash test/test-image.bash $IMAGE_NAME $FRAMES_DIR
+bash test-image.bash $IMAGE_NAME $FRAMES_DIR
 ```
 
 In the above `IMAGE_NAME` is the name of your Docker image, and `FRAMES_DIR`
 is the path to the directory of frames to process, which must be a relative
-path to your working directory. The output labels are written to a
-`labels.json` file in your working directory.
+path to your working directory. The output labels are written to
+`out/labels.json` file in your working directory.
 
 The directory of frames must be populated with the syntax
 `/path/to/frames/%06d.<ext>`, where `%06d` denotes the frame number of the

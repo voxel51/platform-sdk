@@ -118,7 +118,7 @@ You can also upload analytics by logging into your
 ## Using the analytic on the platform
 
 After the analytic has been processed and is ready for use (check the Platform
-Console to verify), you can run a test platform job on the `data/test.mp4`
+Console to verify), you can run a test platform job on the `data/people.mp4`
 video by executing the following code with the Python client library:
 
 ```py
