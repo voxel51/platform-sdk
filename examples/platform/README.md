@@ -131,7 +131,8 @@ analytic = api.upload_analytic(analytic_json_path)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, analytic_image_path, "cpu")
+image_type = "cpu"  # declare that the image was built for CPU-only execution
+api.upload_analytic_image(analytic_id, analytic_image_path, image_type)
 ```
 
 You can also upload analytics by logging into your

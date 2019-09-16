@@ -237,7 +237,7 @@ its client libraries. For example, the following code snippet shows how to
 publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
 
 ```py
-from voxel51.users.api import API
+from voxel51.users.api import API, AnalyticType
 
 analytic_json_path = "/path/to/analytic.json"
 analytic_image_path = "/path/to/image.tar.gz"
@@ -245,11 +245,13 @@ analytic_image_path = "/path/to/image.tar.gz"
 api = API()
 
 # Upload analytic JSON
-analytic = api.upload_analytic(analytic_json_path)
+analytic_type = AnalyticType.PLATFORM  # customize as necessary
+analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
+image_type = "gpu"  # declare that the image supports GPU execution
+api.upload_analytic_image(analytic_id, analytic_image_path, image_type)
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)

@@ -94,7 +94,7 @@ The following code snippet publishes the analytic to the platform using the
 Python client library:
 
 ```py
-from voxel51.users.api import API
+from voxel51.users.api import API, AnalyticType
 
 analytic_json_path = "./analytic.json"
 analytic_image_path = "./image-to-video-demo.tar.gz"
@@ -102,11 +102,13 @@ analytic_image_path = "./image-to-video-demo.tar.gz"
 api = API()
 
 # Upload analytic JSON and declare it as an image-to-video model
-analytic = api.upload_analytic(analytic_json_path, is_image_to_video=True)
+analytic_type=AnalyticType.IMAGE_TO_VIDEO  # declare as Image-To-Video
+analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, analytic_image_path, "cpu")
+image_type = "cpu"  # declare that the image was built for CPU-only execution
+api.upload_analytic_image(analytic_id, analytic_image_path, image_type)
 ```
 
 You can also upload analytics by logging into your
