@@ -71,7 +71,7 @@ def main():
         # Create a TaskManager for the task
         task_manager = voxt.TaskManager.from_url(task_config_url)
     except:
-        voxt.fail_epically(task_config_url)
+        voxt.fail_epically()
         return
 
     try:

@@ -49,12 +49,25 @@ download and activiate an API token to enable use of the client library.
 
 ## Quickstart
 
-See the [Quickstart Guide](QUICKSTART.md) for step-by-step instructions on
-using this SDK to wrap your custom analytic for deployment to the Voxel51
-Platform.
+### Platform Analytics
 
-See the [Example Analytic](examples) directory for an end-to-end
-example of building and deploying a test analytic to the platform.
+See the [Platform Quickstart Guide](PLATFORM_QUICKSTART) for step-by-step
+instructions on using this SDK to wrap your custom analytic for deployment to
+the Voxel51 Platform.
+
+Also, see the [Platform Examples](PLATFORM_EXAMPLES) directory for an
+end-to-end example of building and deploying a test analytic to the platform.
+
+### Image-To-Video Analytics
+
+See the [Image-To-Video Quickstart Guide](IMAGE_TO_VIDEO_QUICKSTART) for
+step-by-step instructions on using the Image-To-Video tool in this SDK to wrap
+your custom image-based model for deployment to the Voxel51 Platform to process
+videos.
+
+Also, see the [Image-To-Video Examples](IMAGE_TO_VIDEO_EXAMPLES) directory for
+an end-to-end example of building and deploying an image model to the platform
+using the Image-To-Video Tool.
 
 
 ## Overview
@@ -193,8 +206,8 @@ reported automatically via the Platform SDK:
 }
 ```
 
-See the [Quickstart Guide](QUICKSTART.md) for more details about the interface
-provided by the Platform SDK.
+See the [Platform Quickstart Guide](quickstarts/PLATFORM.md) for more details
+about the interface provided by the Platform SDK.
 
 
 ## Analytic deployment
@@ -224,7 +237,7 @@ its client libraries. For example, the following code snippet shows how to
 publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
 
 ```py
-from voxel51.users.api import API
+from voxel51.users.api import API, AnalyticType
 
 analytic_json_path = "/path/to/analytic.json"
 analytic_image_path = "/path/to/image.tar.gz"
@@ -232,11 +245,13 @@ analytic_image_path = "/path/to/image.tar.gz"
 api = API()
 
 # Upload analytic JSON
-analytic = api.upload_analytic(analytic_json_path)
+analytic_type = AnalyticType.PLATFORM  # customize as necessary
+analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
+image_type = "gpu"  # declare that the image supports GPU execution
+api.upload_analytic_image(analytic_id, analytic_image_path, image_type)
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)

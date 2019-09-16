@@ -1,4 +1,4 @@
-# Example Analytic
+# Example Platform Analytic
 
 This guide provides a end-to-end example of building and deploying an analytic
 to the Voxel51 Platform.
@@ -6,10 +6,10 @@ to the Voxel51 Platform.
 
 ## Overview
 
-The `examples/` directory of this repository defines a `platform-demo` analytic
-that is ready for deployment to the Voxel51 Platform. The actual functionality
-of the analytic is simple: it downloads an input video and randomly generates
-a `VideoLabels` file that contains a single randomly oriented object detection.
+This directory defines a `platform-demo` analytic that is ready for deployment
+to the Voxel51 Platform. The actual functionality of the analytic is simple: it
+downloads an input video and randomly generates a `VideoLabels` file that
+contains a single randomly oriented object detection.
 
 The following files constitute the definition of the analytic:
 
@@ -36,8 +36,8 @@ wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg
 ```
 
 In addition, make sure that you followed the installation instructions in the
-[README](../README.md) to get setup with a Platform Account, the Python client,
-and an API token.
+[README](../../README.md) to get setup with a Platform Account, the Python
+client, and an API token.
 
 
 ## Building the image
@@ -72,20 +72,20 @@ defines a local testing server that you can use to perform such tests.
 If you have not already, install the test server by running:
 
 ```shell
-cd ../tests
+cd ../../tests
 npm install
-cd ../examples
+cd ../examples/platform
 ```
 
 If you do not have `npm` installed, follow the complete install instructions
-in the [tests README](TESTS).
+in the README in the tests folder.
 
 Then, run the following command to spawn a test server to run a job on the
 `platform-demo` image locally:
 
 ```shell
 # Launch test server
-bash ../tests/run.bash \
+bash ../../tests/run.bash \
     --analytic-image platform-demo \
     --analytic-json ./analytic.json \
     --inputs video=data/test.mp4 \
@@ -131,7 +131,8 @@ analytic = api.upload_analytic(analytic_json_path)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, analytic_image_path, "cpu")
+image_type = "cpu"  # declare that the image was built for CPU-only execution
+api.upload_analytic_image(analytic_id, analytic_image_path, image_type)
 ```
 
 You can also upload analytics by logging into your

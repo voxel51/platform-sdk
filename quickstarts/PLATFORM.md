@@ -1,11 +1,11 @@
-# Voxel51 Platform Quickstart
+# Platform Quickstart
 
 This guide provides a detailed description of using the
 [Platform SDK](https://github.com/voxel51/platform-sdk) to wrap your custom
 analytic for deployment to the Voxel51 Platform in a Docker image.
 
 See the
-[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+[Platform Examples Folder](https://github.com/voxel51/platform-sdk/tree/develop/examples/platform)
 for a pre-defined test analytic that you can build and deploy to the platform
 to get comfortable with the workflow.
 
@@ -131,7 +131,7 @@ def main():
         # the platform. This command logs the failure and notifies the platform
         # as fully as possible.
         #
-        voxt.fail_epically(task_config_url)
+        voxt.fail_epically()
         return
 
     try:
