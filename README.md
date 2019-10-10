@@ -124,12 +124,12 @@ Platform API
 - `API_BASE_URL`: the base URL of the Platform API that the SDK will use
 
 The following JSON file shows an example of a task specification provided to
-the `vehicle-sense` analytic:
+the `voxel51/vehicle-sense` analytic:
 
 ```json
 {
-    "analytic": "vehicle-sense",
-    "version": "0.1.0",
+    "analytic": "voxel51/vehicle-sense",
+    "version": "0.3.0",
     "job_id": "2ffe1110-b446-427d-8829-db9ac95d0638",
     "inputs": {
         "video": {
@@ -170,13 +170,13 @@ remote storage providers (Google Cloud, AWS Cloud, private datacenters, etc.)
 
 As a task is being executed, the Platform SDK provides a convenient interface
 for reporting the status of the task to the platform. The following JSON file
-shows an example of the status of a completed `vehicle-sense` task that was
+shows an example of the status of a completed `voxel51/vehicle-sense` task that was
 reported automatically via the Platform SDK:
 
 ```json
 {
-    "analytic": "vehicle-sense",
-    "version": "0.1.0",
+    "analytic": "voxel51/vehicle-sense",
+    "version": "0.3.0",
     "state": "COMPLETE",
     "start_time": "2019-02-02 07:14:28",
     "complete_time": "2019-02-02 07:32:45",
