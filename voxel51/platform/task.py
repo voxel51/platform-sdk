@@ -108,6 +108,8 @@ class TaskManager(object):
     def start(self):
         '''Marks the task as started and publishes the :class:`TaskStatus` to
         the platform.
+
+        If the task is already started, no action is taken.
         '''
         start_task(self.task_status)
 
@@ -589,9 +591,15 @@ def start_task(task_status):
     '''Marks the task as started and publishes the :class:`TaskStatus` to the
     platform.
 
+    If the task is already started, no action is taken.
+
     Args:
         task_status (TaskStatus): the TaskStatus for the task
     '''
+    if task_status.state == TaskState.RUNNING:
+        logger.info("Task is already started")
+        return
+
     logger.info("Task started")
     task_status.start()
     task_status.publish()
