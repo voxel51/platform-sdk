@@ -403,29 +403,44 @@ class TaskStatus(Serializable):
     def start(self, msg="Task started"):
         '''Marks the task as started.
 
+        If the task is already started, no action is taken.
+
         Args:
             msg (str, optional): a message to log
         '''
+        if self.state == TaskState.RUNNING:
+            return
+
         self.start_time = self.add_message(msg)
         self.state = TaskState.RUNNING
 
     def complete(self, msg="Task complete"):
         '''Marks the task as complete.
 
+        If the task is already complete, no action is taken.
+
         Args:
             msg (str, optional): a message to log
         '''
+        if self.state == TaskState.COMPLETE:
+            return
+
         self.complete_time = self.add_message(msg)
         self.state = TaskState.COMPLETE
 
     def fail(self, failure_type=None, msg="Task failed"):
         '''Marks the task as failed.
 
+        If the task is already failed, no action is taken.
+
         Args:
             failure_type (TaskFailureType, optional): an optional failure
                 reason for the task
             msg (str, optional): an optional message to log
         '''
+        if self.state == TaskState.FAILED:
+            return
+
         self.fail_time = self.add_message(msg)
         self.state = TaskState.FAILED
         if failure_type is not None:
@@ -597,7 +612,6 @@ def start_task(task_status):
         task_status (TaskStatus): the TaskStatus for the task
     '''
     if task_status.state == TaskState.RUNNING:
-        logger.info("Task is already started")
         return
 
     logger.info("Task started")
