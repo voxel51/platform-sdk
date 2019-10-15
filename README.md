@@ -116,12 +116,18 @@ environment variables:
 - `TASK_DESCRIPTION` : the URL from which to download a JSON file that
 describes the task to be performed
 
-- `JOB_ID` : the ID of the job being executed by this task
+- `JOB_ID` : the ID of the job being executed by this task. Provided as an
+environment variable as an extra layer of redundancy in case the task JSON
+cannot be accessed
 
 - `API_TOKEN` : the API token that the process can use to communicate with the
 Platform API
 
 - `API_BASE_URL`: the base URL of the Platform API that the SDK will use
+
+- `LOGFILE_SIGNED_URL`: the URI to which to POST the logfile for the task.
+Provided as an environment variable as an extra layer of redundancy in case the
+task JSON cannot be accessed
 
 The following JSON file shows an example of a task specification provided to
 the `voxel51/vehicle-sense` analytic:
@@ -170,8 +176,8 @@ remote storage providers (Google Cloud, AWS Cloud, private datacenters, etc.)
 
 As a task is being executed, the Platform SDK provides a convenient interface
 for reporting the status of the task to the platform. The following JSON file
-shows an example of the status of a completed `voxel51/vehicle-sense` task that was
-reported automatically via the Platform SDK:
+shows an example of the status of a completed `voxel51/vehicle-sense` task that
+was reported automatically via the Platform SDK:
 
 ```json
 {
