@@ -39,17 +39,6 @@ RUN apt-get update \
     && pip --no-cache-dir install --upgrade numpy==1.16.0 \
     && rm -rf /var/lib/apt
 
-#
-# Declare environment variables that the platform will use to communicate with
-# the image at runtime
-#
-ENV \
-    TASK_DESCRIPTION=null \
-    JOB_ID=null \
-    API_TOKEN=null \
-    API_BASE_URL=null \
-    LOGFILE_SIGNED_URL=null
-
 # Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
 
