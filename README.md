@@ -129,7 +129,7 @@ the `voxel51/vehicle-sense` analytic:
 ```json
 {
     "analytic": "voxel51/vehicle-sense",
-    "version": "0.3.0",
+    "version": "0.3",
     "job_id": "2ffe1110-b446-427d-8829-db9ac95d0638",
     "inputs": {
         "video": {
@@ -176,7 +176,7 @@ reported automatically via the Platform SDK:
 ```json
 {
     "analytic": "voxel51/vehicle-sense",
-    "version": "0.3.0",
+    "version": "0.3",
     "state": "COMPLETE",
     "start_time": "2019-02-02 07:14:28",
     "complete_time": "2019-02-02 07:32:45",
