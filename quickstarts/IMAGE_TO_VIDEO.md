@@ -48,7 +48,7 @@ You can easily adapt this template to run your custom model by inserting
 the appropriate code in the places marked by `@todo`.
 
 ```python
-#!/usr/bin/env/python
+#!/usr/bin/env python
 '''
 Template entrypoint for an Image-To-Video Docker image on the Voxel51 Platform.
 
