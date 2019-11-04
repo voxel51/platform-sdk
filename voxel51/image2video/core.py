@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Core methods for the Image-To-Video tool in the Voxel51 Platform SDK.
 

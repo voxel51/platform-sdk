@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Utilities for the Voxel51 Platform SDK.
 

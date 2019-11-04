@@ -1,4 +1,4 @@
-#!/usr/bin/env/python
+#!/usr/bin/env python
 '''
 Example entrypoint for an Image-To-Video container.
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Configuration settings for the Voxel51 Platform SDK.
 

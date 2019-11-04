@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Task management module for the Voxel51 Platform SDK.
 

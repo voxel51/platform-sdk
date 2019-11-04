@@ -1,4 +1,4 @@
-#!/usr/bin/env/python
+#!/usr/bin/env python
 '''
 Main entrypoint for the `platform-demo` analytic.
 

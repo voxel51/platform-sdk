@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Authentication module for the Voxel51 Platform API.
 
