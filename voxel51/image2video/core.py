@@ -20,7 +20,7 @@ from builtins import *
 import logging
 
 import eta.core.image as etai
-import eta.core.log as etal
+import eta.core.logging as etal
 import eta.core.utils as etau
 import eta.core.video as etav
 
