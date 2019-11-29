@@ -1,0 +1,9 @@
+*.tar.gz
+
+data/
+out/
+platform-sdk/
+api-py/
+
+models/*
+!models/tfslim_imagenet_labels.txt

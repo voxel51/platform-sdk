@@ -1,0 +1,9 @@
+{
+    "info": {
+        "version": "0.1",
+        "name": "tf-slim-classifier-i2v",
+        "supports_cpu": true,
+        "supports_gpu": true,
+        "description": "An analytic that operates a frame-based classifier from the TensorFlow-Slim Model Zoo"
+    }
+}
