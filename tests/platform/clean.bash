@@ -7,7 +7,6 @@
 # Copyright 2017-2019, Voxel51, Inc.
 # voxel51.com
 #
-# Brian Moore, brian@voxel51.com
-#
 
-node "$(dirname "$0")/server/cleanup.js" "$@"
+THIS_DIR=$(dirname "$0")
+node "${THIS_DIR}/server/cleanup.js" "$@"

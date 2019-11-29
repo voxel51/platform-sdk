@@ -13,38 +13,17 @@ whether your analytic executed successfully and invoked all necessary SDK
 methods.
 
 
-## Installation
-
-The test suite requires [Node.js](https://nodejs.org) and
-[npm](https://www.npmjs.com). We recommend that you use
-[nvm](https://github.com/creationix/nvm) to install them, if necessary.
-
-```shell
-# Install node and npm via nvm
-curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-source ~/.bashrc
-nvm install node
-```
-
-To setup the test suite, simply run the following command from the `tests/`
-directory:
-
-```shell
-npm install
-```
-
-
 ## Quickstart
 
-The `run.bash` script runs the local testing server. The script is used as
-follows:
+The `test-platform.bash` script runs the local testing server. The script is
+used as follows:
 
 ```
 Voxel51 Platform local analytic testing server
 
 Example usage
 
-  bash run.bash \
+  bash test-platform.bash \
     --analytic-image <image-name> \
     --analytic-json <analytic-json> \
     --inputs <name>=<path> \
@@ -70,20 +49,21 @@ Options
   -h, --help                        Displays this usage guide.
 ```
 
-Running the `run.bash` script will output a `docker run` command that you must
-copy and paste into another terminal window in order to run your analytic.
-When you run the image, an `out/` directory will be populated with the various
-files read and written by your analytic. Once the Docker image exits (either
-successfully or unsuccessfully), kill the server by entering `Ctrl-C`. A test
-report will then be generated that summarizes the function of your analytic and
-highlights any issues that were identified. After your analytic image passes
-local tests, it is ready for deployment to the Voxel51 Platform!
+Running the `test-platform.bash` script will output a `docker run` command that
+you must copy and paste into another terminal window in order to run your
+analytic. When you run the image, an `out/` directory will be populated with
+the various files read and written by your analytic. Once the Docker image
+exits (either successfully or unsuccessfully), kill the server by entering
+`Ctrl-C`. A test report will then be generated that summarizes the function of
+your analytic and highlights any issues that were identified. After your
+analytic image passes local tests, it is ready for deployment to the Voxel51
+Platform!
 
 Note that you must restart the server for each test you run.
 
-See the [examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
-for a pre-defined test analytic that you can build and deploy to the platform
-to get comfortable with the workflow.
+See the [examples folder](../../examples/README.md) for a pre-defined test
+analytic that you can build and deploy to the platform to get comfortable with
+the workflow.
 
 
 ## Customization
@@ -97,8 +77,8 @@ storage directory and/or the path to which test results files are written.
 
 To cleanup any generated test files, run the `clean.bash` script. Note that
 this script must be run from the same working directory from which you ran
-the `run.bash` script so that any relative paths in the `server/config.js`
-will be interpreted correctly.
+the `test-platform.bash` script so that any relative paths in the
+`server/config.js` will be interpreted correctly.
 
 You must manually cleanup any Docker images that you build on your machine.
 
@@ -107,6 +87,3 @@ You must manually cleanup any Docker images that you build on your machine.
 
 Copyright 2017-2019, Voxel51, Inc.<br>
 voxel51.com
-
-David Hodgson, david@voxel51.com<br>
-Brian Moore, brian@voxel51.com
