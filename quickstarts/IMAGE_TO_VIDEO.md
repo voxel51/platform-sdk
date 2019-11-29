@@ -2,12 +2,12 @@
 
 This guide provides a detailed description of using the
 [Platform SDK](https://github.com/voxel51/platform-sdk) to wrap your custom
-image-based model and deploy it to the Voxel51 Platform to process videos.
+image-based model and deploy it to the
+[Voxel51 Platform](https://console.voxel51.com) to process videos.
 
-See the
-[Image-To-Video Examples Folder](https://github.com/voxel51/platform-sdk/tree/develop/examples/image-to-video)
-for a pre-defined test image-based moel that you can build and deploy to the
-platform using the Image-To-Video tool.
+See the [examples folder](../examples/README.md) for pre-defined examples of
+Image-To-Video analytics that you can build and deploy to the Platform to get
+comfortable with the workflow.
 
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
@@ -285,12 +285,10 @@ rm -rf platform-sdk
 
 After you have built the Docker image for your custom image-based analytic,
 you can test it locally on a directory of frames of your choice by running
-the `test-image.bash` script in the
-[examples/image-to-video](https://github.com/voxel51/platform-sdk/tree/develop/examples/image-to-video)
-directory:
+the `test-i2v.bash` script provided by the Platform SDK:
 
 ```shell
-bash test-image.bash $IMAGE_NAME $FRAMES_DIR
+bash ../tests/test-i2v.bash $IMAGE_NAME $FRAMES_DIR
 ```
 
 In the above `IMAGE_NAME` is the name of your Docker image, and `FRAMES_DIR`
@@ -314,7 +312,7 @@ docker save <your-image-name> | gzip -c > <your-image-name>.tar.gz
 ```
 
 Finally, follow the instructions in the `Analytic deployment` section of the
-[README](README.md) to publish your analytic to the platform.
+[README](../README.md) to publish your analytic to the platform.
 
 
 ## Copyright

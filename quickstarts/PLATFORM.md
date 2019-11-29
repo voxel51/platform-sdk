@@ -2,12 +2,11 @@
 
 This guide provides a detailed description of using the
 [Platform SDK](https://github.com/voxel51/platform-sdk) to wrap your custom
-analytic for deployment to the Voxel51 Platform in a Docker image.
+analytic for deployment to the [Voxel51 Platform](https://console.voxel51.com).
 
-See the
-[Platform Examples Folder](https://github.com/voxel51/platform-sdk/tree/develop/examples/platform)
-for a pre-defined test analytic that you can build and deploy to the platform
-to get comfortable with the workflow.
+See the [examples folder](../examples/README.md) for pre-defined examples of
+analytics that you can build and deploy to the Platform to get comfortable with
+the workflow.
 
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
@@ -420,10 +419,8 @@ rm -rf platform-sdk
 ## Local testing
 
 After you have built the Docker image for your custom analytic, you can use
-the local test server in the
-[tests folder](https://github.com/voxel51/platform-sdk/tree/develop/tests)
-to verify that your image is functioning properly before deploying it to the
-Voxel51 Platform. See the README in that folder for detailed instructions.
+the local test server in the [tests folder](../tests/README.md) to verify that
+your image is functioning properly before deploying it to the Voxel51 Platform.
 
 
 ## Docker deployment
@@ -437,7 +434,7 @@ docker save <your-image-name> | gzip -c > <your-image-name>.tar.gz
 ```
 
 Finally, follow the instructions in the `Analytic deployment` section of the
-[README](README.md) to publish your analytic to the platform.
+[README](../README.md) to publish your analytic to the platform.
 
 
 ## Copyright
