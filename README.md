@@ -1,6 +1,7 @@
 # Voxel51 Platform SDK
 
-An SDK for deploying custom analytics to the Voxel51 Platform.
+An SDK for deploying custom analytics to the
+[Voxel51 Platform](https://console.voxel51.com).
 
 Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel51/platform-sdk).
 
@@ -51,23 +52,22 @@ download and activiate an API token to enable use of the client library.
 
 ### Platform Analytics
 
-See the [Platform Quickstart Guide](PLATFORM_QUICKSTART) for step-by-step
+See the [Platform Quickstart Guide](quickstarts/PLATFORM.md) for step-by-step
 instructions on using this SDK to wrap your custom analytic for deployment to
 the Voxel51 Platform.
 
-Also, see the [Platform Examples](PLATFORM_EXAMPLES) directory for an
-end-to-end example of building and deploying a test analytic to the platform.
+Also, see the [examples folder](examples/README.md) for an end-to-end example
+of building and deploying a test analytic to the platform.
 
 ### Image-To-Video Analytics
 
-See the [Image-To-Video Quickstart Guide](IMAGE_TO_VIDEO_QUICKSTART) for
+See the [Image-To-Video Quickstart Guide](quickstarts/IMAGE_TO_VIDEO.md) for
 step-by-step instructions on using the Image-To-Video tool in this SDK to wrap
 your custom image-based model for deployment to the Voxel51 Platform to process
 videos.
 
-Also, see the [Image-To-Video Examples](IMAGE_TO_VIDEO_EXAMPLES) directory for
-an end-to-end example of building and deploying an image model to the platform
-using the Image-To-Video Tool.
+Also, see the [examples folder](examples/README.md) for several end-to-end
+examples of building and deploying analytics using the Image-To-Video tool.
 
 
 ## Overview
@@ -220,7 +220,7 @@ about the interface provided by the Platform SDK.
 
 You can deploy new custom analytics or new versions of your existing analytics
 at any time via the [API](https://voxel51.com/docs/api) or the
-[web console](https://console.voxel51.com). Deploying a new analytic is a
+[Web Console](https://console.voxel51.com). Deploying a new analytic is a
 simple two step process:
 
 - Upload an analytic JSON to the platform that describes the details and
@@ -240,7 +240,8 @@ ready for production use!
 
 New analytics can be published programmatically via the Platform API or any of
 its client libraries. For example, the following code snippet shows how to
-publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
+publish a GPU-enabled analytic using the
+[Python Client Library](https://github.com/voxel51/api-py):
 
 ```py
 from voxel51.users.api import API, AnalyticType
@@ -265,8 +266,8 @@ for more complete instructions for deploying analytics via the API.
 
 ### Deployment via web console
 
-You can also publish new analytics via the web-based
-[Platform Console](https://console.voxel51.com). To do so, simply login
+You can also publish new analytics via the Platform's
+[Web Console](https://console.voxel51.com). To do so, simply login
 to your platform account, navigate to the `Analytics` page, and click `Upload`.
 
 
