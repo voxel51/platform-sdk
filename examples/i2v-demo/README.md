@@ -122,7 +122,7 @@ cpu_image_path = "./i2v-demo.tar.gz"
 api = API()
 
 # Upload analytic JSON
-analytic_type = AnalyticType.IMAGE_TO_VIDEO  # declare as Image-To-Video
+analytic_type = AnalyticType.IMAGE_TO_VIDEO
 analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
 analytic_id = analytic["id"]
 

@@ -68,6 +68,8 @@ MODEL=ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03
 
 Download the model of interest and extract the frozen inference graph:
 
+```shell
+# Extracts frozen inference graph to `models/frozen_inference_graph.pb`
 wget -P models/ http://download.tensorflow.org/models/object_detection/${MODEL}.tar.gz
 tar -xf models/${MODEL}.tar.gz -C models/
 mv models/${MODEL}/frozen_inference_graph.pb models/frozen_inference_graph.pb
@@ -78,7 +80,7 @@ rm -r models/${MODEL}
 ### ETA Models Registry
 
 Alternatively, you can directly download a frozen inference graph from the ETA
-models registry:
+Models Registry:
 
 ```shell
 # Downloads a pre-trained FPN SSD with ResNet50 backbone from the ETA models
@@ -91,8 +93,6 @@ eta gdrive download --public \
 ## Building the image
 
 To build the image, run the following commands:
-
-Build the image:
 
 ```shell
 # For GPU build
@@ -192,7 +192,7 @@ gpu_image_path = "./tf-models-detector-i2v-gpu.tar.gz"
 api = API()
 
 # Upload analytic JSON
-analytic_type = AnalyticType.IMAGE_TO_VIDEO  # declare as Image-To-Video
+analytic_type = AnalyticType.IMAGE_TO_VIDEO
 analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
 analytic_id = analytic["id"]
 
