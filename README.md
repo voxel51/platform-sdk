@@ -247,24 +247,23 @@ ready for production use!
 New analytics can be published programmatically via the Platform API or any of
 its client libraries. For example, the following code snippet shows how to
 publish a GPU-enabled analytic using the
-[Python Client Library](https://github.com/voxel51/api-py):
+[Python client library](https://github.com/voxel51/api-py):
 
 ```py
 from voxel51.users.api import API, AnalyticType
 
 analytic_json_path = "/path/to/analytic.json"
-analytic_image_path = "/path/to/image.tar.gz"
+gpu_image_path = "/path/to/gpu-image.tar.gz"
 
 api = API()
 
 # Upload analytic JSON
-analytic_type = AnalyticType.PLATFORM  # customize as necessary
+analytic_type = AnalyticType.PLATFORM
 analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
 analytic_id = analytic["id"]
 
 # Upload image
-image_type = "gpu"  # declare that the image supports GPU execution
-api.upload_analytic_image(analytic_id, analytic_image_path, image_type)
+api.upload_analytic_image(analytic_id, gpu_image_path, "gpu")
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)
