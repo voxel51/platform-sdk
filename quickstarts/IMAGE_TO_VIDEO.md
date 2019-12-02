@@ -5,9 +5,10 @@ This guide provides a detailed description of using the
 image-based model and deploy it to the
 [Voxel51 Platform](https://console.voxel51.com) to process videos.
 
-See the [examples folder](../examples/README.md) for pre-defined examples of
-Image-To-Video analytics that you can build and deploy to the Platform to get
-comfortable with the workflow.
+See the
+[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+for pre-defined examples of Image-To-Video analytics that you can build and
+deploy to the Platform to get comfortable with the workflow.
 
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
