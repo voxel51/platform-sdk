@@ -36,9 +36,8 @@ the Platform API, you also need to install the
 git clone https://github.com/voxel51/api-py
 cd api-py
 
-# Install the library
-pip install -r requirements.txt
-pip install -e .
+# Run the install script
+bash install.bash
 
 cd ..
 ```
