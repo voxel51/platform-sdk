@@ -40,6 +40,7 @@ echo "Installing ETA lite"
 cd eta
 bash install.bash -l
 cp config-example.json config.json
+cd ..
 
 # Install local test server
 echo "Installing local test server"
