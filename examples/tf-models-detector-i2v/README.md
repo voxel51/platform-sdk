@@ -121,9 +121,12 @@ rm -rf platform-sdk
 ## Testing locally
 
 Before deploying analytics to the platform, it is helpful to test the Docker
-images locally to ensure that they are functioning properly.
+images locally to ensure that they are functioning properly. The Platform SDK
+provides a `test-i2v` script that you can use to perform such tests. Type
+`test-i2v -h` to learn more about the script.
 
-To do so, first download a directory of frames to work with:
+To test your analytic locally, first download a directory of frames to work
+with:
 
 ```shell
 mkdir -p data
@@ -133,14 +136,15 @@ tar -xf data/people.tar.gz -C data/
 rm data/people.tar.gz
 ```
 
-Then run the image on the frames using the `test-i2v.bash` script provided in
-the Platform SDK:
+Then run the image on the frames using the `test-i2v` script:
 
 ```shell
-bash ../../tests/test-i2v.bash "${IMAGE_NAME}" data/cats/
+test-i2v "${IMAGE_NAME}" data/people
 ```
 
-If the script executed correctly, it will write an `out/labels.json` file.
+If the script executed correctly, it will write an `out/labels.json` file in
+your working directory that contains the predictions generated for each input
+frame.
 
 To visualize the labels on the input video, run the following ETA pipeline,
 which will generate an `out/people-annotated.mp4` file:
@@ -155,6 +159,12 @@ eta build -n visualize_labels \
     -o "annotated_video=\"${ANNOTATED_VIDEO_PATH}\"" \
     --run-now
 ```
+
+To cleanup after the test, run `test-i2v -c` from the same working directory in
+which you ran the test script.
+
+After your analytic image passes local tests, it is ready for deployment to
+the Voxel51 Platform!
 
 
 ## Deploying to the platform

@@ -26,28 +26,12 @@ the inputs and outputs that the analytic exposes
 the analytic and its dependencies
 
 
-## Setup
-
-Download a short test video to work with:
-
-```shell
-mkdir -p data
-wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg7CtlQPiVkJJKmi662nfraCF'
-```
-
-In addition, make sure that you followed the installation instructions in the
-[README](../../README.md) to get setup with a Platform Account, the Python
-client, and an API token.
-
-
 ## Building the image
 
-To build the demo analytic, simply run the commands below from this directory.
-The code will clone a fresh copy of the Platform SDK, build the Docker image,
-and then cleanup the generated files.
+To build the image, run the following commands:
 
 ```shell
-# Clone platform-sdk
+# Clone Platform SDK
 git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
 git submodule init
@@ -55,7 +39,7 @@ git submodule update
 cd ..
 
 # Build image
-docker build -t "platform-demo" .
+docker build --tag platform-demo .
 
 # Cleanup
 rm -rf platform-sdk
@@ -65,16 +49,22 @@ rm -rf platform-sdk
 ## Testing locally
 
 Before deploying analytics to the platform, it is helpful to test the Docker
-images locally to ensure that they are functioning properly. The
-[platform tests folder](../../tests/platform/README.md) defines a local
-testing server that you can use to perform such tests.
+images locally to ensure that they are functioning properly. The Platform SDK
+provides a `test-platform` script that you can use to perform such tests.
+Type `test-plaform -h` to learn more about the script.
 
-Execute the following command to spawn a test server to run a job on the
-`platform-demo` image locally:
+To test your analytic locally, first download a test video to work with:
+
+```shell
+mkdir -p data
+wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg7CtlQPiVkJJKmi662nfraCF'
+```
+
+Then execute the following command to spawn a test server:
 
 ```shell
 # Launch test server
-bash ../../tests/platform/test-platform.bash \
+test-platform \
     --analytic-image platform-demo \
     --analytic-json analytic.json \
     --inputs video=data/test.mp4 \
@@ -90,6 +80,9 @@ executes.
 After the Docker image exits, press `Ctrl-C` in the terminal session running
 the server. This will generate a report summarizing the function of your
 analytic and highlight any issues identified with your analytic.
+
+To cleanup after the test, run `test-platform -c` from the working directory
+in which you launched the test server.
 
 After your analytic image passes local tests, it is ready for deployment to
 the Voxel51 Platform!

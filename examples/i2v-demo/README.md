@@ -67,9 +67,12 @@ rm -rf platform-sdk
 ## Testing locally
 
 Before deploying analytics to the platform, it is helpful to test the Docker
-images locally to ensure that they are functioning properly.
+images locally to ensure that they are functioning properly. The Platform SDK
+provides a `test-i2v` script that you can use to perform such tests. Type
+`test-i2v -h` to learn more about the script.
 
-To do so, first download a directory of frames to work with:
+To test your analytic locally, first download a directory of frames to work
+with:
 
 ```shell
 mkdir -p data
@@ -79,15 +82,21 @@ tar -xf data/people.tar.gz -C data/
 rm data/people.tar.gz
 ```
 
-Then run the image on the frames using the `test-i2v.bash` script provided by
-the Platform SDK:
+Then run the image on the frames using the `test-i2v` script:
 
 ```shell
-bash ../../tests/test-i2v.bash i2v-demo data/people/
+test-i2v i2v-demo data/people
 ```
 
 If the script executed correctly, it will write an `out/labels.json` file in
-your working directory, and you are ready to deploy to the Voxel51 Platform!
+your working directory that contains the predictions generated for each input
+frame.
+
+To cleanup after the test, run `test-i2v -c` from the same working directory in
+which you ran the test script.
+
+After your analytic image passes local tests, it is ready for deployment to
+the Voxel51 Platform!
 
 
 ## Deploying to the platform
