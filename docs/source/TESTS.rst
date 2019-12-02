@@ -1,2 +1,0 @@
-
-.. mdinclude:: ../../tests/README.md
