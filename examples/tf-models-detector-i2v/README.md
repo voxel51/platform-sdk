@@ -178,7 +178,9 @@ docker save tf-models-detector-i2v-gpu | gzip -c > tf-models-detector-i2v-gpu.ta
 ```
 
 The following code snippet publishes the analytic to the platform using the
-Python client library:
+Python client library. In order to run it, you must have first followed the
+[installation instructions in the README](../../README.md#installation)
+to get setup with a Platform Account, the Python client, and an API token.
 
 ```py
 from voxel51.users.api import API, AnalyticType
