@@ -51,22 +51,28 @@ download and activiate an API token to enable use of the client library.
 
 ### Platform Analytics
 
-See the [Platform Quickstart Guide](quickstarts/PLATFORM.md) for step-by-step
-instructions on using this SDK to wrap your custom analytic for deployment to
-the Voxel51 Platform.
+See the
+[Platform Quickstart Guide](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/PLATFORM.md)
+for step-by-step instructions on using this SDK to wrap your custom analytic
+for deployment to the Voxel51 Platform.
 
-Also, see the [examples folder](examples/README.md) for an end-to-end example
-of building and deploying a test analytic to the platform.
+Also, see the
+[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+for an end-to-end example of building and deploying a test analytic to the
+platform.
 
 ### Image-To-Video Analytics
 
-See the [Image-To-Video Quickstart Guide](quickstarts/IMAGE_TO_VIDEO.md) for
-step-by-step instructions on using the Image-To-Video tool in this SDK to wrap
-your custom image-based model for deployment to the Voxel51 Platform to process
-videos.
+See the
+[Image-To-Video Quickstart Guide](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/IMAGE_TO_VIDEO.md)
+for step-by-step instructions on using the Image-To-Video tool in this SDK to
+wrap your custom image-based model for deployment to the Voxel51 Platform to
+process videos.
 
-Also, see the [examples folder](examples/README.md) for several end-to-end
-examples of building and deploying analytics using the Image-To-Video tool.
+Also, see the
+[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+for several end-to-end examples of building and deploying analytics using the
+Image-To-Video tool.
 
 
 ## Overview
@@ -211,8 +217,9 @@ was reported automatically via the Platform SDK:
 }
 ```
 
-See the [Platform Quickstart Guide](quickstarts/PLATFORM.md) for more details
-about the interface provided by the Platform SDK.
+See the
+[Platform Quickstart Guide](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/PLATFORM.md)
+for more details about the interface provided by the Platform SDK.
 
 
 ## Analytic deployment
