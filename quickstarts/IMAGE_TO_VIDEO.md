@@ -285,21 +285,29 @@ rm -rf platform-sdk
 ## Local testing
 
 After you have built the Docker image for your custom image-based analytic,
-you can test it locally on a directory of frames of your choice by running
-the `test-i2v.bash` script provided by the Platform SDK:
+you can use the `test-i2v` script that was installed along with the Platform
+SDK to verify that your image is functioning properly before deploying it to
+the Voxel51 Platform.
+
+You can test your image locally on a directory of frames of your choice by
+running the following command:
 
 ```shell
-bash ../tests/test-i2v.bash $IMAGE_NAME $FRAMES_DIR
+test-i2v <image-name> <frames-dir>
 ```
 
-In the above `IMAGE_NAME` is the name of your Docker image, and `FRAMES_DIR`
-is the path to the directory of frames to process, which must be a relative
-path to your working directory. The output labels are written to
+In the above, `<image-name>` is the name of your Docker image and
+`<frames-dir>` is the path to the directory of frames to process, which must
+be a relative path to your working directory. The output labels are written to
 `out/labels.json` file in your working directory.
 
-The directory of frames must be populated with the syntax
-`/path/to/frames/%06d.<ext>`, where `%06d` denotes the frame number of the
-image (e.g., `000010` for frame 10), and `<ext>` is any valid image format.
+The directory of frames should be populated with filenames of the form
+`%06d.<ext>`, where `%06d` denotes the frame number of the image
+(e.g., `000010` for frame 10), and `<ext>` is any valid image format.
+
+Type `test-i2v -h` for help, and see the
+[this folder](https://github.com/voxel51/platform-sdk/tree/develop/tests/image2video)
+for more informtion.
 
 
 ## Docker deployment
@@ -309,7 +317,7 @@ file so that you can upload it to the Voxel51 Platform. To do so, simply
 execute a command like:
 
 ```shell
-docker save <your-image-name> | gzip -c > <your-image-name>.tar.gz
+docker save <image-name> | gzip -c > <image-name>.tar.gz
 ```
 
 Finally, follow the instructions in the

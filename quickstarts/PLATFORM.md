@@ -409,8 +409,23 @@ rm -rf platform-sdk
 ## Local testing
 
 After you have built the Docker image for your custom analytic, you can use
-the local test server in the [tests folder](../tests/README.md) to verify that
-your image is functioning properly before deploying it to the Voxel51 Platform.
+the `test-platform` script that was installed along with the Platform SDK to
+verify that your image is functioning properly before deploying it to the
+Voxel51 Platform.
+
+The basic syntax for launching a test server instance is:
+
+```shell
+test-platform \
+    --analytic-image <image-name> \
+    --analytic-json <analytic-json> \
+    --inputs <name>=<path> \
+    --compute-type <cpu|gpu>
+```
+
+Type `test-platform -h` for help, and see the
+[this folder](https://github.com/voxel51/platform-sdk/tree/develop/tests/platform)
+for more informtion.
 
 
 ## Docker deployment
