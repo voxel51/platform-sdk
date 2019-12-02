@@ -79,15 +79,15 @@ const optionDefinitions = [
 
 const usageDefinition = [
   {
-    content: 'Voxel51 Platform local analytic testing server'
+    content: 'Voxel51 Platform Analytic Local Testing Server'
   },
   {
     header: 'Example usage',
-    content: 'bash run.bash \\\n' +
+    content: 'test-platform \\\n' +
       '--analytic-image <image-name> \\\n' +
       '--analytic-json <analytic-json> \\\n' +
       '--inputs <name>=<path> \\\n' +
-      '--compute-type gpu'
+      '--compute-type <cpu|gpu>'
   },
   {
     header: 'Options',
