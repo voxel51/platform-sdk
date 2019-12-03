@@ -26,4 +26,8 @@ setup(
     install_requires=[
         "requests>=2.18.4",
     ],
+    scripts=[
+        "tests/platform/test-platform",
+        "tests/image2video/test-i2v",
+    ]
 )

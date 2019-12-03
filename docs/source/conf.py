@@ -34,16 +34,20 @@ extensions = [
     "m2r",
 ]
 
-# Types of class members to generate documentation for
-autodoc_default_flags = ["members"]
-#autodoc_default_flags = ["members", "inherited-members"]
+# Types of class members to generate documentation for.
+autodoc_default_flags = ["members", "inherited-members"]
+#autodoc_default_flags = ["members"]
+#autodoc_inherit_docstrings = False
+autodoc_member_order = "bysource"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
+# You can specify multiple suffix as a list of strings.
 source_suffix = [".rst", ".md"]
+
+# Parse relative links to MD files into ref and doc directives.
 m2r_parse_relative_links = True
 
 # The master toctree document.

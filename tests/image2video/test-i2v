@@ -1,0 +1,61 @@
+#!/bin/bash
+# Image-To-Video local testing script.
+#
+# To see usage:
+#   test-i2v -h
+#
+# Copyright 2017-2019, Voxel51, Inc.
+# voxel51.com
+#
+
+# Show usage information
+usage() {
+    echo "Usage:  bash test-i2v [-h] [-c] [IMAGE_NAME] [FRAMES_DIR]
+
+Image-To-Video Local Testing Script.
+
+This script runs an Image-To-Video Docker image locally on an input directory
+of images of your choice.
+
+The frames directory that you provide must be relative to your working
+directory. The output labels are written to 'out/labels.json' in your working
+directory.
+
+optional arguments:
+-c              cleanup generated files from a previous test run from the
+                current working directory
+-h              show this help message and exit
+
+positional arguments:
+IMAGE_NAME      the name of the Image-To-Video Docker image to test
+FRAMES_DIR      the directory of frames to process
+"
+}
+
+# Parse flags
+CLEANUP=false
+SHOW_HELP=false
+while getopts "hc" FLAG; do
+    case "${FLAG}" in
+        c) CLEANUP=true ;;
+        h) SHOW_HELP=true ;;
+        *) usage ;;
+    esac
+done
+[ ${SHOW_HELP} = true ] && usage && exit 0
+
+# Cleanup after previous test
+if [[ ${CLEANUP} = true ]]; then
+    echo "Deleting './out' if necessary"
+    rm -rf ./out
+    exit 0
+fi
+
+OUTPUT_DIR="$(pwd)/out"
+FRAMES_DIR="$(pwd)/$2"
+
+# Run test
+docker run --rm \
+    -v "${FRAMES_DIR}":/shared/user/inputs/frames/ \
+    -v "${OUTPUT_DIR}":/shared/user/outputs/ \
+    "$1"

@@ -15,11 +15,7 @@
     "ramda": "^0.26.1",
     "uuid": "^3.3.2"
   },
-  "scripts": {
-    "start": "node server/index.js",
-    "clean": "node server/cleanup.js",
-    "debug": "DEBUG=server node server/index.js"
-  },
+  "scripts": {},
   "devDependencies": {
     "debug": "^4.1.1"
   }

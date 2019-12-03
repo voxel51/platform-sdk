@@ -1,7 +1,7 @@
 # Example Platform Analytic
 
 This guide provides a end-to-end example of building and deploying an analytic
-to the Voxel51 Platform.
+to the [Voxel51 Platform](https://console.voxel51.com) using the Platform SDK.
 
 
 ## Overview
@@ -26,28 +26,12 @@ the inputs and outputs that the analytic exposes
 the analytic and its dependencies
 
 
-## Setup
-
-Download a short test video to work with:
-
-```shell
-mkdir -p data
-wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg7CtlQPiVkJJKmi662nfraCF'
-```
-
-In addition, make sure that you followed the installation instructions in the
-[README](../../README.md) to get setup with a Platform Account, the Python
-client, and an API token.
-
-
 ## Building the image
 
-To build the demo analytic, simply run the commands below from this directory.
-The code will clone a fresh copy of the Platform SDK, build the Docker image,
-and then cleanup the generated files.
+To build the image, run the following commands:
 
 ```shell
-# Clone platform-sdk
+# Clone Platform SDK
 git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
 git submodule init
@@ -55,7 +39,7 @@ git submodule update
 cd ..
 
 # Build image
-docker build -t "platform-demo" .
+docker build --tag platform-demo .
 
 # Cleanup
 rm -rf platform-sdk
@@ -65,29 +49,24 @@ rm -rf platform-sdk
 ## Testing locally
 
 Before deploying analytics to the platform, it is helpful to test the Docker
-images locally to ensure that they are functioning properly. The
-[tests folder](https://github.com/voxel51/platform-sdk/tree/develop/tests)
-defines a local testing server that you can use to perform such tests.
+images locally to ensure that they are functioning properly. The Platform SDK
+provides a `test-platform` script that you can use to perform such tests.
+Type `test-plaform -h` to learn more about the script.
 
-If you have not already, install the test server by running:
+To test your analytic locally, first download a test video to work with:
 
 ```shell
-cd ../../tests
-npm install
-cd ../examples/platform
+mkdir -p data
+wget -O data/test.mp4 'https://drive.google.com/uc?export=download&id=1wq3zg62Zg7CtlQPiVkJJKmi662nfraCF'
 ```
 
-If you do not have `npm` installed, follow the complete install instructions
-in the README in the tests folder.
-
-Then, run the following command to spawn a test server to run a job on the
-`platform-demo` image locally:
+Then execute the following command to spawn a test server:
 
 ```shell
 # Launch test server
-bash ../../tests/run.bash \
+test-platform \
     --analytic-image platform-demo \
-    --analytic-json ./analytic.json \
+    --analytic-json analytic.json \
     --inputs video=data/test.mp4 \
     --compute-type cpu
 ```
@@ -102,27 +81,32 @@ After the Docker image exits, press `Ctrl-C` in the terminal session running
 the server. This will generate a report summarizing the function of your
 analytic and highlight any issues identified with your analytic.
 
+To cleanup after the test, run `test-platform -c` from the working directory
+in which you launched the test server.
+
 After your analytic image passes local tests, it is ready for deployment to
 the Voxel51 Platform!
 
 
 ## Deploying to the platform
 
-To deploy your working analytic, you must first save it as a `.tar.gz` file so
-that you can upload it to the platform:
+To deploy your analytic to the Platform, you must first save the Docker image
+as a `.tar.gz` file:
 
 ```shell
 docker save platform-demo | gzip -c > platform-demo.tar.gz
 ```
 
 The following code snippet publishes the analytic to the platform using the
-Python client library:
+Python client library. In order to run it, you must have first followed the
+[installation instructions in the README](../../README.md#installation)
+to get setup with a Platform Account, the Python client, and an API token.
 
 ```py
 from voxel51.users.api import API
 
 analytic_json_path = "./analytic.json"
-analytic_image_path = "./platform-demo.tar.gz"
+cpu_image_path = "./platform-demo.tar.gz"
 
 api = API()
 
@@ -131,11 +115,10 @@ analytic = api.upload_analytic(analytic_json_path)
 analytic_id = analytic["id"]
 
 # Upload image
-image_type = "cpu"  # declare that the image was built for CPU-only execution
-api.upload_analytic_image(analytic_id, analytic_image_path, image_type)
+api.upload_analytic_image(analytic_id, cpu_image_path, "cpu")
 ```
 
-You can also upload analytics by logging into your
+You can also upload analytics via your
 [Platform Console account](https://console.voxel51.com).
 
 
@@ -153,20 +136,18 @@ api = API()
 
 # Upload data
 data = api.upload_data("data/test.mp4")
-data_id = data["id"]
 
 # Upload and start job
-job_request = JobRequest("<your-username>/platform-demo")
-job_request.set_input("video", data_id=data_id)
-job = api.upload_job_request(job_request, "platform-demo", auto_start=True)
-job_id = job["id"]
+job_request = JobRequest("<username>/platform-demo")
+job_request.set_input("video", data_id=data["id"])
+job = api.upload_job_request(job_request, data["name"], auto_start=True)
 
 # Wait until job completes, then download output
-api.wait_until_job_completes(job_id)
-api.download_job_output(job_id, "out/labels.json")
+api.wait_until_job_completes(job["id"])
+api.download_job_output(job["id"], "out/labels.json")
 ```
 
-In the above, replace `<your-username>` with your username on the platform.
+In the above, replace `<username>` with your username on the platform.
 
 
 ## Copyright

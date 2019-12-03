@@ -2,12 +2,12 @@
 
 This guide provides a detailed description of using the
 [Platform SDK](https://github.com/voxel51/platform-sdk) to wrap your custom
-analytic for deployment to the Voxel51 Platform in a Docker image.
+analytic for deployment to the [Voxel51 Platform](https://console.voxel51.com).
 
 See the
-[Platform Examples Folder](https://github.com/voxel51/platform-sdk/tree/develop/examples/platform)
-for a pre-defined test analytic that you can build and deploy to the platform
-to get comfortable with the workflow.
+[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+for pre-defined examples of analytics that you can build and deploy to the
+Platform to get comfortable with the workflow.
 
 <img src="https://drive.google.com/uc?id=1j0S8pLsopAqF1Ik3rf-CdyAIU4kA0sOP" alt="voxel51-logo.png" width="40%"/>
 
@@ -18,9 +18,9 @@ All analytics are deployed to the Voxel51 Platform as
 [Docker images](https://www.docker.com). If you are new to Docker, we recommend
 that you:
 
-- install the Community Edition (CE) on your machine by following the simple
+- Install the Community Edition (CE) on your machine by following the simple
 instructions at https://docs.docker.com/install
-- read the Docker orientation guide at https://docs.docker.com/get-started to
+- Read the Docker orientation guide at https://docs.docker.com/get-started to
 get familar with the concepts
 
 
@@ -30,12 +30,12 @@ The following code provides an annotated example of a generic Python executable
 `main.py` that acts as the main entrypoint for an analytic Docker image. It
 uses the Platform SDK to:
 
- - parse the task description provided to the image at runtime
- - download the inputs and parameters for the task
- - report the necessary metadata to the platform
- - invoke the analytic-specific implementation
- - publish the outputs of the task to the platform
- - mark the task as complete
+ - Parse the task description provided to the image at runtime
+ - Download the inputs and parameters for the task
+ - Report the necessary metadata to the platform
+ - Invoke the analytic-specific implementation
+ - Publish the outputs of the task to the platform
+ - Mark the task as complete
 
 It also demonstrates how to appropriately handle runtime errors that may occur
 during execution.
@@ -256,14 +256,6 @@ executable defined above, we strongly recommend wrapping your executable in the
 following simple `main.bash` script, which will act as the entrypoint to your
 Docker image.
 
-The script simply executes the main executable from the previous section, pipes
-its `stdout` and `stderr` to disk, and, if the executable exits with a non-zero
-status code, uploads the logfile to the platform and marks the job as `FAILED`.
-
-This extra layer of protection is important to catch and appropriately report
-errors that prevent the Platform SDK from loading (e.g., an `import` error
-caused from buggy installation instructions in the `Dockerfile`).
-
 ```shell
 #!/bin/bash
 # Main entrypoint for an analytic Docker image.
@@ -305,6 +297,14 @@ if [ $? -ne 0 ]; then
     wait
 fi
 ```
+
+The script simply executes the main executable from the previous section, pipes
+its `stdout` and `stderr` to disk, and, if the executable exits with a non-zero
+status code, uploads the logfile to the platform and marks the job as `FAILED`.
+
+This extra layer of protection is important to catch and appropriately report
+errors that prevent the Platform SDK from loading (e.g., an `import` error
+caused from buggy installation instructions in the `Dockerfile`).
 
 
 ## Docker build
@@ -373,17 +373,6 @@ RUN apt-get update \
     && python -m pip --no-cache-dir install --upgrade numpy==1.16.0 \
     && rm -rf /var/lib/apt
 
-#
-# Declare environment variables that the platform will use to communicate with
-# the image at runtime
-#
-ENV \
-    TASK_DESCRIPTION=null \
-    JOB_ID=null \
-    API_TOKEN=null \
-    API_BASE_URL=null \
-    LOGFILE_SIGNED_URL=null
-
 # Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
 
@@ -410,7 +399,7 @@ cd ..
 #
 
 # Build image
-docker build -t "<your-image-name>" .
+docker build -t "<image-name>" .
 
 # Cleanup
 rm -rf platform-sdk
@@ -420,10 +409,23 @@ rm -rf platform-sdk
 ## Local testing
 
 After you have built the Docker image for your custom analytic, you can use
-the local test server in the
-[tests folder](https://github.com/voxel51/platform-sdk/tree/develop/tests)
-to verify that your image is functioning properly before deploying it to the
-Voxel51 Platform. See the README in that folder for detailed instructions.
+the `test-platform` script that was installed along with the Platform SDK to
+verify that your image is functioning properly before deploying it to the
+Voxel51 Platform.
+
+The basic syntax for launching a test server instance is:
+
+```shell
+test-platform \
+    --analytic-image <image-name> \
+    --analytic-json <analytic-json> \
+    --inputs <name>=<path> \
+    --compute-type <cpu|gpu>
+```
+
+Type `test-platform -h` for help, and see the
+[this folder](https://github.com/voxel51/platform-sdk/tree/develop/tests/platform)
+for more informtion.
 
 
 ## Docker deployment
@@ -433,11 +435,12 @@ file so that you can upload it to the Voxel51 Platform. To do so, simply
 execute a command like:
 
 ```shell
-docker save <your-image-name> | gzip -c > <your-image-name>.tar.gz
+docker save <image-name> | gzip -c > <image-name>.tar.gz
 ```
 
-Finally, follow the instructions in the `Analytic deployment` section of the
-[README](README.md) to publish your analytic to the platform.
+Finally, follow the instructions in the
+[Analytic deployment section of the README](https://github.com/voxel51/platform-sdk/blob/develop/README.md#analytic-deployment)
+to publish your analytic to the platform.
 
 
 ## Copyright

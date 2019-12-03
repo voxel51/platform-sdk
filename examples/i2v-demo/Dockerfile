@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+ubuntu:16.04
 
 #
 # Install `platform-sdk` and its dependencies

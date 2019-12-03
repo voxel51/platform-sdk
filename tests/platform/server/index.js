@@ -3,9 +3,6 @@
  *
  * Copyright 2017-2019, Voxel51, Inc.
  * voxel51.com
- *
- * David Hodgson, david@voxel51.com
- * Brian Moore, brian@voxel51.com
  */
 'use strict';
 
@@ -17,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const uuid4 = require('uuid/v4');
 
+const clean = require('./clean.js');
 const config = require('./config.js');
 const schema = require('./schema.js');
 const server = require('./server.js');
@@ -58,13 +56,18 @@ const optionDefinitions = [
   {
     name: 'compute-type',
     type: String,
-    defaultValue: 'cpu',
     description: 'The compute type to use. Your Docker image must support ' +
       'this compute type. If GPU execution is requested, `--runtime=nvidia` ' +
       'is added to the `docker run` command; it is assumed that your ' +
-      'machine and Docker installation are configured to support this. ' +
-      'The default is `cpu`.',
+      'machine and Docker installation are configured to support this.',
     typeLabel: '<cpu|gpu>',
+  },
+  {
+    name: 'clean',
+    alias: 'c',
+    type: Boolean,
+    description: 'Cleanup generated files from a previous test run from the ' +
+      'current working directory.'
   },
   {
     name: 'help',
@@ -76,15 +79,15 @@ const optionDefinitions = [
 
 const usageDefinition = [
   {
-    content: 'Voxel51 Platform local analytic testing server'
+    content: 'Voxel51 Platform Analytic Local Testing Server'
   },
   {
     header: 'Example usage',
-    content: 'bash run.bash \\\n' +
+    content: 'test-platform \\\n' +
       '--analytic-image <image-name> \\\n' +
       '--analytic-json <analytic-json> \\\n' +
       '--inputs <name>=<path> \\\n' +
-      '--compute-type gpu'
+      '--compute-type <cpu|gpu>'
   },
   {
     header: 'Options',
@@ -110,6 +113,13 @@ const JOB_ID = uuid4();
       debug('Displaying help.');
       const usage = commandLineUsage(usageDefinition);
       console.log(usage);
+      process.exit(0);
+    }
+
+    // Handle clean flag
+    if (options.clean) {
+      debug('Cleaning up after test.');
+      clean.cleanup();
       process.exit(0);
     }
 
