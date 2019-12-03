@@ -279,7 +279,7 @@ LOGFILE_PATH=/var/log/image.log
 # for your analytic.
 #
 set -o pipefail
-python main.py 2>&1 | tee "${LOGFILE_PATH}"
+python main.py 2>&1 | tee -a "${LOGFILE_PATH}"
 
 # Gracefully handle uncaught failures in analytic
 if [ $? -ne 0 ]; then
