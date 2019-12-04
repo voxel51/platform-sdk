@@ -70,8 +70,6 @@ performs the following actions:
 
 Copyright 2017-2019, Voxel51, Inc.
 voxel51.com
-
-Brian Moore, brian@voxel51.com
 '''
 # pragma pylint: disable=redefined-builtin
 # pragma pylint: disable=unused-wildcard-import
@@ -155,16 +153,14 @@ Docker image.
 #!/bin/bash
 # Main entrypoint for an Image-to-Video container.
 #
-# Syntax:
-#   bash main.bash
-#
 
 #
-# Don't change this path; the platform attaches a pre-stop hook to images at
-# runtime that will upload the logfile from this location whenever a task is
+# Don't change `LOGFILE_PATH`. The platform attaches a pre-stop hook to images
+# at runtime that will upload the logfile from this location whenever a task is
 # terminated unexpectedly (e.g., preemption, resource violation, etc.)
 #
 LOGFILE_PATH=/var/log/image.log
+BACKUP_LOGFILE_PATH=/var/log/backup.log
 
 #
 # Execute analytic and pipe stdout/stderr to disk so that this information
@@ -174,11 +170,22 @@ LOGFILE_PATH=/var/log/image.log
 # for your analytic.
 #
 set -o pipefail
-python main.py 2>&1 | tee -a "${LOGFILE_PATH}"
+python main.py 2>&1 | tee "${BACKUP_LOGFILE_PATH}"
+
+# Gracefully handle uncaught failures in analytic
+if [ $? -ne 0 ]; then
+    #
+    # An uncatught exception occurred when executing the analytic, so append
+    # the backup log to the logfile, just in case
+    #
+    echo "UNCAUGHT EXCEPTION; APPENDING BACKUP LOG" >> "${LOGFILE_PATH}"
+    cat "${BACKUP_LOGFILE_PATH}" >> "${LOGFILE_PATH}"
+fi
 ```
 
-The script simply executes the main executable from the previous section
-and pipes its `stdout` and `stderr` to disk.
+The script simply executes the main executable from the previous section, pipes
+its `stdout` and `stderr` to disk, and appends it to the logfile for the task
+if the executable exits with an non-zero code.
 
 This extra layer of protection is important to appropriately log errors that
 prevent your image from appropriately loading (e.g., an `import` error
@@ -199,10 +206,6 @@ custom installation requirements for your analytic.
 ```shell
 # A typical base image for GPU deployments. Others are possible
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
-
-#
-# Your custom installation here!
-#
 
 #
 # Install `platform-sdk` and its dependencies
@@ -251,6 +254,10 @@ RUN apt-get update \
     && python -m pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
     && python -m pip --no-cache-dir install --upgrade numpy==1.16.0 \
     && rm -rf /var/lib/apt
+
+#
+# Your custom installation here!
+#
 
 # Setup entrypoint
 COPY main.bash /engine/main.bash
