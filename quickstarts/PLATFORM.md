@@ -258,37 +258,37 @@ Docker image.
 
 ```shell
 #!/bin/bash
-# Main entrypoint for an analytic Docker image.
-#
-# Syntax:
-#     bash main.bash
+# Main entrypoint for a Voxel51 Platform Analytic.
 #
 
 #
-# Don't change this path; the platform attaches a pre-stop hook to images at
-# runtime that will upload the logfile from this location whenever a task is
+# Don't change `LOGFILE_PATH`. The platform attaches a pre-stop hook to images
+# at runtime that will upload the logfile from this location whenever a task is
 # terminated unexpectedly (e.g., preemption, resource violation, etc.)
 #
 LOGFILE_PATH=/var/log/image.log
+BACKUP_LOGFILE_PATH=/var/log/backup.log
 
 #
-# Execute analytic and pipe stdout/stderr to disk so that we can post it
-# manually in case of errors.
+# Execute analytic and pipe stdout/stderr to disk so that this information
+# will be available in case of errors.
 #
 # If necessary, replace `python main.py` here with the appropriate invocation
 # for your analytic.
 #
 set -o pipefail
-python main.py 2>&1 | tee -a "${LOGFILE_PATH}"
+python main.py 2>&1 | tee "${BACKUP_LOGFILE_PATH}"
 
 # Gracefully handle uncaught failures in analytic
 if [ $? -ne 0 ]; then
-    # The task failed, so...
+    # Append backlog log
+    echo "UNCAUGHT EXCEPTION; APPENDING BACKUP LOG" >> "${LOGFILE_PATH}"
+    cat "${BACKUP_LOGFILE_PATH}" >> "${LOGFILE_PATH}"
 
-    # Upload the logfile
+    # Upload logfile
     curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
 
-    # Post the job failure
+    # Post job failure
     curl -X PUT "${API_BASE_URL}/jobs/${JOB_ID}/state" \
         -H "X-Voxel51-Agent: ${API_TOKEN}" \
         -H "Content-Type: application/json" \
@@ -320,10 +320,6 @@ custom installation requirements for your analytic.
 ```shell
 # A typical base image for GPU deployments. Others are possible
 FROM nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04
-
-#
-# Your custom installation here!
-#
 
 #
 # Install `platform-sdk` and its dependencies
@@ -372,6 +368,10 @@ RUN apt-get update \
     && python -m pip --no-cache-dir install -I tensorflow-gpu==1.12.0 \
     && python -m pip --no-cache-dir install --upgrade numpy==1.16.0 \
     && rm -rf /var/lib/apt
+
+#
+# Your custom installation here!
+#
 
 # Expose port so image can read/write from external storage at runtime
 EXPOSE 8000
