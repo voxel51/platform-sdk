@@ -1,32 +1,35 @@
 #!/bin/bash
-# Main entrypoint for the `platform-demo` analytic.
+# Main entrypoint for a Voxel51 Platform Analytic.
 #
 # Copyright 2017-2019, Voxel51, Inc.
 # voxel51.com
 #
-# Brian Moore, brian@voxel51.com
-#
 
 #
-# Don't change this path; the platform attaches a pre-stop hook to images at
-# runtime that will upload the logfile from this location whenever a task is
+# Don't change `LOGFILE_PATH`. The platform attaches a pre-stop hook to images
+# at runtime that will upload the logfile from this location whenever a task is
 # terminated unexpectedly (e.g., preemption, resource violation, etc.)
 #
 LOGFILE_PATH=/var/log/image.log
+BACKUP_LOGFILE_PATH=/var/log/backup.log
 
-# Run analytic
-# Pipes stdout/stderr to disk so that we can post it manually in case of errors
+#
+# Execute analytic and pipe stdout/stderr to disk so that this information
+# will be available in case of errors.
+#
 set -o pipefail
-python main.py 2>&1 | tee "${LOGFILE_PATH}"
+python main.py 2>&1 | tee "${BACKUP_LOGFILE_PATH}"
 
 # Gracefully handle uncaught failures in analytic
 if [ $? -ne 0 ]; then
-    # The task failed, so...
+    # Append backlog log
+    echo "UNCAUGHT EXCEPTION; APPENDING BACKUP LOG" >> "${LOGFILE_PATH}"
+    cat "${BACKUP_LOGFILE_PATH}" >> "${LOGFILE_PATH}"
 
-    # Upload the logfile
+    # Upload logfile
     curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
 
-    # Post the job failure
+    # Post job failure
     curl -X PUT "${API_BASE_URL}/jobs/${JOB_ID}/state" \
         -H "X-Voxel51-Agent: ${API_TOKEN}" \
         -H "Content-Type: application/json" \

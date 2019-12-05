@@ -71,5 +71,3 @@ https://pycodestyle.readthedocs.io/en/latest/intro.html) for more information.
 
 Copyright 2017-2019, Voxel51, Inc.<br>
 voxel51.com
-
-Brian Moore, brian@voxel51.com
