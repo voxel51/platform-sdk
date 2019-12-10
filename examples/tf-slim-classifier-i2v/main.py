@@ -58,15 +58,14 @@ def load_model():
         "attr_name": "imagenet",
         "model_path": MODEL_PATH,
         "network_name": NETWORK_NAME,
-        "labels_path": LABELS_PATH
+        "labels_path": LABELS_PATH,
+        "confidence_thresh" : CONFIDENCE_THRESHOLD,
     })
     return TFSlimClassifier(config)
 
 
 def process_image(model, img):
     attrs = model.predict(img)
-    attrs.filter_elements(
-        [lambda attr: attr.confidence >= CONFIDENCE_THRESHOLD])
     return etai.ImageLabels(attrs=attrs)
 
 
