@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Entrypoint for the `tf-slim-classifier-i2v` container.
+Entrypoint for the `tf-models-segmenter-i2v` container.
 
 Copyright 2017-2019, Voxel51, Inc.
 voxel51.com
@@ -22,7 +22,7 @@ from builtins import *
 import logging
 
 import eta.core.image as etai
-from eta.classifiers import TFSlimClassifier, TFSlimClassifierConfig
+from eta.detectors import TFModelsSegmenter, TFModelsSegmenterConfig
 
 import voxel51.image2video.core as voxc
 
@@ -30,10 +30,10 @@ import voxel51.image2video.core as voxc
 logger = logging.getLogger(__name__)
 
 
-NETWORK_NAME = "resnet_v2_50"
-MODEL_PATH = "/engine/models/resnet_v2_50_imagenet.pb"
-LABELS_PATH = "/engine/models/tfslim_imagenet_labels.txt"
+MODEL_PATH = "/engine/models/frozen_inference_graph.pb"
+LABELS_PATH = "/engine/models/mscoco_label_map.pbtxt"
 CONFIDENCE_THRESHOLD = 0.3
+MASK_THRESHOLD = 0.5
 
 
 def main():
@@ -54,19 +54,18 @@ def main():
 
 
 def load_model():
-    config = TFSlimClassifierConfig({
-        "attr_name": "imagenet",
+    config = TFModelsSegmenterConfig({
         "model_path": MODEL_PATH,
-        "network_name": NETWORK_NAME,
         "labels_path": LABELS_PATH,
-        "confidence_thresh" : CONFIDENCE_THRESHOLD,
+        "mask_thresh": MASK_THRESHOLD,
+        "confidence_thresh": CONFIDENCE_THRESHOLD,
     })
-    return TFSlimClassifier(config)
+    return TFModelsSegmenter(config)
 
 
 def process_image(model, img):
-    attrs = model.predict(img)
-    return etai.ImageLabels(attrs=attrs)
+    objects = model.detect(img)
+    return etai.ImageLabels(objects=objects)
 
 
 if __name__ == "__main__":

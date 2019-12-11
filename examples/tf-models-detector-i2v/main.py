@@ -56,14 +56,13 @@ def load_model():
     config = TFModelsDetectorConfig({
         "model_path": MODEL_PATH,
         "labels_path": LABELS_PATH,
+        "confidence_thresh": CONFIDENCE_THRESHOLD,
     })
     return TFModelsDetector(config)
 
 
 def process_image(model, img):
     objects = model.detect(img)
-    objects.filter_elements(
-        [lambda obj: obj.confidence >= CONFIDENCE_THRESHOLD])
     return etai.ImageLabels(objects=objects)
 
 
