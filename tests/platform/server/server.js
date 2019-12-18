@@ -522,8 +522,7 @@ const server = (function makeServer() {
       fs.writeFileSync(config.TEST_REPORT_PATH, reportStr);
       console.log(`\nTest report written to ${config.TEST_REPORT_PATH}\n`);
 
-      let cleanScript = path.join(__dirname, '../clean.bash');
-      console.log(`To cleanup, run:\n\nbash ${cleanScript}\n`);
+      console.log(`To cleanup, run:\n\ntest-platform --clean\n`);
 
       return resolve();
     });
