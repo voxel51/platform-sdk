@@ -669,10 +669,9 @@ def make_publish_callback(job_id, status_path_config):
         syntax :func:`publish_callback(task_status)`
     '''
     def _publish_status(task_status):
-        voxu.upload_bytes(
-            task_status.to_str(), status_path_config,
-            content_type="application/json")
-        logger.info("Task status written to cloud storage")
+        #
+        # Report job state to platform
+        #
 
         if task_status.state == TaskState.FAILED:
             failure_type = task_status.failure_type
@@ -681,12 +680,23 @@ def make_publish_callback(job_id, status_path_config):
 
         _get_api_client().update_job_state(
             job_id, task_status.state, failure_type=failure_type)
+
         if task_status.state == TaskState.FAILED:
             logger.info(
                 "Job state %s (%s) posted to API", task_status.state,
                 failure_type)
         else:
             logger.info("Job state %s posted to API", task_status.state)
+
+        #
+        # Post current task status
+        #
+
+        voxu.upload_bytes(
+            task_status.to_str(), status_path_config,
+            content_type="application/json")
+
+        logger.info("Task status written to cloud storage")
 
     return _publish_status
 
