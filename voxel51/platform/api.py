@@ -80,8 +80,9 @@ class API(object):
             self._requests.close()
 
     def get_job_path_config(self, job_id, url_type):
-        endpoint = self.base_url + "/jobs/" + job_id + "/geturl/" + url_type
+        endpoint = self.base_url + "/jobs/" + job_id + "/url/" + url_type
         res = self._requests.get(endpoint, headers=self._header)
+        _validate_response(res)
         return voxu.RemotePathConfig(_parse_json_response(res))
 
     def post_job_metadata(self, job_id, metadata):
