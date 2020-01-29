@@ -471,8 +471,10 @@ def make_publish_callback(job_id, status_path_config):
         syntax :func:`publish_callback(task_status)`
     '''
     def _publish_status(task_status):
+        api = _get_api_client()
         voxu.upload_bytes(
-            task_status.to_str(), status_path_config,
+            task_status.to_str(),
+            api.get_job_path_config(job_id, "status"),
             content_type="application/json")
         logger.info("Task status written to cloud storage")
 
@@ -481,7 +483,7 @@ def make_publish_callback(job_id, status_path_config):
         else:
             failure_type = None
 
-        _get_api_client().update_job_state(
+        api.update_job_state(
             job_id, task_status.state, failure_type=failure_type)
         if task_status.state == TaskState.FAILED:
             logger.info(
@@ -602,7 +604,9 @@ def upload_output(output_path, task_config, task_status):
         task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
     '''
-    voxu.upload(output_path, task_config.output)
+    voxu.upload(
+        output_path,
+        _get_api_client().get_job_path_config(task_config.job_id, "output"))
     logger.info("Output uploaded to %s", task_config.output)
     task_status.add_message("Output published")
 
@@ -646,7 +650,9 @@ def upload_logfile(logfile_path, task_config):
         task_config (TaskConfig): the TaskConfig for the task
     '''
     logger.info("Uploading logfile to %s", str(task_config.logfile))
-    voxu.upload(logfile_path, task_config.logfile)
+    voxu.upload(
+        logfile_path,
+        _get_api_client().get_job_path_config(task_config.job_id, "log"))
 
 
 def fail_gracefully(
