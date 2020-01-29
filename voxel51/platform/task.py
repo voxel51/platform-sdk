@@ -937,7 +937,7 @@ def fail_epically(logfile_path=None):
 
 
 def _get_api_client():
-    global _API_CLIENT
+    global _API_CLIENT  # pylint: disable=global-statement
     if _API_CLIENT is None:
         _API_CLIENT = voxa.make_api_client()
     return _API_CLIENT
