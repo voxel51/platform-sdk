@@ -878,46 +878,44 @@ def fail_gracefully(
         logfile_path (str, optional): an optional path to a logfile for the
             task to upload
     '''
-    # Log the stack trace and mark the task as failed
-    exc_info = sys.exc_info()
+    # Log the error
     if failure_type is not None:
         logger.info("Failure type: %s", failure_type)
     else:
         logger.info("Failure type not specified")
-    logger.error("Uncaught exception", exc_info=exc_info)
+    logger.error("Uncaught exception", exc_info=sys.exc_info())
+
+    # Mark the task as failed
     task_status.fail(failure_type=failure_type)
 
     try:
         # Try to publish the task status
         task_status.publish()
     except:
-        logger.error("Failed to publish job status")
+        logger.error("Failed to publish task status", exc_info=sys.exc_info())
 
     try:
-        # Try to upload the logfile, if any
+        # Try to upload the logfile, if requested
         if logfile_path:
             upload_logfile(logfile_path, task_config)
     except:
-        logger.error("Failed to upload logfile")
+        logger.error("Failed to upload logfile", exc_info=sys.exc_info())
 
 
-def fail_epically():
+def fail_epically(logfile_path=None):
     '''Handles an epic failure of a task that occurs before the
     :class:`TaskConfig` was succesfully downloaded. The platform is notified
     of the failure as fully as possible.
+
+    Args:
+        logfile_path (str, optional): an optional path to a logfile for the
+            task to upload
     '''
-    #
-    # Log exception, even though we'll be unable to upload the logfile
-    # because something went wrong before we were even able to parse the
-    # task config to get the logfile path
-    #
+    # Log the error
     logger.error("Uncaught exception", exc_info=sys.exc_info())
 
     try:
-        #
-        # The only thing we can do is update the job status to FAILED
-        # and blame it on the platform
-        #
+        # Update the job status to FAILED and blame it on the platform
         job_id = os.environ[voxc.JOB_ID_ENV_VAR]
         _get_api_client().update_job_state(
             job_id, TaskState.FAILED, failure_type=TaskFailureType.PLATFORM)
@@ -925,7 +923,17 @@ def fail_epically():
             "Job state %s (%s) posted to API", TaskState.FAILED,
             TaskFailureType.PLATFORM)
     except:
-        logger.error("Unable to communicate with API")
+        logger.error("Unable to communicate with API", exc_info=sys.exc_info())
+
+    try:
+        # Try to upload the logfile, if requested
+        if logfile_path:
+            logfile_url = os.environ[voxc.LOGFILE_SIGNED_URL_ENV_VAR]
+            logfile = RemotePathConfig.from_signed_url(logfile_url)
+            logger.info("Uploading logfile to %s", str(logfile))
+            voxu.upload(logfile_path, logfile)
+    except:
+        logger.error("Failed to upload logfile", exc_info=sys.exc_info())
 
 
 def _get_api_client():
