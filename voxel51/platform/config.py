@@ -19,7 +19,7 @@ from builtins import *
 
 
 #
-# The environment variable that will hold the URL from which to download the
+# The environment variable that holds the URL from which to download the
 # TaskConfig for the task
 #
 TASK_DESCRIPTION_ENV_VAR = "TASK_DESCRIPTION"
@@ -39,3 +39,9 @@ API_TOKEN_ENV_VAR = "API_TOKEN"
 # The environment variable that holds the base URL of the API
 #
 API_BASE_URL_ENV_VAR = "API_BASE_URL"
+
+#
+# The environment variable that holds the URL to which to upload the logfile
+# for the task
+#
+LOGFILE_SIGNED_URL_ENV_VAR = "LOGFILE_SIGNED_URL"
