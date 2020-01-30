@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Utilities for the Voxel51 Platform SDK.
 
@@ -24,7 +23,7 @@ import os
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 
-from eta.core.config import Config
+from eta.core.config import Config, ConfigError
 import eta.core.image as etai
 import eta.core.storage as etas
 import eta.core.video as etav
@@ -37,7 +36,12 @@ class RemotePathConfig(Config):
     '''Class that describes the location of a remote file.'''
 
     def __init__(self, d):
-        self.signed_url = self.parse_string(d, "signed-url")
+        # We allow either `signed-url` or `signed_url`
+        signed_url1 = self.parse_string(d, "signed-url", default=None)
+        signed_url2 = self.parse_string(d, "signed_url", default=None)
+        if signed_url1 is None and signed_url2 is None:
+            raise ConfigError("Expected key `signed_url` or `signed-url`")
+        self.signed_url = signed_url1 or signed_url2
 
     def __str__(self):
         return self.signed_url
@@ -88,6 +92,21 @@ def get_metadata_for_image(image_path):
     return etai.ImageMetadata.build_for(image_path)
 
 
+def get_download_path(path_config, output_dir):
+    '''Gets the local path for the given download.
+
+    Args:
+        path_config (RemotePathConfig): a RemotePathConfig describing the file
+            to download
+        output_dir (str): the directory to download the file to
+
+    Returns:
+        the local path for the download
+    '''
+    filename = etas.HTTPStorageClient.get_filename(path_config.signed_url)
+    return os.path.join(output_dir, filename)
+
+
 def download(path_config, output_dir):
     '''Downloads the specified file to the given directory.
 
@@ -99,8 +118,7 @@ def download(path_config, output_dir):
     Returns:
         the local path to the downloaded file
     '''
-    filename = etas.HTTPStorageClient.get_filename(path_config.signed_url)
-    local_path = os.path.join(output_dir, filename)
+    local_path = get_download_path(path_config, output_dir)
     _get_http_client().download(path_config.signed_url, local_path)
     return local_path
 

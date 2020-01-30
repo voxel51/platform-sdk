@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Task management module for the Voxel51 Platform SDK.
 
@@ -23,13 +22,8 @@ import logging
 import os
 import sys
 
-try:
-    import urllib.parse as urlparse  # Python 3
-except ImportError:
-    import urlparse  # Python 2
-
 from eta.core.config import Config
-import eta.core.log as etal
+import eta.core.logging as etal
 from eta.core.serial import Serializable
 import eta.core.utils as etau
 
@@ -113,8 +107,24 @@ class TaskManager(object):
     def start(self):
         '''Marks the task as started and publishes the :class:`TaskStatus` to
         the platform.
+
+        If the task is already started, no action is taken.
         '''
         start_task(self.task_status)
+
+    def pause(self, config_path, status_path):
+        '''Pauses the task by writing the :class:`TaskConfig` and current
+        :class:`TaskStatus` to disk locally.
+
+        To resume a task and retrieve the associated :class:`TaskManger`, use
+        :func:`resume_task`.
+
+        Args:
+            config_path (str): local path to write the TaskConfig
+            status_path (str): local path to write the TaskStatus
+        '''
+        pause_task(
+            self.task_config, self.task_status, config_path, status_path)
 
     def download_inputs(self, inputs_dir):
         '''Downloads the task inputs.
@@ -139,7 +149,44 @@ class TaskManager(object):
             or paths (data parameters)
         '''
         return parse_parameters(
-            data_params_dir, self.task_config, self.task_status)
+            self.task_config, self.task_status,
+            data_params_dir=data_params_dir)
+
+    def get_path_for_input(self, name, inputs_dir):
+        '''Gets the filepath for the task input with the given name.
+
+        Note that this function does not check if the input actually exists at
+        the returned location.
+
+        Args:
+            name (str): the name of the input
+            inputs_dir (str): the directory for the inputs
+
+        Returns:
+            the local filepath to the input
+        '''
+        path_config = self.task_config.inputs[name]
+        return voxu.get_download_path(path_config, inputs_dir)
+
+    def get_path_for_data_parameter(self, name, data_params_dir):
+        '''Gets the filepath for the data parameter with the given name.
+
+        Note that this function does not check if the parameter actually exists
+        at the returned location.
+
+        Args:
+            name (str): the name of the data parameter
+            data_params_dir (str): the directory for the data parameters
+
+        Returns:
+            the local filepath to the data parameter
+        '''
+        val = self.task_config.parameters[name]
+        if not voxu.RemotePathConfig.is_path_config_dict(val):
+            raise ValueError("Parameter '%s' is not a data parameter" % name)
+
+        path_config = voxu.RemotePathConfig(val)
+        return voxu.get_download_path(path_config, data_params_dir)
 
     def record_input_metadata(
             self, name, image_path=None, video_path=None, metadata=None):
@@ -255,7 +302,7 @@ class TaskStatus(Serializable):
     Attributes:
         analytic (str): name of the analytic
         version (str): version of the analytic
-        state (TaskState): current state of the task
+        state (TaskState): state of the task
         start_time (str): time the task was started, or None if not started
         complete_time (str): time the task was completed, or None if not
             completed
@@ -270,24 +317,68 @@ class TaskStatus(Serializable):
             data to their associated data IDs
     '''
 
-    def __init__(self, task_config):
+    def __init__(
+            self,
+            analytic=None,
+            version=None,
+            state=TaskState.SCHEDULED,
+            start_time=None,
+            complete_time=None,
+            fail_time=None,
+            failure_type=TaskFailureType.NONE,
+            messages=None,
+            inputs=None,
+            posted_data=None
+        ):
         '''Creates a TaskStatus instance.
 
         Args:
-            task_config (TaskConfig): a TaskConfig instace describing the task
+            analytic (str): the name of the analytic
+            version (str, optional): the version of the analytic
+            state (TaskState, optional): the state of the task
+            start_time (str, optional): the time the task was started, if
+                applicable
+            complete_time (str, optional): the time the task was completed, if
+                applicable
+            fail_time (str, optional): the time the task failed, if applicable
+            failure_type (TaskFailureType, optional): the
+                :class:`TaskFailureType` of the task, if applicable
+            messages (list, optional): list of :class:`TaskStatusMessage`
+                instances for the task, if any
+            inputs (dict, optional): a dictionary containing metadata about the
+                inputs to the task, if any
+            posted_data (dict, optional): a dictionary mapping names of
+                outputs, if any, posted as data to their associated data IDs
         '''
-        self.analytic = task_config.analytic
-        self.version = task_config.version
-        self.state = TaskState.SCHEDULED
-        self.start_time = None
-        self.complete_time = None
-        self.fail_time = None
-        self.failure_type = TaskFailureType.NONE
-        self.messages = []
-        self.inputs = {}
-        self.posted_data = {}
-        self._publish_callback = make_publish_callback(
+        self.analytic = analytic or ""
+        self.version = version
+        self.state = state
+        self.start_time = start_time
+        self.complete_time = complete_time
+        self.fail_time = fail_time
+        self.failure_type = failure_type
+        self.messages = messages or []
+        self.inputs = inputs or {}
+        self.posted_data = posted_data or {}
+        self._publish_callback = None
+
+    @classmethod
+    def build_for(cls, task_config):
+        '''Builds a TaskStatus for recording the status of the task specified
+        by the given TaskConfig.
+
+        Args:
+            task_config (TaskConfig): a TaskConfig describing the task
+
+        Returns:
+            a TaskStatus instance
+        '''
+        task_status = cls(
+            analytic=task_config.analytic, version=task_config.version)
+        publish_callback = make_publish_callback(
             task_config.job_id, task_config.status)
+        task_status.set_publish_callback(publish_callback)
+        return task_status
 
     def record_input_metadata(self, name, metadata):
         '''Records metadata about the given input.
@@ -311,29 +402,44 @@ class TaskStatus(Serializable):
     def start(self, msg="Task started"):
         '''Marks the task as started.
 
+        If the task is already started, no action is taken.
+
         Args:
             msg (str, optional): a message to log
         '''
+        if self.state == TaskState.RUNNING:
+            return
+
         self.start_time = self.add_message(msg)
         self.state = TaskState.RUNNING
 
     def complete(self, msg="Task complete"):
         '''Marks the task as complete.
 
+        If the task is already complete, no action is taken.
+
         Args:
             msg (str, optional): a message to log
         '''
+        if self.state == TaskState.COMPLETE:
+            return
+
         self.complete_time = self.add_message(msg)
         self.state = TaskState.COMPLETE
 
     def fail(self, failure_type=None, msg="Task failed"):
         '''Marks the task as failed.
 
+        If the task is already failed, no action is taken.
+
         Args:
             failure_type (TaskFailureType, optional): an optional failure
                 reason for the task
             msg (str, optional): an optional message to log
         '''
+        if self.state == TaskState.FAILED:
+            return
+
         self.fail_time = self.add_message(msg)
         self.state = TaskState.FAILED
         if failure_type is not None:
@@ -353,17 +459,54 @@ class TaskStatus(Serializable):
         self.messages.append(message)
         return message.time
 
+    def set_publish_callback(self, publish_callback):
+        '''Sets the callback to use when `publish()` is called.
+
+        Args:
+            publish_callback: a function that accepts a :class:`TaskStatus`
+                object and performs some desired action with it
+        '''
+        self._publish_callback = publish_callback
+
     def publish(self):
         '''Publishes the task status using
         :func:`TaskStatus._publish_callback``.
         '''
-        self._publish_callback(self)
+        if self._publish_callback:
+            self._publish_callback(self)
 
     def attributes(self):
         '''Returns a list of class attributes to be serialized.'''
         return [
             "analytic", "version", "state", "start_time", "complete_time",
             "fail_time", "failure_type", "messages", "inputs", "posted_data"]
+
+    @classmethod
+    def from_dict(cls, d):
+        '''Constructs a :class:`TaskStatus` instance from a JSON dictionary.
+
+        Args:
+            d (dict): a JSON dictionary
+
+        Returns:
+            a TaskStatus instance
+        '''
+        analytic = d["analytic"]
+        version = d["version"]
+        state = d["state"]
+        start_time = d["start_time"]
+        complete_time = d["complete_time"]
+        fail_time = d["fail_time"]
+        failure_type = d["failure_type"]
+        messages = [TaskStatusMessage.from_dict(md) for md in d["messages"]]
+        # Note that we are not parsing Serializable objects here, if any
+        inputs = d["inputs"]
+        posted_data = d["posted_data"]
+        return cls(
+            analytic=analytic, version=version, state=state,
+            start_time=start_time, complete_time=complete_time,
+            fail_time=fail_time, failure_type=failure_type, messages=messages,
+            inputs=inputs, posted_data=posted_data)
 
 
 class TaskStatusMessage(Serializable):
@@ -388,6 +531,19 @@ class TaskStatusMessage(Serializable):
     def attributes(self):
         '''Returns a list of class attributes to be serialized.'''
         return ["message", "time"]
+
+    @classmethod
+    def from_dict(cls, d):
+        '''Constructs a :class:`TaskStatusMessage` instance from a JSON
+        dictionary.
+
+        Args:
+            d (dict): a JSON dictionary
+
+        Returns:
+            a TaskStatusMessage instance
+        '''
+        return cls(d["message"], time=d.get("time", None))
 
 
 def setup_logging(logfile_path, rotate=True):
@@ -440,7 +596,7 @@ def make_task_status(task_config):
     Returns:
         a :class:`TaskStatus` instance for tracking the progress of the task
     '''
-    task_status = TaskStatus(task_config)
+    task_status = TaskStatus.build_for(task_config)
     logger.info("TaskStatus instance created")
     return task_status
 
@@ -449,12 +605,54 @@ def start_task(task_status):
     '''Marks the task as started and publishes the :class:`TaskStatus` to the
     platform.
 
+    If the task is already started, no action is taken.
+
     Args:
         task_status (TaskStatus): the TaskStatus for the task
     '''
+    if task_status.state == TaskState.RUNNING:
+        return
+
     logger.info("Task started")
     task_status.start()
     task_status.publish()
+
+
+def pause_task(task_config, task_status, config_path, status_path):
+    '''Pauses the task by writing the the :class:`TaskConfig` and
+    :class:`TaskStatus` to local disk.
+
+    Args:
+        task_config (TaskConfig): the TaskConfig for the task
+        task_status (TaskStatus): the TaskStatus for the task
+        config_path (str): path to write the TaskConfig
+        status_path (str): path to write the TaskStatus
+    '''
+    task_config.write_json(config_path)
+    task_status.write_json(status_path)
+
+
+def resume_task(config_path, status_path, task_status_cls=TaskStatus):
+    '''Resumes the task specified by the given :class:`TaskConfig` and
+    :class:`TaskStatus` by reading them from disk.
+
+    Args:
+        config_path (str): the path from which to load the TaskConfig
+        status_path (str): the path from which to read the TaskStatus
+        task_status_cls (type, optional): an optional TaskStatus subclass type
+            to use to load the TaskStatus
+
+    Returns:
+        a TaskManager instance
+    '''
+    task_config = TaskConfig.from_json(config_path)
+    task_status = task_status_cls.from_json(status_path)
+
+    publish_callback = make_publish_callback(
+        task_config.job_id, task_config.status)
+    task_status.set_publish_callback(publish_callback)
+
+    return TaskManager(task_config, task_status=task_status)
 
 
 def make_publish_callback(job_id, status_path_config):
@@ -517,15 +715,18 @@ def download_inputs(inputs_dir, task_config, task_status):
     return input_paths
 
 
-def parse_parameters(data_params_dir, task_config, task_status):
-    '''Parses the task parameters. Any data parameters are downloaded to the
-    specified directory.
+def parse_parameters(task_config, task_status, data_params_dir=None):
+    '''Parses the task parameters.
+
+    Any data parameters are downloaded to the specified `data_params_dir`,
+    if provided.
 
     Args:
-        data_params_dir (str): the directory to which to download data
-            parameters, if any. Can be None if no data parameters are expected
         task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
+        data_params_dir (str, optional): the directory to which to download
+            data parameters, if any. Can be None if no data parameters are
+            expected, or if they should be skipped if encountered
 
     Returns:
         a dictionary mapping parameter names to values (builtin parameters) or
@@ -534,6 +735,11 @@ def parse_parameters(data_params_dir, task_config, task_status):
     parameters = {}
     for name, val in iteritems(task_config.parameters):
         if voxu.RemotePathConfig.is_path_config_dict(val):
+            if data_params_dir is None:
+                logger.info("Skipping data parameter '%s'", name)
+                task_status.add_message("Skipping data parameter '%s'" % name)
+                continue
+
             path_config = voxu.RemotePathConfig(val)
             local_path = voxu.download(path_config, data_params_dir)
             parameters[name] = local_path
@@ -692,14 +898,10 @@ def fail_gracefully(
         logger.error("Failed to upload logfile")
 
 
-def fail_epically(task_config_url):
+def fail_epically():
     '''Handles an epic failure of a task that occurs before the
     :class:`TaskConfig` was succesfully downloaded. The platform is notified
     of the failure as fully as possible.
-
-    Args:
-        task_config_url (str): the URL from which the :class:`TaskConfig` was
-            to be downloaded
     '''
     #
     # Log exception, even though we'll be unable to upload the logfile

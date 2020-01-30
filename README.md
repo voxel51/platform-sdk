@@ -1,6 +1,7 @@
 # Voxel51 Platform SDK
 
-An SDK for deploying custom analytics to the Voxel51 Platform.
+An SDK for deploying custom analytics to the
+[Voxel51 Platform](https://console.voxel51.com).
 
 Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel51/platform-sdk).
 
@@ -35,9 +36,8 @@ the Platform API, you also need to install the
 git clone https://github.com/voxel51/api-py
 cd api-py
 
-# Install the library
-pip install -r requirements.txt
-pip install -e .
+# Run the install script
+bash install.bash
 
 cd ..
 ```
@@ -49,12 +49,30 @@ download and activiate an API token to enable use of the client library.
 
 ## Quickstart
 
-See the [Quickstart Guide](QUICKSTART.md) for step-by-step instructions on
-using this SDK to wrap your custom analytic for deployment to the Voxel51
-Platform.
+### Platform Analytics
 
-See the [Example Analytic](examples) directory for an end-to-end
-example of building and deploying a test analytic to the platform.
+See the
+[Platform Quickstart Guide](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/PLATFORM.md)
+for step-by-step instructions on using this SDK to wrap your custom analytic
+for deployment to the Voxel51 Platform.
+
+Also, see the
+[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+for an end-to-end example of building and deploying a test analytic to the
+platform.
+
+### Image-To-Video Analytics
+
+See the
+[Image-To-Video Quickstart Guide](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/IMAGE_TO_VIDEO.md)
+for step-by-step instructions on using the Image-To-Video tool in this SDK to
+wrap your custom image-based model for deployment to the Voxel51 Platform to
+process videos.
+
+Also, see the
+[examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
+for several end-to-end examples of building and deploying analytics using the
+Image-To-Video tool.
 
 
 ## Overview
@@ -103,20 +121,26 @@ environment variables:
 - `TASK_DESCRIPTION` : the URL from which to download a JSON file that
 describes the task to be performed
 
-- `JOB_ID` : the ID of the job being executed by this task
+- `JOB_ID` : the ID of the job being executed by this task. Provided as an
+environment variable as an extra layer of redundancy in case the task JSON
+cannot be accessed
 
 - `API_TOKEN` : the API token that the process can use to communicate with the
 Platform API
 
 - `API_BASE_URL`: the base URL of the Platform API that the SDK will use
 
+- `LOGFILE_SIGNED_URL`: the URI to which to POST the logfile for the task.
+Provided as an environment variable as an extra layer of redundancy in case the
+task JSON cannot be accessed
+
 The following JSON file shows an example of a task specification provided to
-the `vehicle-sense` analytic:
+the `voxel51/vehicle-sense` analytic:
 
 ```json
 {
-    "analytic": "vehicle-sense",
-    "version": "0.1.0",
+    "analytic": "voxel51/vehicle-sense",
+    "version": "0.3",
     "job_id": "2ffe1110-b446-427d-8829-db9ac95d0638",
     "inputs": {
         "video": {
@@ -157,13 +181,13 @@ remote storage providers (Google Cloud, AWS Cloud, private datacenters, etc.)
 
 As a task is being executed, the Platform SDK provides a convenient interface
 for reporting the status of the task to the platform. The following JSON file
-shows an example of the status of a completed `vehicle-sense` task that was
-reported automatically via the Platform SDK:
+shows an example of the status of a completed `voxel51/vehicle-sense` task that
+was reported automatically via the Platform SDK:
 
 ```json
 {
-    "analytic": "vehicle-sense",
-    "version": "0.1.0",
+    "analytic": "voxel51/vehicle-sense",
+    "version": "0.3",
     "state": "COMPLETE",
     "start_time": "2019-02-02 07:14:28",
     "complete_time": "2019-02-02 07:32:45",
@@ -193,15 +217,16 @@ reported automatically via the Platform SDK:
 }
 ```
 
-See the [Quickstart Guide](QUICKSTART.md) for more details about the interface
-provided by the Platform SDK.
+See the
+[Platform Quickstart Guide](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/PLATFORM.md)
+for more details about the interface provided by the Platform SDK.
 
 
 ## Analytic deployment
 
 You can deploy new custom analytics or new versions of your existing analytics
 at any time via the [API](https://voxel51.com/docs/api) or the
-[web console](https://console.voxel51.com). Deploying a new analytic is a
+[Web Console](https://console.voxel51.com). Deploying a new analytic is a
 simple two step process:
 
 - Upload an analytic JSON to the platform that describes the details and
@@ -221,22 +246,24 @@ ready for production use!
 
 New analytics can be published programmatically via the Platform API or any of
 its client libraries. For example, the following code snippet shows how to
-publish a GPU-enabled analytic using the [Python client library](https://github.com/voxel51/api-py):
+publish a GPU-enabled analytic using the
+[Python client library](https://github.com/voxel51/api-py):
 
 ```py
-from voxel51.users.api import API
+from voxel51.users.api import API, AnalyticType
 
 analytic_json_path = "/path/to/analytic.json"
-analytic_image_path = "/path/to/image.tar.gz"
+gpu_image_path = "/path/to/gpu-image.tar.gz"
 
 api = API()
 
 # Upload analytic JSON
-analytic = api.upload_analytic(analytic_json_path)
+analytic_type = AnalyticType.PLATFORM
+analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, analytic_image_path, "gpu")
+api.upload_analytic_image(analytic_id, gpu_image_path, "gpu")
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)
@@ -244,8 +271,8 @@ for more complete instructions for deploying analytics via the API.
 
 ### Deployment via web console
 
-You can also publish new analytics via the web-based
-[Platform Console](https://console.voxel51.com). To do so, simply login
+You can also publish new analytics via the Platform's
+[Web Console](https://console.voxel51.com). To do so, simply login
 to your platform account, navigate to the `Analytics` page, and click `Upload`.
 
 

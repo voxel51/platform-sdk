@@ -1,0 +1,9 @@
+{
+    "info": {
+        "version": "0.1",
+        "name": "image-to-video-demo",
+        "supports_cpu": true,
+        "supports_gpu": false,
+        "description": "A demo Image-To-Video analytic for the Voxel51 Plaform"
+    }
+}

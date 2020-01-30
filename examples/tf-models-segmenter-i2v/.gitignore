@@ -1,0 +1,9 @@
+*.tar.gz
+
+data/
+out/
+platform-sdk/
+api-py/
+
+models/*
+!models/mscoco_label_map.pbtxt

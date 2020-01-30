@@ -1,4 +1,3 @@
-#!/usr/bin/env/python
 '''
 Client for interacting with the Voxel51 Platform API.
 

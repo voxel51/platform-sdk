@@ -1,0 +1,22 @@
+{
+  "name": "@voxel51/platform-sdk-test-server",
+  "version": "0.1.0",
+  "description": "Local testing server for developing analytics to deploy to the Voxel51 Platform",
+  "main": "./server/index.js",
+  "repository": "https://github.com/voxel51/platform-sdk",
+  "author": "Voxel51, Inc.",
+  "license": "BSD-4-Clause",
+  "private": true,
+  "dependencies": {
+    "busboy": "^0.3.1",
+    "command-line-args": "^5.1.1",
+    "command-line-usage": "^5.0.5",
+    "joi": "^14.3.1",
+    "ramda": "^0.26.1",
+    "uuid": "^3.3.2"
+  },
+  "scripts": {},
+  "devDependencies": {
+    "debug": "^4.1.1"
+  }
+}

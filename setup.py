@@ -15,8 +15,9 @@ setup(
     author="Voxel51, Inc.",
     author_email="support@voxel51.com",
     url="https://github.com/voxel51/platform-sdk",
-    license="BSD 4-clause",
+    license="BSD-4-Clause",
     packages=find_packages(),
+    include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Operating System :: OS Independent",
@@ -26,4 +27,9 @@ setup(
     install_requires=[
         "requests>=2.18.4",
     ],
+    scripts=[
+        "tests/platform/test-platform",
+        "tests/image2video/test-i2v",
+    ],
+    python_requires=">=2.7",
 )

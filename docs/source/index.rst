@@ -5,7 +5,6 @@ Voxel51 Platform SDK
    :maxdepth: 2
 
    README
-   QUICKSTART
-   EXAMPLES
-   TESTS
+   PLATFORM_QUICKSTART
+   IMAGE_TO_VIDEO_QUICKSTART
    voxel51
