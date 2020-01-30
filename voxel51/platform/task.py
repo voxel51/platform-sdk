@@ -507,7 +507,8 @@ def download_inputs(inputs_dir, task_config, task_status):
         a dictionary mapping input names to their downloaded filepaths
     '''
     input_paths = {}
-    for name, path_config in iteritems(task_config.inputs):
+    inputs = _get_api_client().get_job_data_config(task_config.job_id)
+    for name, path_config in iteritems(inputs):
         local_path = voxu.download(path_config, inputs_dir)
         input_paths[name] = local_path
         logger.info("Input '%s' downloaded", name)

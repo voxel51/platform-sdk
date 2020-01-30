@@ -14,6 +14,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import *
+from future.utils import iteritems
 # pragma pylint: enable=redefined-builtin
 # pragma pylint: enable=unused-wildcard-import
 # pragma pylint: enable=wildcard-import
@@ -84,6 +85,15 @@ class API(object):
         res = self._requests.get(endpoint, headers=self._header)
         _validate_response(res)
         return voxu.RemotePathConfig(_parse_json_response(res))
+
+    def get_job_data_config(self, job_id):
+        endpoint = self.base_url + "/jobs/" + job_id + "/url/data"
+        res = self._requests.get(endpoint, headers=self._header)
+        _validate_response(res)
+        return {
+            k: voxu.RemotePathConfig(v)
+            for k, v in iteritems(_parse_json_response(res))
+        }
 
     def post_job_metadata(self, job_id, metadata):
         '''Posts metadata for the job with the given ID.
