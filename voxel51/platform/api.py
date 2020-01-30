@@ -80,13 +80,30 @@ class API(object):
         if self.keep_alive:
             self._requests.close()
 
-    def get_job_path_config(self, job_id, url_type):
+    def get_job_url(self, job_id, url_type):
+        '''Retrieves a signed URL to post job information or output.
+
+        Args:
+            job_id (str): the job ID
+            url_type (str): one of "status", "log", or "output"
+
+        Returns:
+            a RemotePathConfig object
+        '''
         endpoint = self.base_url + "/jobs/" + job_id + "/url/" + url_type
         res = self._requests.get(endpoint, headers=self._header)
         _validate_response(res)
         return voxu.RemotePathConfig(_parse_json_response(res))
 
-    def get_job_data_config(self, job_id):
+    def get_job_data_urls(self, job_id):
+        '''Retrieves signed URLs to download job input data.
+
+        Args:
+            job_id (str): the job ID
+
+        Returns:
+            a dictionary mapping input names to RemotePathConfig objects
+        '''
         endpoint = self.base_url + "/jobs/" + job_id + "/url/data"
         res = self._requests.get(endpoint, headers=self._header)
         _validate_response(res)

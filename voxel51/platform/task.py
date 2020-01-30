@@ -474,7 +474,7 @@ def make_publish_callback(job_id, status_path_config):
         api = _get_api_client()
         voxu.upload_bytes(
             task_status.to_str(),
-            api.get_job_path_config(job_id, "status"),
+            api.get_job_url(job_id, "status"),
             content_type="application/json")
         logger.info("Task status written to cloud storage")
 
@@ -507,7 +507,7 @@ def download_inputs(inputs_dir, task_config, task_status):
         a dictionary mapping input names to their downloaded filepaths
     '''
     input_paths = {}
-    inputs = _get_api_client().get_job_data_config(task_config.job_id)
+    inputs = _get_api_client().get_job_data_urls(task_config.job_id)
     for name, path_config in iteritems(inputs):
         local_path = voxu.download(path_config, inputs_dir)
         input_paths[name] = local_path
@@ -607,7 +607,7 @@ def upload_output(output_path, task_config, task_status):
     '''
     voxu.upload(
         output_path,
-        _get_api_client().get_job_path_config(task_config.job_id, "output"))
+        _get_api_client().get_job_url(task_config.job_id, "output"))
     logger.info("Output uploaded to %s", task_config.output)
     task_status.add_message("Output published")
 
@@ -653,7 +653,7 @@ def upload_logfile(logfile_path, task_config):
     logger.info("Uploading logfile to %s", str(task_config.logfile))
     voxu.upload(
         logfile_path,
-        _get_api_client().get_job_path_config(task_config.job_id, "log"))
+        _get_api_client().get_job_url(task_config.job_id, "log"))
 
 
 def fail_gracefully(
