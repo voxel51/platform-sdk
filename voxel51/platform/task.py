@@ -672,7 +672,7 @@ def make_publish_callback(job_id, status_path_config):
         api = _get_api_client()
         voxu.upload_bytes(
             task_status.to_str(),
-            api.get_job_url(job_id, "status"),
+            api.get_job_status_url(job_id),
             content_type="application/json")
         logger.info("Task status written to cloud storage")
 
@@ -813,7 +813,7 @@ def upload_output(output_path, task_config, task_status):
     '''
     voxu.upload(
         output_path,
-        _get_api_client().get_job_url(task_config.job_id, "output"))
+        _get_api_client().get_job_output_url(task_config.job_id))
     logger.info("Output uploaded to %s", task_config.output)
     task_status.add_message("Output published")
 
@@ -859,7 +859,7 @@ def upload_logfile(logfile_path, task_config):
     logger.info("Uploading logfile to %s", str(task_config.logfile))
     voxu.upload(
         logfile_path,
-        _get_api_client().get_job_url(task_config.job_id, "log"))
+        _get_api_client().get_job_log_url(task_config.job_id))
 
 
 def fail_gracefully(

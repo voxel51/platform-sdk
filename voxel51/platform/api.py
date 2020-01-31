@@ -79,21 +79,6 @@ class API(object):
         if self.keep_alive:
             self._requests.close()
 
-    def get_job_url(self, job_id, url_type):
-        '''Retrieves a signed URL to post job information or output.
-
-        Args:
-            job_id (str): the job ID
-            url_type (str): one of "status", "log", or "output"
-
-        Returns:
-            a RemotePathConfig object
-        '''
-        endpoint = self.base_url + "/jobs/" + job_id + "/url/" + url_type
-        res = self._requests.get(endpoint, headers=self._header)
-        _validate_response(res)
-        return voxu.RemotePathConfig(_parse_json_response(res))
-
     def get_job_data_urls(self, job_id):
         '''Retrieves signed URLs to download job input data.
 
@@ -110,6 +95,39 @@ class API(object):
             k: voxu.RemotePathConfig(v)
             for k, v in iteritems(_parse_json_response(res))
         }
+
+    def get_job_status_url(self, job_id):
+        '''Retrieves a signed URL to post the job status file
+
+        Args:
+            job_id (str): the job ID:
+
+        Returns:
+            a RemotePathConfig object
+        '''
+        return self._get_job_url(job_id, "status")
+
+    def get_job_log_url(self, job_id):
+        '''Retrieves a signed URL to post the job log file
+
+        Args:
+            job_id (str): the job ID:
+
+        Returns:
+            a RemotePathConfig object
+        '''
+        return self._get_job_url(job_id, "log")
+
+    def get_job_output_url(self, job_id):
+        '''Retrieves a signed URL to post the job output
+
+        Args:
+            job_id (str): the job ID:
+
+        Returns:
+            a RemotePathConfig object
+        '''
+        return self._get_job_url(job_id, "output")
 
     def post_job_metadata(self, job_id, metadata):
         '''Posts metadata for the job with the given ID.
@@ -168,6 +186,21 @@ class API(object):
                 endpoint, files=files, headers=self._header)
         _validate_response(res)
         return _parse_json_response(res)["data"]["data_id"]
+
+    def _get_job_url(self, job_id, url_type):
+        '''Retrieves a signed URL to post job information or output.
+
+        Args:
+            job_id (str): the job ID
+            url_type (str): one of "status", "log", or "output"
+
+        Returns:
+            a RemotePathConfig object
+        '''
+        endpoint = self.base_url + "/jobs/" + job_id + "/url/" + url_type
+        res = self._requests.get(endpoint, headers=self._header)
+        _validate_response(res)
+        return voxu.RemotePathConfig(_parse_json_response(res))
 
 
 class APIError(Exception):
