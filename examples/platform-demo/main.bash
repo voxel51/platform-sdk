@@ -26,14 +26,12 @@ if [ $? -ne 0 ]; then
     echo "UNCAUGHT EXCEPTION; APPENDING BACKUP LOG" >> "${LOGFILE_PATH}"
     cat "${BACKUP_LOGFILE_PATH}" >> "${LOGFILE_PATH}"
 
-    # Upload logfile
-    curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
-
     # Post job failure
     curl -X PUT "${API_BASE_URL}/jobs/${JOB_ID}/state" \
         -H "X-Voxel51-Agent: ${API_TOKEN}" \
         -H "Content-Type: application/json" \
-        -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
+        -d '{"state": "FAILED", "failure_type": "ANALYTIC"}'
 
-    wait
+    # Upload logfile
+    curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}"
 fi

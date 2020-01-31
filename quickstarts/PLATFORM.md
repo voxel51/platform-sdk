@@ -285,22 +285,20 @@ if [ $? -ne 0 ]; then
     echo "UNCAUGHT EXCEPTION; APPENDING BACKUP LOG" >> "${LOGFILE_PATH}"
     cat "${BACKUP_LOGFILE_PATH}" >> "${LOGFILE_PATH}"
 
-    # Upload logfile
-    curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}" &
-
     # Post job failure
     curl -X PUT "${API_BASE_URL}/jobs/${JOB_ID}/state" \
         -H "X-Voxel51-Agent: ${API_TOKEN}" \
         -H "Content-Type: application/json" \
-        -d '{"state": "FAILED", "failure_type": "ANALYTIC"}' &
+        -d '{"state": "FAILED", "failure_type": "ANALYTIC"}'
 
-    wait
+    # Upload logfile
+    curl -T "${LOGFILE_PATH}" -X PUT "${LOGFILE_SIGNED_URL}"
 fi
 ```
 
 The script simply executes the main executable from the previous section, pipes
 its `stdout` and `stderr` to disk, and, if the executable exits with a non-zero
-status code, uploads the logfile to the platform and marks the job as `FAILED`.
+status code, marks the job as `FAILED` and uploads the logfile to the platform.
 
 This extra layer of protection is important to catch and appropriately report
 errors that prevent the Platform SDK from loading (e.g., an `import` error
