@@ -70,6 +70,12 @@ const server = (function makeServer() {
       handler: getInputFile,
     },
     {
+      name: 'get signed url',
+      regex: new RegExp('\\/v1\\/jobs\\/.*\\/url/.*'),
+      methods: ['GET'],
+      handler: getSignedUrl,
+    },
+    {
       name: 'write output',
       regex: new RegExp('\\/v1\\/local\\/file\\?output\\='),
       methods: ['PUT', 'POST'],
@@ -150,7 +156,8 @@ const server = (function makeServer() {
         debug('The main response handler returned a controller call with:');
         debug(code, body);
         debug('Have the headers been sent?', res.headersSent);
-        if (res.headersSent || (!code && !body) || req.method === 'GET') {
+        if (res.headersSent || (!code && !body) ||
+            (req.method === 'GET' && req.url.includes('/local/file'))) {
           debug(
             'If yes, OR no code and no body OR it was a GET to download ' +
             'file, return.');
@@ -290,6 +297,19 @@ const server = (function makeServer() {
       return u;
     }
     return await createAndPipeReadStream(u, res);
+  }
+
+  function getSignedUrl(req, res) {
+    let key = req.url.split('/').pop();
+    if (key === 'data') {
+      key = 'inputs';
+    } else if (key === 'log') {
+      key = 'logfile';
+    }
+    return {
+      code: 200,
+      body: TASK[key],
+    };
   }
 
   async function writeOutput(req, res) {
