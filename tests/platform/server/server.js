@@ -91,7 +91,7 @@ const server = (function makeServer() {
 
   return Object.freeze({spinup, recordEvent});
 
-  function spinup(task) {
+  function spinup(task, port=config.PORT) {
     return new Promise(function(resolve, reject) {
       TASK = task;
       const server = http.createServer(async (req, res) => {
@@ -112,8 +112,8 @@ const server = (function makeServer() {
         debug('Response handler found. Calling controller.');
         return await resHandler(req, res);
       });
-      const socket = server.listen(config.PORT, 'localhost', () => {
-        console.log(`Server is listening on port ${config.PORT}`);
+      const socket = server.listen(port, 'localhost', () => {
+        console.log(`Server is listening on port ${port}`);
       });
       socket.on('close', async () => {
         await generateTestReport();
