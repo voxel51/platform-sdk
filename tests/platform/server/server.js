@@ -22,6 +22,10 @@ const server = (function makeServer() {
 
   var eventList = {
     getTaskJSON: false,
+    getInputURL: false,
+    getStatusURL: false,
+    getLogfileURL: false,
+    getOutputURL: false,
     getInputFile: false,
     running: false,
     writeStatus: false,
@@ -94,6 +98,18 @@ const server = (function makeServer() {
       handler: writeStatus,
     },
   ];
+
+  const SIGNED_URL_TO_TASK_KEY = {
+    data: 'inputs',
+    log: 'logfile',
+  };
+
+  const SIGNED_URL_TO_EVENT = {
+    data: 'getInputURL',
+    status: 'getStatusURL',
+    output: 'getOutputURL',
+    log: 'getLogfileURL',
+  };
 
   return Object.freeze({spinup, recordEvent});
 
@@ -300,15 +316,11 @@ const server = (function makeServer() {
   }
 
   function getSignedUrl(req, res) {
-    let key = req.url.split('/').pop();
-    if (key === 'data') {
-      key = 'inputs';
-    } else if (key === 'log') {
-      key = 'logfile';
-    }
+    const key = req.url.split('/').pop();
+    recordEvent(SIGNED_URL_TO_EVENT[key], true);
     return {
       code: 200,
-      body: TASK[key],
+      body: TASK[SIGNED_URL_TO_TASK_KEY[key] || key],
     };
   }
 
@@ -483,6 +495,12 @@ const server = (function makeServer() {
         'Use `TaskManager.start()` to mark the task as running.');
 
       reportTestResult(
+        'Checking that the input URLs were requested...',
+        eventList.getOutputURL,
+        'The input signed URLs were not requested',
+        'Use TaskManager.get_job_data_urls() to retrieve these signed URLs');
+
+      reportTestResult(
         'Checking that input files were downloaded...',
         eventList.getInputFile,
         'Inputs were not downloaded',
@@ -495,10 +513,22 @@ const server = (function makeServer() {
         'Use `TaskManager.post_job_metadata()` to report job metadata');
 
       reportTestResult(
+        'Checking that the status file URL was requested...',
+        eventList.getOutputURL,
+        'The status file signed URL was not requested',
+        'Use TaskManager.get_job_status_url() to retrieve this signed URL');
+
+      reportTestResult(
         'Checking that task status file was published at least once...',
         eventList.writeStatus && eventList.numStatusWrites > 0,
         'Task status file was not published',
         'Use `TaskManager.publish_status()` to publish task status');
+
+      reportTestResult(
+        'Checking that the logfile file URL was requested...',
+        eventList.getOutputURL,
+        'The logfile file signed URL was not requested',
+        'Use TaskManager.get_job_log_url() to retrieve this signed URL');
 
       reportTestResult(
         'Checking that logfile was posted...',
@@ -525,6 +555,14 @@ const server = (function makeServer() {
 
       // @todo analytics do not necessarily need to post an output; they may
       // only post outputs as data
+      if (!eventList.uploadData) {
+        reportTestResult(
+          'Checking that the output URL was requested...',
+          eventList.getOutputURL,
+          'The output signed URL was not requested',
+          'Use TaskManager.get_job_output_url() to retrieve this signed URL');
+      }
+
       reportTestResult(
         'Checking that output was uploaded...',
         eventList.writeOutput || eventList.uploadData,
