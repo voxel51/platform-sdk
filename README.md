@@ -119,7 +119,8 @@ The platform communicates with analytic Docker images by setting the following
 environment variables:
 
 - `TASK_DESCRIPTION` : the URL from which to download a JSON file that
-describes the task to be performed
+describes the task to be performed. Note that this may return a HTTP redirect,
+which should be followed
 
 - `JOB_ID` : the ID of the job being executed by this task. Provided as an
 environment variable as an extra layer of redundancy in case the task JSON
@@ -142,21 +143,7 @@ the `voxel51/vehicle-sense` analytic:
     "analytic": "voxel51/vehicle-sense",
     "version": "0.3",
     "job_id": "2ffe1110-b446-427d-8829-db9ac95d0638",
-    "inputs": {
-        "video": {
-            "signed-url": "https://storage.googleapis.com/XXXX"
-        }
-    },
     "parameters": {},
-    "output": {
-        "signed-url": "https://storage.googleapis.com/XXXX"
-    },
-    "status": {
-        "signed-url": "https://storage.googleapis.com/XXXX"
-    },
-    "logfile": {
-        "signed-url": "https://storage.googleapis.com/XXXX"
-    }
 }
 ```
 
@@ -166,10 +153,7 @@ The `job_id` specifies the ID of the platform job being executed, which is used
 by the SDK when communicating the status of the task to the platform. The job
 ID is also provided via environment variable, which is done as a safety measure
 to support failure reporting in cases when the task JSON cannot be downloaded
-or parsed. The `inputs` object specifies where the process should download its
-input(s), and the `parameters` object specifies any parameters that were set.
-Finally the `output`, `status`, and `logfile` objects specify where to upload
-the task outputs, status file, and logfile, respectively.
+or parsed.
 
 The Platform SDK provides a `voxel51.platform.task.TaskConfig` class that
 conveniently encapsulates reading and parsing the above specification. In
