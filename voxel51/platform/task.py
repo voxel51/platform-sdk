@@ -48,10 +48,6 @@ class TaskConfig(Config):
         self.inputs = self.parse_object_dict(
             d, "inputs", voxu.RemotePathConfig, default={})
         self.parameters = self.parse_dict(d, "parameters", default={})
-        self.status = self.parse_object(d, "status", voxu.RemotePathConfig)
-        self.logfile = self.parse_object(d, "logfile", voxu.RemotePathConfig)
-        self.output = self.parse_object(
-            d, "output", voxu.RemotePathConfig, default=None)
 
 
 class TaskState(object):
@@ -375,8 +371,7 @@ class TaskStatus(Serializable):
         '''
         task_status = cls(
             analytic=task_config.analytic, version=task_config.version)
-        publish_callback = make_publish_callback(
-            task_config.job_id, task_config.status)
+        publish_callback = make_publish_callback(task_config.job_id)
         task_status.set_publish_callback(publish_callback)
         return task_status
 
@@ -648,21 +643,18 @@ def resume_task(config_path, status_path, task_status_cls=TaskStatus):
     task_config = TaskConfig.from_json(config_path)
     task_status = task_status_cls.from_json(status_path)
 
-    publish_callback = make_publish_callback(
-        task_config.job_id, task_config.status)
+    publish_callback = make_publish_callback(task_config.job_id)
     task_status.set_publish_callback(publish_callback)
 
     return TaskManager(task_config, task_status=task_status)
 
 
-def make_publish_callback(job_id, status_path_config):
+def make_publish_callback(job_id):
     '''Makes a callback function that can be called to publish the status of an
     ongoing task.
 
     Args:
         job_id (str): the ID of the underlying job
-        status_path_config (voxel51.platform.utils.RemotePathConfig): a
-            RemotePathConfig specifying how to publish the :class:`TaskStatus`
 
     Returns:
         a function that can publish a :class:`TaskStatus` instance via the
@@ -811,10 +803,9 @@ def upload_output(output_path, task_config, task_status):
         task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
     '''
-    voxu.upload(
-        output_path,
-        _get_api_client().get_job_output_url(task_config.job_id))
-    logger.info("Output uploaded to %s", task_config.output)
+    output_url = _get_api_client().get_job_output_url(task_config.job_id)
+    voxu.upload(output_path, output_url)
+    logger.info("Output uploaded to %s", output_url)
     task_status.add_message("Output published")
 
 
@@ -856,10 +847,9 @@ def upload_logfile(logfile_path, task_config):
         logfile_path (str): the path to a logfile to upload
         task_config (TaskConfig): the TaskConfig for the task
     '''
-    logger.info("Uploading logfile to %s", str(task_config.logfile))
-    voxu.upload(
-        logfile_path,
-        _get_api_client().get_job_log_url(task_config.job_id))
+    logfile_url = _get_api_client().get_job_log_url(task_config.job_id)
+    logger.info("Uploading logfile to %s", str(logfile_url))
+    voxu.upload(logfile_path, logfile_url)
 
 
 def fail_gracefully(
