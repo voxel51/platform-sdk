@@ -687,9 +687,9 @@ def make_publish_callback(job_id):
         #
 
         voxu.upload_bytes(
-            task_status.to_str(),
-            api.get_job_status_url(job_id),
+            task_status.to_str(), api.get_job_status_url(job_id),
             content_type="application/json")
+
         logger.info("Task status written to cloud storage")
 
     return _publish_status
