@@ -18,14 +18,18 @@ from future.utils import iteritems
 # pragma pylint: enable=unused-wildcard-import
 # pragma pylint: enable=wildcard-import
 
+import logging
 import os
 
 import mimetypes
 import requests
+from requests.exceptions import HTTPError
 
 import voxel51.platform.auth as voxa
 import voxel51.platform.config as voxc
 import voxel51.platform.utils as voxu
+
+logger = logging.getLogger(__name__)
 
 
 def make_api_client():
@@ -96,7 +100,9 @@ class API(object):
                 k: voxu.RemotePathConfig(v)
                 for k, v in iteritems(_parse_json_response(res))
             }
-        except:
+        except HTTPError as e:
+            logger.warning("Bad response for {}".format(endpoint))
+            logger.warning(e)
             return task_config.inputs
 
     def get_job_status_url(self, task_config):
@@ -206,7 +212,9 @@ class API(object):
         try:
             _validate_response(res)
             return voxu.RemotePathConfig(_parse_json_response(res))
-        except:
+        except HTTPError as e:
+            logger.warning("Bad response for {}".format(endpoint))
+            logger.warning(e)
             return getattr(task_config, url_type)
 
 
