@@ -79,55 +79,59 @@ class API(object):
         if self.keep_alive:
             self._requests.close()
 
-    def get_job_data_urls(self, job_id):
+    def get_job_data_urls(self, task_config):
         '''Retrieves signed URLs to download job input data.
 
         Args:
-            job_id (str): the job ID
+            task_config (voxel51.platform.task.TaskConfig): the task config
 
         Returns:
             a dictionary mapping input names to RemotePathConfig objects
         '''
-        endpoint = self.base_url + "/jobs/" + job_id + "/url/data"
+        endpoint = self.base_url + "/jobs/" + task_config.job_id + "/url/data"
         res = self._requests.get(endpoint, headers=self._header)
-        _validate_response(res)
-        return {
-            k: voxu.RemotePathConfig(v)
-            for k, v in iteritems(_parse_json_response(res))
-        }
+        try:
+            _validate_response(res)
+            return {
+                k: voxu.RemotePathConfig(v)
+                for k, v in iteritems(_parse_json_response(res))
+            }
+        except APIError as e:
+            print(e)
+            return task_config.inputs
 
-    def get_job_status_url(self, job_id):
+    def get_job_status_url(self, task_config):
         '''Retrieves a signed URL to post the job status file
 
         Args:
-            job_id (str): the job ID:
+            task_config (voxel51.platform.task.TaskConfig): the task config
 
         Returns:
             a RemotePathConfig object
         '''
-        return self._get_job_url(job_id, "status")
+        return self._get_job_url(task_config, "status")
 
-    def get_job_log_url(self, job_id):
+    def get_job_log_url(self, task_config):
         '''Retrieves a signed URL to post the job log file
 
         Args:
-            job_id (str): the job ID:
+            task_config (voxel51.platform.task.TaskConfig): the task config
 
         Returns:
             a RemotePathConfig object
         '''
-        return self._get_job_url(job_id, "log")
+        return self._get_job_url(task_config, "log")
 
-    def get_job_output_url(self, job_id):
+    def get_job_output_url(self, task_config):
         '''Retrieves a signed URL to post the job output
 
         Args:
-            job_id (str): the job ID:
+            task_config (voxel51.platform.task.TaskConfig): the task config
 
         Returns:
             a RemotePathConfig object
         '''
-        return self._get_job_url(job_id, "output")
+        return self._get_job_url(task_config, "output")
 
     def post_job_metadata(self, job_id, metadata):
         '''Posts metadata for the job with the given ID.
@@ -187,20 +191,26 @@ class API(object):
         _validate_response(res)
         return _parse_json_response(res)["data"]["data_id"]
 
-    def _get_job_url(self, job_id, url_type):
+    def _get_job_url(self, task_config, url_type):
         '''Retrieves a signed URL to post job information or output.
 
         Args:
-            job_id (str): the job ID
+            task_config (voxel51.platform.task.TaskConfig): the task config
             url_type (str): one of "status", "log", or "output"
 
         Returns:
             a RemotePathConfig object
         '''
-        endpoint = self.base_url + "/jobs/" + job_id + "/url/" + url_type
+        endpoint = "{}/jobs/{}/url/{}".format(self.base_url, task_config.job_id,
+                                              url_type)
         res = self._requests.get(endpoint, headers=self._header)
-        _validate_response(res)
-        return voxu.RemotePathConfig(_parse_json_response(res))
+        try:
+            _validate_response(res)
+            return voxu.RemotePathConfig(_parse_json_response(res))
+        except APIError as e:
+            print(e)
+            print(task_config)
+            return getattr(task_config, url_type)
 
 
 class APIError(Exception):
