@@ -96,8 +96,7 @@ class API(object):
                 k: voxu.RemotePathConfig(v)
                 for k, v in iteritems(_parse_json_response(res))
             }
-        except Exception as e:
-            print(e)
+        except:
             return task_config.inputs
 
     def get_job_status_url(self, task_config):
@@ -201,15 +200,13 @@ class API(object):
         Returns:
             a RemotePathConfig object
         '''
-        endpoint = "{}/jobs/{}/url/{}".format(self.base_url, task_config.job_id,
-                                              url_type)
+        endpoint = \
+            self.base_url + "/jobs/" + task_config.job_id + "/url/" + url_type
         res = self._requests.get(endpoint, headers=self._header)
         try:
             _validate_response(res)
             return voxu.RemotePathConfig(_parse_json_response(res))
-        except Exception as e:
-            print(e)
-            print(task_config)
+        except:
             return getattr(task_config, url_type)
 
 
