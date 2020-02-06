@@ -933,7 +933,7 @@ def fail_epically(logfile_path=None):
         # Try to upload the logfile, if requested
         if logfile_path:
             logfile_url = os.environ[voxc.LOGFILE_SIGNED_URL_ENV_VAR]
-            logfile = RemotePathConfig.from_signed_url(logfile_url)
+            logfile = voxu.RemotePathConfig.from_signed_url(logfile_url)
             logger.info("Uploading logfile to %s", str(logfile))
             voxu.upload(logfile_path, logfile)
     except:
