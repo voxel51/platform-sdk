@@ -101,7 +101,6 @@ class API(object):
                 for k, v in iteritems(_parse_json_response(res))
             }
         except HTTPError as e:
-            logger.warning("Bad response for {}".format(endpoint))
             logger.warning(e)
             return task_config.inputs
 
@@ -213,7 +212,6 @@ class API(object):
             _validate_response(res)
             return voxu.RemotePathConfig(_parse_json_response(res))
         except HTTPError as e:
-            logger.warning("Bad response for {}".format(endpoint))
             logger.warning(e)
             return getattr(task_config, url_type)
 
