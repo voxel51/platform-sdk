@@ -18,6 +18,7 @@ from future.utils import iteritems
 # pragma pylint: enable=unused-wildcard-import
 # pragma pylint: enable=wildcard-import
 
+import datetime
 import logging
 import os
 import sys
@@ -303,10 +304,11 @@ class TaskStatus(Serializable):
         analytic (str): name of the analytic
         version (str): version of the analytic
         state (TaskState): state of the task
-        start_time (str): time the task was started, or None if not started
-        complete_time (str): time the task was completed, or None if not
+        start_time (datetime): time the task was started, or None if not
+            started
+        complete_time (datetime): time the task was completed, or None if not
             completed
-        fail_time (str): time the task failed, or None if not failed
+        fail_time (datetime): time the task failed, or None if not failed
         failure_type (TaskFailureType): the TaskFailureType of the task, if
             applicable
         messages (list): list of :class:`TaskStatusMessage` instances for the
@@ -336,11 +338,12 @@ class TaskStatus(Serializable):
             analytic (str): the name of the analytic
             version (str, optional): the version of the analytic
             state (TaskState, optional): the state of the task
-            start_time (str, optional): the time the task was started, if
+            start_time (datetime, optional): the time the task was started, if
                 applicable
-            complete_time (str, optional): the time the task was completed, if
+            complete_time (datetime, optional): the time the task was
+                completed, if applicable
+            fail_time (datetime, optional): the time the task failed, if
                 applicable
-            fail_time (str, optional): the time the task failed, if applicable
             failure_type (TaskFailureType, optional): the
                 :class:`TaskFailureType` of the task, if applicable
             messages (list, optional): list of :class:`TaskStatusMessage`
@@ -494,9 +497,9 @@ class TaskStatus(Serializable):
         analytic = d["analytic"]
         version = d["version"]
         state = d["state"]
-        start_time = d["start_time"]
-        complete_time = d["complete_time"]
-        fail_time = d["fail_time"]
+        start_time = etau.parse_isotime(d.get("start_time"))
+        complete_time = etau.parse_isotime(d.get("complete_time"))
+        fail_time = etau.parse_isotime(d.get("fail_time"))
         failure_type = d["failure_type"]
         messages = [TaskStatusMessage.from_dict(md) for md in d["messages"]]
         # Note that we are not parsing Serializable objects here, if any
@@ -514,7 +517,7 @@ class TaskStatusMessage(Serializable):
 
     Attributes:
         message (str): the message string
-        time (str): the timestamp string
+        time (datetime): the message timestamp
     '''
 
     def __init__(self, message, time=None):
@@ -522,11 +525,11 @@ class TaskStatusMessage(Serializable):
 
         Args:
             message (str): a message string
-            time (str, optional): an optional time string. If not provided, the
-                current time in ISO 8601 format is used
+            time (datetime, optional): an optional timestamp. If not provided,
+                the current time is used
         '''
         self.message = message
-        self.time = time or etau.get_isotime()
+        self.time = time or datetime.datetime.utcnow()
 
     def attributes(self):
         '''Returns a list of class attributes to be serialized.'''
@@ -543,7 +546,8 @@ class TaskStatusMessage(Serializable):
         Returns:
             a TaskStatusMessage instance
         '''
-        return cls(d["message"], time=d.get("time", None))
+        time = etau.parse_isotime(d.get("time"))
+        return cls(d["message"], time=time)
 
 
 def setup_logging(logfile_path, rotate=True):
