@@ -100,7 +100,7 @@ class API(object):
                 k: voxu.RemotePathConfig(v)
                 for k, v in iteritems(_parse_json_response(res))
             }
-        except HTTPError as e:
+        except (APIError, HTTPError) as e:
             logger.warning(e)
             return task_config.inputs
 
@@ -211,7 +211,8 @@ class API(object):
         try:
             _validate_response(res)
             return voxu.RemotePathConfig(_parse_json_response(res))
-        except HTTPError as e:
+        except (APIError, HTTPError) as e:
+            logger.warning(type(e))
             logger.warning(e)
             return getattr(task_config, url_type)
 
