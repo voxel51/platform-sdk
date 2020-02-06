@@ -212,7 +212,6 @@ class API(object):
             _validate_response(res)
             return voxu.RemotePathConfig(_parse_json_response(res))
         except (APIError, HTTPError) as e:
-            logger.warning(type(e))
             logger.warning(e)
             return getattr(task_config, url_type)
 
