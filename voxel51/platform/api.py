@@ -205,8 +205,8 @@ class API(object):
         Returns:
             a RemotePathConfig object
         '''
-        endpoint = \
-            self.base_url + "/jobs/" + task_config.job_id + "/url/" + url_type
+        endpoint = (self.base_url + "/jobs/" + task_config.job_id +
+                    "/url/" + url_type)
         res = self._requests.get(endpoint, headers=self._header)
         try:
             _validate_response(res)
