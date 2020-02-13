@@ -49,9 +49,14 @@ class TaskConfig(Config):
             d, "inputs", voxu.RemotePathConfig, default={})
         self.parameters = self.parse_dict(d, "parameters", default={})
         self.status = self.parse_object(d, "status", voxu.RemotePathConfig)
-        self.log = self.parse_object(d, "logfile", voxu.RemotePathConfig)
+        self.logfile = self.parse_object(d, "logfile", voxu.RemotePathConfig)
         self.output = self.parse_object(
             d, "output", voxu.RemotePathConfig, default=None)
+
+    # alias for logfile
+    @property
+    def log(self):
+        return self.logfile
 
 
 class TaskState(object):
