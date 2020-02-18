@@ -101,7 +101,9 @@ class API(object):
                 for k, v in iteritems(_parse_json_response(res))
             }
         except (APIError, HTTPError) as e:
-            logger.warning(e)
+            logger.warning(
+                "Failed to retrieve new input signed URLs; falling back to "
+                "pre-populated URLs: %r", e)
             return task_config.inputs
 
     def get_job_status_url(self, task_config):
@@ -212,7 +214,9 @@ class API(object):
             _validate_response(res)
             return voxu.RemotePathConfig(_parse_json_response(res))
         except (APIError, HTTPError) as e:
-            logger.warning(e)
+            logger.warning(
+                "Failed to retrieve new %s signed URL; falling back to "
+                "pre-populated URL: %r", url_type, e)
             return getattr(task_config, url_type)
 
 
