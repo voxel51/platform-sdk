@@ -135,26 +135,6 @@ Platform API
 Provided as an environment variable as an extra layer of redundancy in case the
 task JSON cannot be accessed
 
-The following JSON file shows an example of a task specification provided to
-the `voxel51/vehicle-sense` analytic:
-
-```json
-{
-    "analytic": "voxel51/vehicle-sense",
-    "version": "0.3",
-    "job_id": "2ffe1110-b446-427d-8829-db9ac95d0638",
-    "parameters": {},
-}
-```
-
-In the above JSON, the `analytic` key specifies the name of the analytic being
-run, and the `version` key specifies the particular version of the analytic.
-The `job_id` specifies the ID of the platform job being executed, which is used
-by the SDK when communicating the status of the task to the platform. The job
-ID is also provided via environment variable, which is done as a safety measure
-to support failure reporting in cases when the task JSON cannot be downloaded
-or parsed.
-
 The Platform SDK provides a `voxel51.platform.task.TaskConfig` class that
 conveniently encapsulates reading and parsing the above specification. In
 particular, each of the remote file locations are encapsulated by the
