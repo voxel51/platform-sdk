@@ -16,7 +16,7 @@ methods.
 ## Quickstart
 
 To launch the local testing server, use the `test-platform` script that is
-provided when you install the Platform SDK repository:
+provided when you install the Platform SDK repository with `pip`:
 
 ```
 Voxel51 Platform Analytic Local Testing Server

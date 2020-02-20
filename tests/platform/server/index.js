@@ -70,6 +70,12 @@ const optionDefinitions = [
       'current working directory.'
   },
   {
+    name: 'port',
+    type: Number,
+    description: 'Run the test server on a different port',
+    defaultValue: config.PORT,
+  },
+  {
     name: 'help',
     alias: 'h',
     type: Boolean,
@@ -122,6 +128,8 @@ const JOB_ID = uuid4();
       clean.cleanup();
       process.exit(0);
     }
+
+    config.API_BASE_URL =`http://127.0.0.1:${options.port}/v1`;
 
     // Make storage directory
     debug(`Making storage directory ${config.STORAGE_BASE_DIR}.`);
@@ -181,7 +189,7 @@ const JOB_ID = uuid4();
     debug('Setup complete.');
 
     debug('Spinning up server.');
-    const socket = await server.spinup(task);
+    const socket = await server.spinup(task, options.port);
 
     // Print Docker run instructions
     const dockerCmd = await generateDockerCommand(
