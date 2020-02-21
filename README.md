@@ -10,7 +10,7 @@ Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel5
 
 ## Installation
 
-To install the library, first clone it:
+Install the SDK as follows:
 
 ```shell
 # Clone the repository
@@ -43,8 +43,11 @@ cd ..
 ```
 
 After installing the client library, follow
-[these instructions](https://voxel51.com/docs/api/#api-documentation) to
+[these instructions](https://voxel51.com/docs/api/?python#authentication) to
 download and activiate an API token to enable use of the client library.
+
+After you have installed the client library and activated your API token, run
+`voxel51 auth show`. If you see token information, then you're ready to go!
 
 
 ## Quickstart
