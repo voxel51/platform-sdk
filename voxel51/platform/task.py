@@ -54,6 +54,11 @@ class TaskConfig(Config):
         self.output = self.parse_object(
             d, "output", voxu.RemotePathConfig, default=None)
 
+    # alias for logfile
+    @property
+    def log(self):
+        return self.logfile
+
 
 class TaskState(object):
     '''Enum describing the possible states of a task.'''
@@ -378,8 +383,7 @@ class TaskStatus(Serializable):
         '''
         task_status = cls(
             analytic=task_config.analytic, version=task_config.version)
-        publish_callback = make_publish_callback(
-            task_config.job_id, task_config.status)
+        publish_callback = make_publish_callback(task_config)
         task_status.set_publish_callback(publish_callback)
         return task_status
 
@@ -652,27 +656,25 @@ def resume_task(config_path, status_path, task_status_cls=TaskStatus):
     task_config = TaskConfig.from_json(config_path)
     task_status = task_status_cls.from_json(status_path)
 
-    publish_callback = make_publish_callback(
-        task_config.job_id, task_config.status)
+    publish_callback = make_publish_callback(task_config)
     task_status.set_publish_callback(publish_callback)
 
     return TaskManager(task_config, task_status=task_status)
 
 
-def make_publish_callback(job_id, status_path_config):
+def make_publish_callback(task_config):
     '''Makes a callback function that can be called to publish the status of an
     ongoing task.
 
     Args:
-        job_id (str): the ID of the underlying job
-        status_path_config (voxel51.platform.utils.RemotePathConfig): a
-            RemotePathConfig specifying how to publish the :class:`TaskStatus`
+        task_config (TaskConfig): the ID of the underlying job
 
     Returns:
         a function that can publish a :class:`TaskStatus` instance via the
         syntax :func:`publish_callback(task_status)`
     '''
     def _publish_status(task_status):
+        api = _get_api_client()
         #
         # Report job state to platform
         #
@@ -682,8 +684,8 @@ def make_publish_callback(job_id, status_path_config):
         else:
             failure_type = None
 
-        _get_api_client().update_job_state(
-            job_id, task_status.state, failure_type=failure_type)
+        api.update_job_state(
+            task_config.job_id, task_status.state, failure_type=failure_type)
 
         if task_status.state == TaskState.FAILED:
             logger.info(
@@ -697,7 +699,7 @@ def make_publish_callback(job_id, status_path_config):
         #
 
         voxu.upload_bytes(
-            task_status.to_str(), status_path_config,
+            task_status.to_str(), api.get_job_status_url(task_config),
             content_type="application/json")
 
         logger.info("Task status written to cloud storage")
@@ -717,7 +719,8 @@ def download_inputs(inputs_dir, task_config, task_status):
         a dictionary mapping input names to their downloaded filepaths
     '''
     input_paths = {}
-    for name, path_config in iteritems(task_config.inputs):
+    inputs = _get_api_client().get_job_data_urls(task_config)
+    for name, path_config in iteritems(inputs):
         local_path = voxu.download(path_config, inputs_dir)
         input_paths[name] = local_path
         logger.info("Input '%s' downloaded", name)
@@ -822,8 +825,9 @@ def upload_output(output_path, task_config, task_status):
         task_config (TaskConfig): the TaskConfig for the task
         task_status (TaskStatus): the TaskStatus for the task
     '''
-    voxu.upload(output_path, task_config.output)
-    logger.info("Output uploaded to %s", task_config.output)
+    output_url = _get_api_client().get_job_output_url(task_config)
+    voxu.upload(output_path, output_url)
+    logger.info("Output uploaded to %s", output_url)
     task_status.add_message("Output published")
 
 
@@ -865,8 +869,9 @@ def upload_logfile(logfile_path, task_config):
         logfile_path (str): the path to a logfile to upload
         task_config (TaskConfig): the TaskConfig for the task
     '''
-    logger.info("Uploading logfile to %s", str(task_config.logfile))
-    voxu.upload(logfile_path, task_config.logfile)
+    logfile_url = _get_api_client().get_job_log_url(task_config)
+    logger.info("Uploading logfile to %s", str(logfile_url))
+    voxu.upload(logfile_path, logfile_url)
 
 
 def fail_gracefully(
