@@ -2,7 +2,7 @@
 '''
 Entrypoint for the `tf-models-segmenter-i2v` container.
 
-Copyright 2017-2019, Voxel51, Inc.
+Copyright 2017-2020, Voxel51, Inc.
 voxel51.com
 
 Brian Moore, brian@voxel51.com
@@ -22,7 +22,8 @@ from builtins import *
 import logging
 
 import eta.core.image as etai
-from eta.detectors import TFModelsSegmenter, TFModelsSegmenterConfig
+from eta.detectors import TFModelsInstanceSegmenter, \
+                          TFModelsInstanceSegmenterConfig
 
 import voxel51.image2video.core as voxc
 
@@ -54,13 +55,13 @@ def main():
 
 
 def load_model():
-    config = TFModelsSegmenterConfig({
+    config = TFModelsInstanceSegmenterConfig({
         "model_path": MODEL_PATH,
         "labels_path": LABELS_PATH,
         "mask_thresh": MASK_THRESHOLD,
         "confidence_thresh": CONFIDENCE_THRESHOLD,
     })
-    return TFModelsSegmenter(config)
+    return TFModelsInstanceSegmenter(config)
 
 
 def process_image(model, img):
