@@ -17,8 +17,8 @@ The following files constitute the definition of the analytic:
 gracefully handles any uncaught errors that are raised therein
 
 - `main.py`: the main executable for the analytic, which loads the model using
-the `eta.detectors.TFModelsSegmenter` interface, performs inference on each
-frame provided by the pre-processing container, and saves the resulting
+the `eta.detectors.TFModelsInstanceSegmenter` interface, performs inference on
+each frame provided by the pre-processing container, and saves the resulting
 predictions as an `eta.core.video.VideoLabels` JSON file on disk
 
 - `analytic.json`: the analytic JSON file for the analytic, which declares
