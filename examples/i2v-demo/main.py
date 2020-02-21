@@ -78,10 +78,10 @@ def process_image(model, img):
     # For this demo, we simply generate a random ImageLabels
     image_labels = etai.ImageLabels()
 
-    # Add an image attribute
+    # Add a frame attribute
     scene = random.choice(["urban", "rural", "resedential"])
     img_attr = etad.CategoricalAttribute("scene", scene, confidence=1)
-    image_labels.add_image_attribute(img_attr)
+    image_labels.add_attribute(img_attr)
 
     # Add an object
     obj = _generate_random_object("object", "demo", 1)
