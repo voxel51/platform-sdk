@@ -398,9 +398,6 @@ cd ..
 
 # Build image
 docker build -t "<image-name>" .
-
-# Cleanup
-rm -rf platform-sdk
 ```
 
 
@@ -418,7 +415,7 @@ test-platform \
     --analytic-image <image-name> \
     --analytic-json <analytic-json> \
     --inputs <name>=<path> \
-    --compute-type <cpu|gpu>
+    --compute-type <CPU|GPU>
 ```
 
 Type `test-platform -h` for help, and see the
@@ -443,5 +440,5 @@ to publish your analytic to the platform.
 
 ## Copyright
 
-Copyright 2017-2019, Voxel51, Inc.<br>
+Copyright 2017-2020, Voxel51, Inc.<br>
 [voxel51.com](https://voxel51.com)

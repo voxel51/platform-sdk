@@ -1,8 +1,9 @@
 # Deploying a Semantic Segmentation Model via the Image-To-Video Tool
 
 This directory demonstrates how to deploy a semantic segmentation model stored
-as a frozen TensorFlow graph to the Voxel51 Platform via the Image-To-Video
-tool.
+as a frozen TensorFlow graph to the
+[Voxel51 Platform](https://console.voxel51.com) using the Image-To-Video tool
+from the Platform SDK.
 
 
 ## Overview
@@ -30,11 +31,12 @@ the analytic and its dependencies
 ## Environment setup
 
 First, install a fresh copy of the Platform SDK with a full ETA installation
-inside this directory. This version of the SDK will be copied into the Docker
-image that you build.
+inside this directory. Yes, a fresh copy, not the version of the SDK that you
+cloned in order to access the file you're reading. This new copy of the SDK
+will be copied into the Docker image that you build.
 
-> Note: you probably want to do this in a fresh virtual environment to avoid
-> interfering with your existing environment
+> Note: you probably want to install this in a fresh virtual environment to
+> avoid interfering with your existing environment
 
 ```shell
 git clone https://github.com/voxel51/platform-sdk
@@ -83,9 +85,6 @@ docker build \
     --build-arg TENSORFLOW_VERSION="${TENSORFLOW_VERSION}" \
     --tag "${IMAGE_NAME}" \
     .
-
-# Cleanup
-rm -rf platform-sdk
 ```
 
 
@@ -156,7 +155,7 @@ Python client library. In order to run it, you must have first followed the
 to get setup with a Platform Account, the Python client, and an API token.
 
 ```py
-from voxel51.users.api import API, AnalyticType
+from voxel51.users.api import API, AnalyticType, AnalyticImageType
 
 analytic_json_path = "./analytic.json"
 cpu_image_path = "./tf-semantic-segmenter-i2v-cpu.tar.gz"
@@ -165,13 +164,13 @@ gpu_image_path = "./tf-semantic-segmenter-i2v-gpu.tar.gz"
 api = API()
 
 # Upload analytic JSON
-analytic_type = AnalyticType.IMAGE_TO_VIDEO
-analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
+analytic = api.upload_analytic(
+    analytic_json_path, analytic_type=AnalyticType.IMAGE_TO_VIDEO)
 analytic_id = analytic["id"]
 
 # Upload images
-api.upload_analytic_image(analytic_id, cpu_image_path, "cpu")
-api.upload_analytic_image(analytic_id, gpu_image_path, "gpu")
+api.upload_analytic_image(analytic_id, cpu_image_path, AnalyticImageType.CPU)
+api.upload_analytic_image(analytic_id, gpu_image_path, AnalyticImageType.GPU)
 ```
 
 ### Deploying via CLI
@@ -185,11 +184,11 @@ CPU_IMAGE_PATH=./tf-semantic-segmenter-i2v-cpu.tar.gz
 GPU_IMAGE_PATH=./tf-semantic-segmenter-i2v-gpu.tar.gz
 
 # Upload analytic JSON
-ANALYTIC_ID=$(voxel51 analytics upload $ANALYTIC_DOC_PATH --print-id)
+ANALYTIC_ID=$(voxel51 analytics upload $ANALYTIC_DOC_PATH -t IMAGE_TO_VIDEO --print-id)
 
 # Upload images
-voxel51 analytics upload --image $ANALYTIC_ID --path $CPU_IMAGE_PATH --image-type cpu
-voxel51 analytics upload --image $ANALYTIC_ID --path $GPU_IMAGE_PATH --image-type gpu
+voxel51 analytics upload-image -i $ANALYTIC_ID -p $CPU_IMAGE_PATH -t CPU
+voxel51 analytics upload-image -i $ANALYTIC_ID -p $GPU_IMAGE_PATH -t GPU
 ```
 
 ### Deploying via Platform Console

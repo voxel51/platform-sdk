@@ -26,9 +26,12 @@ the inputs and outputs that the analytic exposes
 the analytic and its dependencies
 
 
-## Building the image
+## Environment setup
 
-To build the image, run the following commands:
+First, clone a fresh copy of the Platform SDK inside this directory. Yes, a
+fresh copy, not the version of the SDK that you cloned in order to access the
+file you're reading. This new copy of the SDK will be copied into the Docker
+image that you build.
 
 ```shell
 # Clone Platform SDK
@@ -37,18 +40,22 @@ cd platform-sdk
 git submodule init
 git submodule update
 cd ..
+```
 
-# Build image
+
+## Building the image
+
+To build the image, run the following command:
+
+```shell
+# Build the image
 docker build --tag platform-demo .
-
-# Cleanup
-rm -rf platform-sdk
 ```
 
 
 ## Testing locally
 
-Before deploying analytics to the platform, it is helpful to test the Docker
+Before deploying analytics to the Platform, it is helpful to test the Docker
 images locally to ensure that they are functioning properly. The Platform SDK
 provides a `test-platform` script that you can use to perform such tests.
 Type `test-plaform -h` to learn more about the script.
@@ -68,12 +75,12 @@ test-platform \
     --analytic-image platform-demo \
     --analytic-json analytic.json \
     --inputs video=data/test.mp4 \
-    --compute-type cpu
+    --compute-type CPU
 ```
 
 The server will print a `docker run` command that you should execute in
 another terminal. This will locally execute the job that you specified, using
-your test server as a proxy for the platform. An `out/` directory will be
+your test server as a proxy for the Platform. An `out/` directory will be
 populated with the various files read and written by the analytic as it
 executes.
 
@@ -88,22 +95,24 @@ After your analytic image passes local tests, it is ready for deployment to
 the Voxel51 Platform!
 
 
-## Deploying to the platform
+## Deploying to the Platform
 
 To deploy your analytic to the Platform, you must first save the Docker image
-as a `.tar.gz` file:
+as a tarfile:
 
 ```shell
 docker save platform-demo | gzip -c > platform-demo.tar.gz
 ```
 
-The following code snippet publishes the analytic to the platform using the
+### Deploying via Python client library
+
+The following code snippet publishes the analytic to the Platform using the
 Python client library. In order to run it, you must have first followed the
 [installation instructions in the README](../../README.md#installation)
 to get setup with a Platform Account, the Python client, and an API token.
 
 ```py
-from voxel51.users.api import API
+from voxel51.users.api import API, AnalyticImageType
 
 analytic_json_path = "./analytic.json"
 cpu_image_path = "./platform-demo.tar.gz"
@@ -115,17 +124,35 @@ analytic = api.upload_analytic(analytic_json_path)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, cpu_image_path, "cpu")
+api.upload_analytic_image(analytic_id, cpu_image_path, AnalyticImageType.CPU)
 ```
 
-You can also upload analytics via your
+### Deploying via CLI
+
+You can also upload analytics via the `voxel51` CLI that is automatically
+installed with the Python client library:
+
+```shell
+ANALYTIC_DOC_PATH=./analytic.json
+CPU_IMAGE_PATH=./platform-demo.tar.gz
+
+# Upload analytic JSON
+ANALYTIC_ID=$(voxel51 analytics upload $ANALYTIC_DOC_PATH --print-id)
+
+# Upload image
+voxel51 analytics upload-image -i $ANALYTIC_ID -p $CPU_IMAGE_PATH -t CPU
+```
+
+### Deploying via Platform Console
+
+Finally, you can upload analytics via your
 [Platform Console account](https://console.voxel51.com).
 
 
-## Using the analytic on the platform
+## Using the analytic on the Platform
 
 After the analytic has been processed and is ready for use (check the Platform
-Console to verify), you can run a test platform job on the `data/test.mp4`
+Console to verify), you can run a test Platform job on the `data/test.mp4`
 video by executing the following code with the Python client library:
 
 ```py
@@ -147,10 +174,10 @@ api.wait_until_job_completes(job["id"])
 api.download_job_output(job["id"], "out/labels.json")
 ```
 
-In the above, replace `<username>` with your username on the platform.
+In the above, replace `<username>` with your username on the Platform.
 
 
 ## Copyright
 
-Copyright 2017-2019, Voxel51, Inc.<br>
+Copyright 2017-2020, Voxel51, Inc.<br>
 [voxel51.com](https://voxel51.com)

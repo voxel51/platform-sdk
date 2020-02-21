@@ -27,7 +27,7 @@ Example usage
     --analytic-image <image-name> \
     --analytic-json <analytic-json> \
     --inputs <name>=<path> \
-    --compute-type <cpu|gpu>
+    --compute-type <CPU|GPU>
 
 Options
 
@@ -37,7 +37,7 @@ Options
                                     times if necessary. At least one input is required.
   -p, --parameters <name>=<value>   Name=value pair(s) specifying parameter settings to use. `value` must be JSON
                                     parsable. Can be repeated multiple times if  necessary.
-  --compute-type <cpu|gpu>          The compute type to use. Your Docker image must support this compute type. If
+  --compute-type <CPU|GPU>          The compute type to use. Your Docker image must support this compute type. If
                                     GPU execution is requested, `--runtime=nvidia` is added to the `docker run`
                                     command; it is assumed that your machine and Docker installation are
                                     configured to support this.
