@@ -36,9 +36,12 @@ image that you build.
 ```shell
 # Clone Platform SDK
 git clone https://github.com/voxel51/platform-sdk
+
+# Initialize submodules
 cd platform-sdk
 git submodule init
 git submodule update
+
 cd ..
 ```
 

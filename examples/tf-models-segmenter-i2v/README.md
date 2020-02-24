@@ -44,6 +44,8 @@ git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
 
 bash install.bash -f
+
+cd ..
 ```
 
 

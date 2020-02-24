@@ -43,6 +43,8 @@ git clone https://github.com/voxel51/platform-sdk
 cd platform-sdk
 
 bash install.bash -f
+
+cd ..
 ```
 
 
@@ -56,9 +58,17 @@ Download the frozen inference graph from the ETA Models Registry by running the
 command below:
 
 ```shell
-# Downloads a pre-trained DeepLabV3 semantic segmentation model from the ETA
+#
+# Download a pre-trained DeepLabV3 semantic segmentation model from the ETA
 # models registry
+#
+
+# Option 1: a larger (~160MB) DeepLabV3 model
 eta gdrive download --public 1GKJtItUirHZ2DY_mQu872QuoWZuAHNr8 \
+    models/frozen_inference_graph.pb
+
+# Option 2: a smaller (~8MB) DeepLabV3 model
+eta gdrive download --public 1JYx2Z6or9Jm24aWv79-5aQ8Gg9IF_m6Z \
     models/frozen_inference_graph.pb
 ```
 
