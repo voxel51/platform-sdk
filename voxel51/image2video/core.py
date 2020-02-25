@@ -45,6 +45,12 @@ class Predictions(object):
         '''Creates a Predictions instance.'''
         self.labels = etav.VideoLabels()
 
+    def __bool__(self):
+        return len(self) > 0
+
+    def __len__(self):
+        return self.labels.num_frames
+
     def add(self, frame_number, image_labels):
         '''Adds labels for the given frame number to the collection.
 
@@ -76,7 +82,7 @@ def read_images():
         images to predict and their associated frame numbers
     '''
     img_patt, frame_numbers = etau.parse_dir_pattern(IMAGE_TO_VIDEO_FRAMES_DIR)
-    logger.info("Found %d frames",  len(frame_numbers))
+    logger.info("Found %d frames", len(frame_numbers))
     for frame_number in frame_numbers:
         logger.debug("Processing frame %d", frame_number)
         img = etai.read(img_patt % frame_number)
@@ -90,6 +96,6 @@ def write_predictions(predictions):
         predictions (Predictions): the predictions to write
     '''
     logger.info(
-        "Writing labels for %d frames to '%s'", len(predictions.labels),
+        "Writing labels for %d frames to '%s'", len(predictions),
         IMAGE_TO_VIDEO_LABELS_PATH)
     predictions.labels.write_json(IMAGE_TO_VIDEO_LABELS_PATH)
