@@ -283,9 +283,6 @@ cd ..
 
 # Build image
 docker build -t "<image-name>" .
-
-# Cleanup
-rm -rf platform-sdk
 ```
 
 

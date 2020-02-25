@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Entrypoint for the `tf-models-segmenter-i2v` container.
+Entrypoint for the `tf-semantic-segmenter-i2v` container.
 
 Copyright 2017-2020, Voxel51, Inc.
 voxel51.com
@@ -21,9 +21,7 @@ from builtins import *
 
 import logging
 
-import eta.core.image as etai
-from eta.detectors import TFModelsInstanceSegmenter, \
-                          TFModelsInstanceSegmenterConfig
+from eta.segmenters import TFSemanticSegmenter, TFSemanticSegmenterConfig
 
 import voxel51.image2video.core as voxc
 
@@ -32,9 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 MODEL_PATH = "/engine/models/frozen_inference_graph.pb"
-LABELS_PATH = "/engine/models/mscoco_label_map.pbtxt"
-CONFIDENCE_THRESHOLD = 0.3
-MASK_THRESHOLD = 0.5
+LABELS_PATH = "/engine/models/cityscapes-train-labels.txt"
 
 
 def main():
@@ -55,18 +51,18 @@ def main():
 
 
 def load_model():
-    config = TFModelsInstanceSegmenterConfig({
+    config = TFSemanticSegmenterConfig({
         "model_path": MODEL_PATH,
         "labels_path": LABELS_PATH,
-        "mask_thresh": MASK_THRESHOLD,
-        "confidence_thresh": CONFIDENCE_THRESHOLD,
+        "resize_to_max_dim": 513,
+        "input_name": "ImageTensor",
+        "output_name": "SemanticPredictions"
     })
-    return TFModelsInstanceSegmenter(config)
+    return TFSemanticSegmenter(config)
 
 
 def process_image(model, img):
-    objects = model.detect(img)
-    return etai.ImageLabels(objects=objects)
+    return model.segment(img)
 
 
 if __name__ == "__main__":

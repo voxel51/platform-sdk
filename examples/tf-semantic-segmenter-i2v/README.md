@@ -1,31 +1,31 @@
-# Example Image-To-Video Analytic
+# Deploying a Semantic Segmentation Model via the Image-To-Video Tool
 
-This guide provides a end-to-end example of building and deploying an analytic
-to the [Voxel51 Platform](https://console.voxel51.com) using the
-Image-To-Video tool from the Platform SDK.
+This directory demonstrates how to deploy a semantic segmentation model stored
+as a frozen TensorFlow graph to the
+[Voxel51 Platform](https://console.voxel51.com) using the Image-To-Video tool
+from the Platform SDK.
 
 
 ## Overview
 
-This directory defines an `i2v-demo` container that is ready for deployment
-to the Voxel51 Platform. The actual functionality of the container is simple:
-it generates a `VideoLabels` file that contains random labels for a single
-frame-level attribute and a single randonly oriented object throughout the
-frames.
+This directory defines a `tf-semantic-segmenter-i2v` analytic that is ready for
+deployment to the Voxel51 Platform.
 
-The following files constitute the definition of the container:
+The following files constitute the definition of the analytic:
 
 - `main.bash`: the main Docker entrypoint script, which calls `main.py` and
-logs any uncaught errors that are raised therein
+gracefully handles any uncaught errors that are raised therein
 
-- `main.py`: the main executable for the container, which defines the (simple)
-functionality of the analytic
+- `main.py`: the main executable for the analytic, which loads the model using
+the `eta.segmenters.TFSemanticSegmenter` interface, performs inference on each
+frame provided by the pre-processing container, and saves the resulting
+predictions as an `eta.core.video.VideoLabels` JSON file on disk
 
-- `analytic.json`: the analytic JSON file for the container, which declares
-the metadata about the Image-To-Video analytic
+- `analytic.json`: the analytic JSON file for the analytic, which declares
+the inputs and outputs that the analytic exposes
 
 - `Dockerfile`: the Dockerfile that specifies how to build an image containing
-the algorithm and its dependencies
+the analytic and its dependencies
 
 
 ## Environment setup
@@ -48,13 +48,53 @@ cd ..
 ```
 
 
-## Building the image
+## Model setup
 
-To build the image, run the following command:
+For this example, we'll use pre-trained DeepLabV3 semantic segmentation model
+that was trained on the
+[Cityscapes dataset](https://www.cityscapes-dataset.com).
+
+Download the frozen inference graph from the ETA Models Registry by running the
+command below:
 
 ```shell
+#
+# Download a pre-trained DeepLabV3 semantic segmentation model from the ETA
+# models registry
+#
+
+# Option 1: a larger (~160MB) DeepLabV3 model
+eta gdrive download --public 1GKJtItUirHZ2DY_mQu872QuoWZuAHNr8 \
+    models/frozen_inference_graph.pb
+
+# Option 2: a smaller (~8MB) DeepLabV3 model
+eta gdrive download --public 1JYx2Z6or9Jm24aWv79-5aQ8Gg9IF_m6Z \
+    models/frozen_inference_graph.pb
+```
+
+
+## Building the image
+
+To build the image, run the following commands:
+
+```shell
+# For GPU build
+BASE_IMAGE="nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04"
+TENSORFLOW_VERSION="tensorflow-gpu==1.12.0"
+IMAGE_NAME="tf-semantic-segmenter-i2v-gpu"
+
+# For CPU build
+BASE_IMAGE="ubuntu:16.04"
+TENSORFLOW_VERSION="tensorflow==1.12.0"
+IMAGE_NAME="tf-semantic-segmenter-i2v-cpu"
+
 # Build the image
-docker build --tag i2v-demo .
+docker build \
+    --file Dockerfile \
+    --build-arg BASE_IMAGE="${BASE_IMAGE}" \
+    --build-arg TENSORFLOW_VERSION="${TENSORFLOW_VERSION}" \
+    --tag "${IMAGE_NAME}" \
+    .
 ```
 
 
@@ -79,27 +119,42 @@ rm data/people.tar.gz
 Then run the image on the frames using the `test-i2v` script:
 
 ```shell
-test-i2v i2v-demo data/people
+test-i2v "${IMAGE_NAME}" data/people
 ```
 
 If the script executed correctly, it will write an `out/labels.json` file in
 your working directory that contains the predictions generated for each input
 frame.
 
+To visualize the labels on the input video, run the following ETA pipeline,
+which will generate an `out/people-annotated.mp4` file:
+
+```shell
+VIDEO_PATH=data/people.mp4
+LABELS_PATH=out/labels.json
+ANNOTATED_VIDEO_PATH=out/people-annotated.mp4
+
+eta build -n visualize_labels \
+    -i "video=\"${VIDEO_PATH}\",video_labels=\"${LABELS_PATH}\"" \
+    -o "annotated_video=\"${ANNOTATED_VIDEO_PATH}\"" \
+    --run-now
+```
+
 To cleanup after the test, run `test-i2v -c` from the same working directory in
 which you ran the test script.
 
 After your analytic image passes local tests, it is ready for deployment to
-the Voxel51 Platform!
+the Platform!
 
 
 ## Deploying to the Platform
 
-To deploy your analytic to the Platform, you must first save the Docker image
-as a tarfile:
+To deploy your working analytic to the Platform, you must first save the Docker
+images as tarfiles:
 
 ```shell
-docker save i2v-demo | gzip -c > i2v-demo.tar.gz
+docker save tf-semantic-segmenter-i2v-cpu | gzip -c > tf-semantic-segmenter-i2v-cpu.tar.gz
+docker save tf-semantic-segmenter-i2v-gpu | gzip -c > tf-semantic-segmenter-i2v-gpu.tar.gz
 ```
 
 ### Deploying via Python client library
@@ -113,7 +168,8 @@ to get setup with a Platform Account, the Python client, and an API token.
 from voxel51.users.api import API, AnalyticType, AnalyticImageType
 
 analytic_json_path = "./analytic.json"
-cpu_image_path = "./i2v-demo.tar.gz"
+cpu_image_path = "./tf-semantic-segmenter-i2v-cpu.tar.gz"
+gpu_image_path = "./tf-semantic-segmenter-i2v-gpu.tar.gz"
 
 api = API()
 
@@ -122,8 +178,9 @@ analytic = api.upload_analytic(
     analytic_json_path, analytic_type=AnalyticType.IMAGE_TO_VIDEO)
 analytic_id = analytic["id"]
 
-# Upload image
+# Upload images
 api.upload_analytic_image(analytic_id, cpu_image_path, AnalyticImageType.CPU)
+api.upload_analytic_image(analytic_id, gpu_image_path, AnalyticImageType.GPU)
 ```
 
 ### Deploying via CLI
@@ -133,13 +190,15 @@ installed with the Python client library:
 
 ```shell
 ANALYTIC_DOC_PATH=./analytic.json
-CPU_IMAGE_PATH=./i2v-demo.tar.gz
+CPU_IMAGE_PATH=./tf-semantic-segmenter-i2v-cpu.tar.gz
+GPU_IMAGE_PATH=./tf-semantic-segmenter-i2v-gpu.tar.gz
 
 # Upload analytic JSON
 ANALYTIC_ID=$(voxel51 analytics upload $ANALYTIC_DOC_PATH -t IMAGE_TO_VIDEO --print-id)
 
-# Upload image
+# Upload images
 voxel51 analytics upload-image -i $ANALYTIC_ID -p $CPU_IMAGE_PATH -t CPU
+voxel51 analytics upload-image -i $ANALYTIC_ID -p $GPU_IMAGE_PATH -t GPU
 ```
 
 ### Deploying via Platform Console
@@ -164,7 +223,7 @@ api = API()
 data = api.upload_data("data/people.mp4")
 
 # Upload and start job
-job_request = JobRequest("<username>/i2v-demo")
+job_request = JobRequest("<username>/tf-semantic-segmenter-i2v")
 job_request.set_input("video", data_id=data["id"])
 job = api.upload_job_request(job_request, data["name"], auto_start=True)
 

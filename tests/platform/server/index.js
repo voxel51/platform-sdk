@@ -60,7 +60,7 @@ const optionDefinitions = [
       'this compute type. If GPU execution is requested, `--runtime=nvidia` ' +
       'is added to the `docker run` command; it is assumed that your ' +
       'machine and Docker installation are configured to support this.',
-    typeLabel: '<cpu|gpu>',
+    typeLabel: '<CPU|GPU>',
   },
   {
     name: 'clean',
@@ -93,7 +93,7 @@ const usageDefinition = [
       '--analytic-image <image-name> \\\n' +
       '--analytic-json <analytic-json> \\\n' +
       '--inputs <name>=<path> \\\n' +
-      '--compute-type <cpu|gpu>'
+      '--compute-type <CPU|GPU>'
   },
   {
     header: 'Options',
@@ -260,7 +260,7 @@ const JOB_ID = uuid4();
     return new Promise(function(resolve, reject) {
       debug('Generating the docker run command.');
       let cmd = 'docker run ';
-      if (COMPUTE_TYPE === 'gpu') {
+      if (COMPUTE_TYPE.toUpperCase() === 'GPU') {
         cmd += '--runtime=nvidia ';
       }
       cmd += `--name ${JOB_ID} ` +

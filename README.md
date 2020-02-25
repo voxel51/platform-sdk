@@ -62,7 +62,7 @@ for deployment to the Voxel51 Platform.
 Also, see the
 [examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
 for an end-to-end example of building and deploying a test analytic to the
-platform.
+Platform.
 
 ### Image-To-Video Analytics
 
@@ -82,30 +82,30 @@ Image-To-Video tool.
 
 The Voxel51 Platform is a scalable compute cluster that allows users to process
 their video (or other) data through state-of-the-art video understanding
-algorithms. The platform is generic and can be deployed in the cloud
+algorithms. The Platform is generic and can be deployed in the cloud
 (Google Cloud, AWS, Microsoft Azure, etc.) or on-premises in a private
 datacenter.
 
-Algorithms are deployed to the platform as **analytics**, which are concrete
+Algorithms are deployed to the Platform as **analytics**, which are concrete
 processing modules that take video (or other) data as input and output metadata
 (e.g., object detections, image classifications, etc.) in a predefined format.
 In turn, users can create **jobs** to run analytics on data they have uploaded
-to the platform. Each analytic is deployed to the platform as a Docker
-container. When a job is requested on the platform, the Docker image for the
+to the Platform. Each analytic is deployed to the Platform as a Docker
+container. When a job is requested on the Platform, the Docker image for the
 corresponding analytic is deployed as a Pod in a Kubernetes cluster and the
 specified data is processed.
 
-The platform contains many publicly available analytics that are maintained by
+The Platform contains many publicly available analytics that are maintained by
 Voxel51. The [Analytics Documentation](https://voxel51.com/docs/analytics#analytics-documentation)
-describes the interface of these analytics in detail. In addition, the platform
+describes the interface of these analytics in detail. In addition, the Platform
 allows users and third-party applications to deploy custom analytics to the
-platform for private use by uploading their own Docker images. This repository
+Platform for private use by uploading their own Docker images. This repository
 contains an easy-to-use SDK that allows you to wrap your custom algorithms with
-a Docker entrypoint that implements the platform's analytic interface. See the
+a Docker entrypoint that implements the Platform's analytic interface. See the
 Analytic Deployment section below to learn how to deploy your custom analytics
-to the platform either programmatically via the API or the web-based console.
+to the Platform either programmatically via the API or the web-based console.
 
-Regardless of where the platform is deployed, users interact with it via the
+Regardless of where the Platform is deployed, users interact with it via the
 Platform API, which exposes the interface through which users can upload and
 manage data resources, run analytics on data, monitor the status of their jobs,
 download the outputs of jobs, access statements and billing, and more. For more
@@ -115,10 +115,10 @@ information about the Platform API, refer to the
 
 ## Analytic interface
 
-All analytics deployed to the platform must be implemented as Docker containers
-that support the platform's interface as described below.
+All analytics deployed to the Platform must be implemented as Docker containers
+that support the Platform's interface as described below.
 
-The platform communicates with analytic Docker images by setting the following
+The Platform communicates with analytic Docker images by setting the following
 environment variables:
 
 - `TASK_DESCRIPTION` : the URL from which to download a JSON file that
@@ -147,7 +147,7 @@ are required for your analytic to support reading/writing files from different
 remote storage providers (Google Cloud, AWS Cloud, private datacenters, etc.)
 
 As a task is being executed, the Platform SDK provides a convenient interface
-for reporting the status of the task to the platform. The following JSON file
+for reporting the status of the task to the Platform. The following JSON file
 shows an example of the status of a completed `voxel51/vehicle-sense` task that
 was reported automatically via the Platform SDK:
 
@@ -196,12 +196,12 @@ at any time via the [API](https://voxel51.com/docs/api) or the
 [Web Console](https://console.voxel51.com). Deploying a new analytic is a
 simple two step process:
 
-- Upload an analytic JSON to the platform that describes the details and
+- Upload an analytic JSON to the Platform that describes the details and
 interface of the analytic you plan to upload. See the
 [API Documentation](https://voxel51.com/docs/api#analytics-download-documentation)
 for a description of the format of this JSON file.
 
-- Upload the corresponding Docker image(s) for your analytic. The platform
+- Upload the corresponding Docker image(s) for your analytic. The Platform
 supports analytic execution via either CPU-only or GPU-enabled compute. You
 must upload a separate Docker image for each execution mode for which you
 declared support in your analytic JSON.
@@ -217,7 +217,7 @@ publish a GPU-enabled analytic using the
 [Python client library](https://github.com/voxel51/api-py):
 
 ```py
-from voxel51.users.api import API, AnalyticType
+from voxel51.users.api import API, AnalyticImageType
 
 analytic_json_path = "/path/to/analytic.json"
 gpu_image_path = "/path/to/gpu-image.tar.gz"
@@ -225,12 +225,11 @@ gpu_image_path = "/path/to/gpu-image.tar.gz"
 api = API()
 
 # Upload analytic JSON
-analytic_type = AnalyticType.PLATFORM
-analytic = api.upload_analytic(analytic_json_path, analytic_type=analytic_type)
+analytic = api.upload_analytic(analytic_json_path)
 analytic_id = analytic["id"]
 
 # Upload image
-api.upload_analytic_image(analytic_id, gpu_image_path, "gpu")
+api.upload_analytic_image(analytic_id, gpu_image_path, AnalyticImageType.GPU)
 ```
 
 See the [API Documentation](https://voxel51.com/docs/api#analytics-upload-analytic)
@@ -240,7 +239,7 @@ for more complete instructions for deploying analytics via the API.
 
 You can also publish new analytics via the Platform's
 [Web Console](https://console.voxel51.com). To do so, simply login
-to your platform account, navigate to the `Analytics` page, and click `Upload`.
+to your Platform account, navigate to the `Analytics` page, and click `Upload`.
 
 
 ## Documentation
@@ -259,5 +258,5 @@ your browser.
 
 ## Copyright
 
-Copyright 2017-2019, Voxel51, Inc.<br>
+Copyright 2017-2020, Voxel51, Inc.<br>
 [voxel51.com](https://voxel51.com)
