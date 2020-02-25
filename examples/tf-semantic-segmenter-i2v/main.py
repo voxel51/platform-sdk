@@ -46,6 +46,10 @@ def main():
             image_labels = process_image(model, img)
             predictions.add(frame_number, image_labels)
 
+    # Store mask index, if available
+    if model.exposes_mask_index:
+        predictions.labels.mask_index = model.get_mask_index()
+
     logger.info("Writing predictions to disk")
     voxc.write_predictions(predictions)
 
