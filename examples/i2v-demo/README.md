@@ -10,7 +10,7 @@ Image-To-Video tool from the Platform SDK.
 This directory defines an `i2v-demo` container that is ready for deployment
 to the Voxel51 Platform. The actual functionality of the container is simple:
 it generates a `VideoLabels` file that contains random labels for a single
-frame-level attribute and a single randonly oriented object throughout the
+frame-level attribute and a single randomly oriented object throughout the
 frames.
 
 The following files constitute the definition of the container:
