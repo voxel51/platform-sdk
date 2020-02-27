@@ -44,11 +44,9 @@ You can easily adapt this template to run your custom algorithm by inserting
 the appropriate calls in the `Your code here!` section.
 
 ```python
+#!/usr/bin/env python
 '''
-Template main executable for an analytic Docker image.
-
-Syntax:
-    python main.py
+Template main executable for a Voxel51 Platform Analytic.
 '''
 import logging
 
@@ -87,12 +85,6 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    '''The main method for the analytic Docker image.
-
-    Note that no arguments are required here because the Platform SDK reads the
-    necessary configuration settings from environment variables.
-    '''
-
     #
     # Setup logging
     #
@@ -131,7 +123,7 @@ def main():
         # the platform. This command logs the failure and notifies the platform
         # as fully as possible.
         #
-        voxt.fail_epically()
+        voxt.fail_epically(logfile_path=TASK_LOGFILE_PATH)
         return
 
     try:

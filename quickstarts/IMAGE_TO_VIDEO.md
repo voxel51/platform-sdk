@@ -34,16 +34,16 @@ As mentioned below, this entrypoint can be re-written in any language if
 desired, as long as it performs the following actions:
 
 - Reads the input images from the ``/shared/user/inputs/frames`` directory,
-which is populated with images in te format ``%06d.<ext>``, where ``%06d``
+which is populated with images in the format ``%06d.<ext>``, where ``%06d``
 denotes the frame number of the image (e.g., `000010` for frame 10), and
 `<ext>` is any valid image format. Note that not all frames will be present in
-this directory
+this directory.
 
 - Writes the predictions to ``/shared/user/outputs/labels.json`` in the JSON
 format defined by ``eta.core.video.VideoLabels``. See
 https://voxel51.com/docs/api/#types-videolabels for more information.
 
-- Any desired logging messages are appended to ``/var/log/image.log``
+- Any desired logging messages are appended to ``/var/log/image.log``.
 
 You can easily adapt this template to run your custom model by inserting
 the appropriate code in the places marked by `@todo`.
@@ -67,24 +67,10 @@ performs the following actions:
     https://voxel51.com/docs/api/#types-videolabels for more information.
 
 3. Any desired logging messages are appended to ``/var/log/image.log``.
-
-Copyright 2017-2019, Voxel51, Inc.
-voxel51.com
 '''
-# pragma pylint: disable=redefined-builtin
-# pragma pylint: disable=unused-wildcard-import
-# pragma pylint: disable=wildcard-import
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import *
-# pragma pylint: enable=redefined-builtin
-# pragma pylint: enable=unused-wildcard-import
-# pragma pylint: enable=wildcard-import
-
 import logging
 
+# The `platform-sdk` package must be pip installed in your image
 import voxel51.image2video.core as voxc
 
 
@@ -92,22 +78,34 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    '''Main method.'''
+    #
     # Setup logging
+    #
+    # This command configures system-wide logging so that all logging recorded
+    # via the `logging` module will be appended to ``/var/log/image.log`` and
+    # thus uploaded and made available via the Platform.
+    #
     voxc.setup_logging()
 
     # Load model
     logger.info("Loading model")
     model = load_model()
 
+    #
     # Perform predictions
+    #
+    # This uses the SDK's builtin ``read_images()`` method to iterate over the
+    # frames and their frame numbers for which you should perform inference.
+    # The resulting predictions are stored in a builtin ``Predictions`` class
+    # provided by the SDK
+    #
     logger.info("Performing predictions")
     predictions = voxc.Predictions()
     for img, frame_number in voxc.read_images():
         image_labels = process_image(model, img)
         predictions.add(frame_number, image_labels)
 
-    # Write predictions to disk
+    # Writes predictions to disk
     logger.info("Writing predictions to disk")
     voxc.write_predictions(predictions)
 
@@ -331,5 +329,5 @@ to publish your analytic to the platform.
 
 ## Copyright
 
-Copyright 2017-2019, Voxel51, Inc.<br>
+Copyright 2017-2020, Voxel51, Inc.<br>
 [voxel51.com](https://voxel51.com)
