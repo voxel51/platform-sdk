@@ -90,20 +90,28 @@ eta gdrive download --public 1PvW3E6Ey3yC7E7mri_Bw6FyjyOOy4_aX \
 
 ## Building the image
 
-To build the image, run the following commands:
+To build a CPU-only image, run the following commands:
 
 ```shell
-# For GPU build
-BASE_IMAGE="nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04"
-TENSORFLOW_VERSION="tensorflow-gpu==1.12.0"
-IMAGE_NAME="tf-models-segmenter-i2v-gpu"
-
-# For CPU build
 BASE_IMAGE="ubuntu:16.04"
 TENSORFLOW_VERSION="tensorflow==1.12.0"
 IMAGE_NAME="tf-models-segmenter-i2v-cpu"
 
-# Build the image
+docker build \
+    --file Dockerfile \
+    --build-arg BASE_IMAGE="${BASE_IMAGE}" \
+    --build-arg TENSORFLOW_VERSION="${TENSORFLOW_VERSION}" \
+    --tag "${IMAGE_NAME}" \
+    .
+```
+
+To build a GPU-enabled image, run the following commands:
+
+```shell
+BASE_IMAGE="nvidia/cuda:9.0-cudnn7-runtime-ubuntu16.04"
+TENSORFLOW_VERSION="tensorflow-gpu==1.12.0"
+IMAGE_NAME="tf-models-segmenter-i2v-gpu"
+
 docker build \
     --file Dockerfile \
     --build-arg BASE_IMAGE="${BASE_IMAGE}" \
@@ -120,8 +128,7 @@ images locally to ensure that they are functioning properly. The Platform SDK
 provides a `test-i2v` script that you can use to perform such tests. Type
 `test-i2v -h` to learn more about the script.
 
-To test your analytic locally, first download a directory of frames to work
-with:
+To test your image locally, first download a directory of frames to work with:
 
 ```shell
 mkdir -p data
@@ -168,6 +175,8 @@ To deploy your working analytic to the Platform, you must first save the Docker
 images as tarfiles:
 
 ```shell
+# Run the commands below corresponding to the image types you built
+
 docker save tf-models-segmenter-i2v-cpu | gzip -c > tf-models-segmenter-i2v-cpu.tar.gz
 docker save tf-models-segmenter-i2v-gpu | gzip -c > tf-models-segmenter-i2v-gpu.tar.gz
 ```
@@ -180,6 +189,8 @@ Python client library. In order to run it, you must have first followed the
 to get setup with a Platform Account, the Python client, and an API token.
 
 ```py
+# Run the commands below corresponding to the image types you built
+
 from voxel51.users.api import API, AnalyticType, AnalyticImageType
 
 analytic_json_path = "./analytic.json"
@@ -204,6 +215,8 @@ You can also upload analytics via the `voxel51` CLI that is automatically
 installed with the Python client library:
 
 ```shell
+# Run the commands below corresponding to the image types you built
+
 ANALYTIC_DOC_PATH=./analytic.json
 CPU_IMAGE_PATH=./tf-models-segmenter-i2v-cpu.tar.gz
 GPU_IMAGE_PATH=./tf-models-segmenter-i2v-gpu.tar.gz

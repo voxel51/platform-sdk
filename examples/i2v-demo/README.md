@@ -65,8 +65,8 @@ images locally to ensure that they are functioning properly. The Platform SDK
 provides a `test-i2v` script that you can use to perform such tests. Type
 `test-i2v -h` to learn more about the script.
 
-To test your analytic locally, first download a directory of frames to work
-with:
+To test your image locally, first download a directory of frames to work with:
+
 
 ```shell
 mkdir -p data
