@@ -15,11 +15,10 @@ Install the SDK as follows:
 ```shell
 # Clone the repository
 git clone https://github.com/voxel51/platform-sdk
-cd platform-sdk
 
 # Run the install script
+cd platform-sdk
 bash install.bash
-
 cd ..
 ```
 
@@ -34,6 +33,8 @@ the Platform API, you also need to install the
 ```shell
 # Clone the repository
 git clone https://github.com/voxel51/api-py
+
+# Install the package
 pip install -e api-py
 ```
 
