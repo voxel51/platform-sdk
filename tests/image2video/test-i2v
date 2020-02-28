@@ -54,6 +54,8 @@ fi
 OUTPUT_DIR="$(pwd)/out"
 FRAMES_DIR="$(pwd)/$2"
 
+mkdir -p "${OUTPUT_DIR}"
+
 # Run test
 docker run --rm \
     -v "${FRAMES_DIR}":/shared/user/inputs/frames/ \
