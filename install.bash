@@ -64,6 +64,7 @@ if [ $? -ne 0 ]; then
     echo "Installing Node.js"
 
     # Install nvm
+    unset NVM_DIR
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
 
     # Manually execute commands from ~/.bashrc so we can use nvm immediately
@@ -73,6 +74,14 @@ if [ $? -ne 0 ]; then
 
     # Install node
     nvm install node
+
+    # Ensures that the rest of this terminal session can also use node
+    if [[ -f ~/.bashrc ]]; then
+        source ~/.bashrc
+    fi
+    if [[ -f ~/.bash_profile ]]; then
+        source ~/.bash_profile
+    fi
 fi
 cd tests/platform
 npm install
