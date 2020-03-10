@@ -62,13 +62,16 @@ echo "Installing local test server"
 command -v npm &> /dev/null
 if [ $? -ne 0 ]; then
     echo "Installing Node.js"
+
+    # Install nvm
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-    if [[ -f ~/.bashrc ]]; then
-        source ~/.bashrc
-    fi
-    if [[ -f ~/.bash_profile ]]; then
-        source ~/.bash_profile
-    fi
+
+    # Manually execute commands from ~/.bashrc so we can use nvm immediately
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+    # Install node
     nvm install node
 fi
 cd tests/platform
