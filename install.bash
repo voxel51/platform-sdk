@@ -62,26 +62,24 @@ echo "Installing local test server"
 command -v npm &> /dev/null
 if [ $? -ne 0 ]; then
     echo "Installing Node.js"
+    INSTALLED_NODE=true
 
     # Install nvm
     unset NVM_DIR
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
-
-    # Manually execute commands from ~/.bashrc so we can use nvm immediately
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
     # Install node
     nvm install node
-
-    # Ensures that the rest of this terminal session can also use node
-    if [[ -f ~/.bashrc ]]; then
-        source ~/.bashrc
-    fi
-    if [[ -f ~/.bash_profile ]]; then
-        source ~/.bash_profile
-    fi
+else
+    echo "Node.js is already installed"
+    INSTALLED_NODE=false
 fi
 cd tests/platform
 npm install
+
+if [ ${INSTALLED_NODE} = true ]; then
+    printf "\n***** You must restart your terminal or source your .bashrc/.bash_profile before you can use the local test server *****\n\n"
+fi
