@@ -3,6 +3,10 @@
 This guide provides a end-to-end example of building and deploying an analytic
 to the [Voxel51 Platform](https://console.voxel51.com) using the Platform SDK.
 
+For more information about building and deploying analytics to the Platform,
+including a full description of the interface that analytics must implement,
+see the [Platform Quickstart](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/PLATFORM.md).
+
 
 ## Overview
 

@@ -5,6 +5,10 @@ as a frozen TensorFlow graph to the
 [Voxel51 Platform](https://console.voxel51.com) using the Image-To-Video tool
 from the Platform SDK.
 
+For more information about the Image-To-Video tool, including a full
+description of the interface that analytics using the tool must implement,
+see the [Image-To-Video Quickstart](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/IMAGE_TO_VIDEO.md).
+
 
 ## Overview
 
