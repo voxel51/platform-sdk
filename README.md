@@ -1,12 +1,23 @@
 # Voxel51 Platform SDK
 
+<div align="center">
+
+<img src="https://user-images.githubusercontent.com/3719547/74191434-8fe4f500-4c21-11ea-8d73-555edfce0854.png" alt="voxel51-logo.png" width="40%"/>
+
+[![Discord](https://img.shields.io/badge/Discord-7289DA?logo=discord&logoColor=white)](https://discord.gg/fiftyone-community)
+[![Hugging Face](https://img.shields.io/badge/Hugging_Face-purple?style=flat&logo=huggingface)](https://huggingface.co/Voxel51)
+[![Voxel51 Blog](https://img.shields.io/badge/Voxel51_Blog-ff6d04?style=flat)](https://voxel51.com/blog)
+[![Newsletter](https://img.shields.io/badge/Newsletter-BE5B25?logo=mail.ru&logoColor=white)](https://share.hsforms.com/1zpJ60ggaQtOoVeBqIZdaaA2ykyk)
+[![LinkedIn](https://img.shields.io/badge/In-white?style=flat&label=Linked&labelColor=blue)](https://www.linkedin.com/company/voxel51)
+[![Twitter](https://img.shields.io/badge/Twitter-000000?logo=x&logoColor=white)](https://x.com/voxel51)
+[![Medium](https://img.shields.io/badge/Medium-12100E?logo=medium&logoColor=white)](https://medium.com/voxel51)
+
+</div>
+
 An SDK for deploying custom analytics to the
 [Voxel51 Platform](https://console.voxel51.com).
 
 Available at [https://github.com/voxel51/platform-sdk](https://github.com/voxel51/platform-sdk).
-
-<img src="https://user-images.githubusercontent.com/3719547/74191434-8fe4f500-4c21-11ea-8d73-555edfce0854.png" alt="voxel51-logo.png" width="40%"/>
-
 
 ## Installation
 
@@ -45,7 +56,6 @@ download and activiate an API token to enable use of the client library.
 After you have installed the client library and activated your API token, run
 `voxel51 auth show`. If you see token information, then you're ready to go!
 
-
 ## Quickstart
 
 ### Platform Analytics
@@ -72,7 +82,6 @@ Also, see the
 [examples folder](https://github.com/voxel51/platform-sdk/tree/develop/examples)
 for several end-to-end examples of building and deploying analytics using the
 Image-To-Video tool.
-
 
 ## Overview
 
@@ -107,7 +116,6 @@ manage data resources, run analytics on data, monitor the status of their jobs,
 download the outputs of jobs, access statements and billing, and more. For more
 information about the Platform API, refer to the
 [API Documentation](https://voxel51.com/docs/api).
-
 
 ## Analytic interface
 
@@ -184,7 +192,6 @@ See the
 [Platform Quickstart Guide](https://github.com/voxel51/platform-sdk/blob/develop/quickstarts/PLATFORM.md)
 for more details about the interface provided by the Platform SDK.
 
-
 ## Analytic deployment
 
 You can deploy new custom analytics or new versions of your existing analytics
@@ -237,7 +244,6 @@ You can also publish new analytics via the Platform's
 [Web Console](https://console.voxel51.com). To do so, simply login
 to your Platform account, navigate to the `Analytics` page, and click `Upload`.
 
-
 ## Documentation
 
 This project uses
@@ -250,7 +256,6 @@ bash docs/generate_docs.bash
 
 To view the documentation, open the `docs/build/html/index.html` file in
 your browser.
-
 
 ## Copyright
 
